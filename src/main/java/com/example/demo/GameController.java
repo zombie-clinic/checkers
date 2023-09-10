@@ -1,30 +1,33 @@
 package com.example.demo;
 
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
-@Controller
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
+@RestController
 public class GameController {
 
     @GetMapping("/")
-    public String index(Model model) {
-        model.addAttribute("message", "Welcome, start a game below");
+    @ResponseBody
+    public ResponseEntity<?> index() {
+        Map<String, String> response = new HashMap<>();
+        response.put("choice1", "white");
+        response.put("choice2", "black");
+        response.put("choice3", "random");
+        response.put("button", "start");
+        return ResponseEntity.ok(response);
+    }
 
-        boolean[][] myArray = {
-                {true, false, true, false, true, false, true, false, true, false},
-                {false, true, false, true, false, true, false, true, false, true},
-                {true, false, true, false, true, false, true, false, true, false},
-                {false, true, false, true, false, true, false, true, false, true},
-                {true, false, true, false, true, false, true, false, true, false},
-                {false, true, false, true, false, true, false, true, false, true},
-                {true, false, true, false, true, false, true, false, true, false},
-                {false, true, false, true, false, true, false, true, false, true},
-                {true, false, true, false, true, false, true, false, true, false},
-                {false, true, false, true, false, true, false, true, false, true},
-        };
-        model.addAttribute("myArray", myArray);
+    @GetMapping("/start")
+    public ResponseEntity<?> startGame(@RequestParam String side) {
+        return ResponseEntity.ok("You are playing " + side + " in the game " + UUID.randomUUID());
+    }
 
-        return "index";
+    @GetMapping("/game/{id}")
+    public ResponseEntity<?> joinGame(@PathVariable String id) {
+        return ResponseEntity.ok("In the game " + id);
     }
 }
