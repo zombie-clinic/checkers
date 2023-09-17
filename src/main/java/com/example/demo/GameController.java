@@ -1,28 +1,17 @@
 package com.example.demo;
 
-import com.example.demo.api.GameApi;
-import com.example.demo.domain.GameResponse;
+import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
+@Hidden
 @RestController
-public class GameController implements GameApi {
-
-    @Override
-    public ResponseEntity<GameResponse> getGameById(UUID gameId) {
-        GameResponse body = new GameResponse();
-        body.setId(UUID.randomUUID());
-        return ResponseEntity.ok(body);
-    }
-
-    @Override
-    public ResponseEntity<String> startGame() {
-        return ResponseEntity.ok(UUID.randomUUID().toString());
-    }
+public class GameController {
 
     @GetMapping("/")
     @ResponseBody
