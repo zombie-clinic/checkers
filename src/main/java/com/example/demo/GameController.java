@@ -1,5 +1,7 @@
 package com.example.demo;
 
+import com.example.demo.api.GameApi;
+import com.example.demo.domain.GameResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -8,7 +10,19 @@ import java.util.Map;
 import java.util.UUID;
 
 @RestController
-public class GameController {
+public class GameController implements GameApi {
+
+    @Override
+    public ResponseEntity<GameResponse> getGameById(UUID gameId) {
+        GameResponse body = new GameResponse();
+        body.setId(UUID.randomUUID());
+        return ResponseEntity.ok(body);
+    }
+
+    @Override
+    public ResponseEntity<String> startGame() {
+        return ResponseEntity.ok(UUID.randomUUID().toString());
+    }
 
     @GetMapping("/")
     @ResponseBody
@@ -19,15 +33,5 @@ public class GameController {
         response.put("choice3", "random");
         response.put("button", "start");
         return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("/start")
-    public ResponseEntity<?> startGame(@RequestParam String side) {
-        return ResponseEntity.ok("You are playing " + side + " in the game " + UUID.randomUUID());
-    }
-
-    @GetMapping("/game/{id}")
-    public ResponseEntity<?> joinGame(@PathVariable String id) {
-        return ResponseEntity.ok("In the game " + id);
     }
 }

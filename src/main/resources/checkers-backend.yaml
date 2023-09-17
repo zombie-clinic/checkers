@@ -1,0 +1,60 @@
+openapi: 3.0.3
+info:
+  title: Checkers OpenAPI 3.0 specification
+  description: This is API for checkers-react-game backend
+  version: 0.1
+servers:
+  - url: localhost:8080/api/v1
+paths:
+  /game:
+    post:
+      tags:
+        - game
+      summary: Start a new game
+      description: Start a new game
+      operationId: startGame
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            text/plain:
+              schema:
+                type: string
+        '405':
+          description: Invalid input
+  /game/{gameId}:
+    get:
+      tags:
+        - game
+      summary: Find game by ID
+      description: Returns a single game
+      operationId: getGameById
+      parameters:
+        - name: gameId
+          in: path
+          description: ID of a game to return
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GameResponse'
+        '400':
+          description: Invalid game id supplied
+        '404':
+          description: Game not found
+
+components:
+  schemas:
+    GameResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+
