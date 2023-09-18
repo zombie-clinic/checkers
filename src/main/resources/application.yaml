@@ -1,3 +1,16 @@
+spring:
+  h2:
+    console.enabled: true
+
+  datasource:
+    url: jdbc:h2:mem:test
+    username: sa
+    password: password
+    driverClassName: org.h2.Driver
+  jpa:
+    spring.jpa.database-platform: org.hibernate.dialect.H2Dialect
+    defer-datasource-initialization: true
+
 springdoc:
   api-docs:
     path: /api-docs
