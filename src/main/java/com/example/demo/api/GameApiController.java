@@ -1,18 +1,32 @@
 package com.example.demo.api;
 
+import com.example.demo.CheckersService;
+import com.example.demo.GameState;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.UUID;
 
+@RequiredArgsConstructor
 @RestController
 public class GameApiController implements GameApi {
 
+    private final CheckersService checkersService;
+
     @Override
-    public ResponseEntity<GameResponse> getGameById(UUID gameId) {
-        GameResponse body = new GameResponse();
-        body.setId(UUID.randomUUID());
-        return ResponseEntity.ok(body);
+    public ResponseEntity<List<GameResponse>> getGamesByState(String state) {
+        return ResponseEntity.ok(checkersService.getGamesByState(GameState.valueOf(state)));
+    }
+
+    @Override
+    public ResponseEntity<GameResponse> getGameById(String gameId) {
+        GameResponse gameResponse = checkersService.getGameById(gameId);
+        if (gameResponse == null) {
+            return null;
+        }
+        return ResponseEntity.ok(gameResponse);
     }
 
     @Override

@@ -11,5 +11,5 @@ INSERT into game (id, state) values ('5525d529-9bb5-489a-b61b-2397962f9d6e', 'co
 INSERT into game (id, state) values ('0e59c559-b0ef-4345-8c05-40a267b8a8a3', 'completed');
 INSERT into game (id, state) values ('79d401ab-ac28-4f27-8c42-ee907c886d74', 'completed');
 INSERT into game (id, state) values ('0f71e103-2278-4a75-b5c0-e555f859fdac', 'completed');
-INSERT into game (id, state) values ('12157ca4-fb32-4b66-baa8-c73c54593fcd', 'deleted');
-INSERT into game (id, state) values ('4a639f32-7555-4a7d-82a7-c3a8613f5b7f', 'deleted');
+INSERT into game (id, state) values ('12157ca4-fb32-4b66-baa8-c73c54593fcd', 'archived');
+INSERT into game (id, state) values ('4a639f32-7555-4a7d-82a7-c3a8613f5b7f', 'archived');
