@@ -17,7 +17,7 @@ public class GameApiController implements GameApi {
 
     @Override
     public ResponseEntity<List<GameResponse>> getGamesByState(String state) {
-        return ResponseEntity.ok(checkersService.getGamesByState(GameState.valueOf(state)));
+        return ResponseEntity.ok(checkersService.getGamesByState(state));
     }
 
     @Override

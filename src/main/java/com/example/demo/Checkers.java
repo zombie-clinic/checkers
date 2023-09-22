@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface Checkers {
 
-    List<GameResponse> getGamesByState(GameState state);
+    List<GameResponse> getGamesByState(String state);
 
     GameResponse getGameById(String uuid);
 }

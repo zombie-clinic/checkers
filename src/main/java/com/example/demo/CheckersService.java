@@ -17,13 +17,18 @@ public class CheckersService implements Checkers {
     private final GameRepository gameRepository;
 
     @Override
-    public List<GameResponse> getGamesByState(GameState state) {
+    public List<GameResponse> getGamesByState(String state) {
+
+        // validate
+        GameState.valueOf(state);
+
         List<Game> games = gameRepository.findGameByState(state);
 
         return games.stream()
                 .map(game -> {
                     var gameResponse = new GameResponse();
                     gameResponse.setId(game.getId());
+                    gameResponse.setState(game.getState());
                     return gameResponse;
                 })
                 .collect(Collectors.toList());
