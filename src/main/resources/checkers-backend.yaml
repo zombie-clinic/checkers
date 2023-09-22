@@ -72,6 +72,37 @@ paths:
           description: Invalid game id supplied
         '404':
           description: Game not found
+  /move/{gameId}:
+    put:
+      tags:
+        - game
+      summary: Make a move within a game
+      description: Start a new game
+      operationId: move
+      parameters:
+        - name: gameId
+          in: path
+          description: ID of an starting/ongoing game
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Optional description in *Markdown*
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Move'
+
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            text/plain:
+              schema:
+                type: string
+        '405':
+          description: Invalid input
 
 components:
   schemas:
@@ -81,4 +112,11 @@ components:
         id:
           type: string
         state:
+          type: string
+    Move:
+      type: object
+      properties:
+        side:
+          type: string
+        move:
           type: string

@@ -1,9 +1,9 @@
 package com.example.demo.api;
 
 import com.example.demo.CheckersService;
-import com.example.demo.GameState;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -14,6 +14,12 @@ import java.util.UUID;
 public class GameApiController implements GameApi {
 
     private final CheckersService checkersService;
+
+    @Override
+    public ResponseEntity<String> move(String gameId, @RequestBody Move move) {
+        checkersService.saveMove(gameId, move);
+        return ResponseEntity.ok("Move saved");
+    }
 
     @Override
     public ResponseEntity<List<GameResponse>> getGamesByState(String state) {

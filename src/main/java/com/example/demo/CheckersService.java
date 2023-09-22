@@ -1,7 +1,9 @@
 package com.example.demo;
 
 import com.example.demo.api.GameResponse;
+import com.example.demo.api.Move;
 import com.example.demo.domain.Game;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +17,17 @@ import java.util.stream.Collectors;
 public class CheckersService implements Checkers {
 
     private final GameRepository gameRepository;
+
+    private final MoveRepository moveRepository;
+
+    @Transactional
+    @Override
+    public void saveMove(String gameId, Move move) {
+        Optional<Game> game = gameRepository.findGameById(gameId);
+        moveRepository.save(new com.example.demo.domain.Move(
+                game.get(), move.getSide(), move.getMove()
+        ));
+    }
 
     @Override
     public List<GameResponse> getGamesByState(String state) {
