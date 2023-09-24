@@ -1,34 +1,38 @@
 package com.example.demo.api;
 
-import com.example.demo.CheckersService;
+import com.example.demo.service.GameService;
+import com.example.demo.service.MoveService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.UUID;
 
 @RequiredArgsConstructor
 @RestController
 public class GameApiController implements GameApi {
 
-    private final CheckersService checkersService;
+    private final GameService gameService;
+
+    private final MoveService moveService;
+
 
     @Override
-    public ResponseEntity<String> move(String gameId, @RequestBody Move move) {
-        checkersService.saveMove(gameId, move);
-        return ResponseEntity.ok("Move saved");
+    public ResponseEntity<String> move(String gameId, MoveRequest moveRequest) {
+        MoveResponse moveResponse = moveService.saveMove(
+                gameId, moveRequest
+        );
+        return ResponseEntity.ok(moveResponse.toString());
     }
 
     @Override
     public ResponseEntity<List<GameResponse>> getGamesByState(String state) {
-        return ResponseEntity.ok(checkersService.getGamesByState(state));
+        return ResponseEntity.ok(gameService.getGamesByStatus(state));
     }
 
     @Override
     public ResponseEntity<GameResponse> getGameById(String gameId) {
-        GameResponse gameResponse = checkersService.getGameById(gameId);
+        GameResponse gameResponse = gameService.getGameById(gameId);
         if (gameResponse == null) {
             return null;
         }
@@ -37,6 +41,7 @@ public class GameApiController implements GameApi {
 
     @Override
     public ResponseEntity<String> startGame() {
-        return ResponseEntity.ok(UUID.randomUUID().toString());
+        GameResponse gameResponse = gameService.startGame();
+        return ResponseEntity.ok(gameResponse.toString());
     }
 }

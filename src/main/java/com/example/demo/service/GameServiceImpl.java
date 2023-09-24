@@ -1,9 +1,9 @@
-package com.example.demo;
+package com.example.demo.service;
 
+import com.example.demo.GameRepository;
+import com.example.demo.GameStatus;
 import com.example.demo.api.GameResponse;
-import com.example.demo.api.Move;
 import com.example.demo.domain.Game;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,34 +14,34 @@ import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
-public class CheckersService implements Checkers {
+public class GameServiceImpl implements GameService {
 
     private final GameRepository gameRepository;
 
-    private final MoveRepository moveRepository;
 
-    @Transactional
     @Override
-    public void saveMove(String gameId, Move move) {
-        Optional<Game> game = gameRepository.findGameById(gameId);
-        moveRepository.save(new com.example.demo.domain.Move(
-                game.get(), move.getSide(), move.getMove()
-        ));
+    public GameResponse startGame() {
+        Game game = new Game();
+        Game savedGame = gameRepository.save(game);
+        var gameResponse = new GameResponse();
+        gameResponse.setId(savedGame.getId());
+        gameResponse.setStatus(game.getStatus());
+        return gameResponse;
     }
 
     @Override
-    public List<GameResponse> getGamesByState(String state) {
+    public List<GameResponse> getGamesByStatus(String gameStatus) {
 
         // validate
-        GameState.valueOf(state);
+        GameStatus.valueOf(gameStatus);
 
-        List<Game> games = gameRepository.findGameByState(state);
+        List<Game> games = gameRepository.findGameByStatus(gameStatus);
 
         return games.stream()
                 .map(game -> {
                     var gameResponse = new GameResponse();
                     gameResponse.setId(game.getId());
-                    gameResponse.setState(game.getState());
+                    gameResponse.setStatus(game.getStatus());
                     return gameResponse;
                 })
                 .collect(Collectors.toList());
@@ -56,6 +56,7 @@ public class CheckersService implements Checkers {
 
         GameResponse gameResponse = new GameResponse();
         gameResponse.setId(game.get().getId());
+        gameResponse.setStatus(game.get().getStatus());
 
         return gameResponse;
     }

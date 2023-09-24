@@ -92,7 +92,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Move'
+              $ref: '#/components/schemas/MoveRequest'
 
       responses:
         '200':
@@ -111,12 +111,26 @@ components:
       properties:
         id:
           type: string
-        state:
+        status:
           type: string
-    Move:
+    MoveRequest:
       type: object
       properties:
         side:
           type: string
         move:
           type: string
+        previousState:
+          type: string
+    MoveResponse:
+      type: object
+      properties:
+        game:
+          $ref: '#/components/schemas/GameResponse'
+        side:
+          type: string
+        move:
+          type: string
+        previousState:
+          type: string
+
