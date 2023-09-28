@@ -4,7 +4,9 @@ import com.example.demo.domain.GameResponse;
 import com.example.demo.domain.MoveRequest;
 import com.example.demo.service.GameService;
 import com.example.demo.service.MoveService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -18,12 +20,14 @@ public class GameApiController implements GameApi {
 
     private final MoveService moveService;
 
+    @SneakyThrows
     @Override
     public ResponseEntity<String> move(String gameId, MoveRequest moveRequest) {
         MoveResponse moveResponse = moveService.saveMove(
                 gameId, moveRequest
         );
-        return ResponseEntity.ok(moveResponse.toString());
+        ObjectMapper objectMapper = new ObjectMapper();
+        return ResponseEntity.ok(objectMapper.writeValueAsString(moveResponse));
     }
 
     @Override
