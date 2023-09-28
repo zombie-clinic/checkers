@@ -1,6 +1,6 @@
 package com.example.demo.service;
 
-import com.example.demo.api.MoveRequest;
+import com.example.demo.domain.MoveRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,7 +20,7 @@ class StateCalculatorTest {
         moveRequest = new MoveRequest();
         moveRequest.setSide("white");
         moveRequest.setMove("11-18");
-        moveRequest.setPreviousState("initial state");
+        moveRequest.setState("initial state");
     }
 
     @Test
@@ -65,7 +65,7 @@ class StateCalculatorTest {
 
     private static MoveRequest generateBlackMoveRequest() {
         MoveRequest moveRequest = new MoveRequest();
-        moveRequest.setPreviousState("{\"black\": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]," +
+        moveRequest.setState("{\"black\": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]," +
                 "\"white\":[21, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 18]}");
         moveRequest.setSide("black");
         moveRequest.setMove("10-15");
@@ -74,7 +74,7 @@ class StateCalculatorTest {
 
     private static MoveRequest generateWhiteMoveRequest() {
         MoveRequest moveRequest = new MoveRequest();
-        moveRequest.setPreviousState("{\"black\": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]," +
+        moveRequest.setState("{\"black\": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]," +
                 "\"white\":[21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32]}");
         moveRequest.setSide("white");
         moveRequest.setMove("22-18");
@@ -83,7 +83,7 @@ class StateCalculatorTest {
 
     private static MoveRequest generateInvalidMoveRequest() {
         MoveRequest moveRequest = new MoveRequest();
-        moveRequest.setPreviousState("""
+        moveRequest.setState("""
                 {
                   "black": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 1
                   2],

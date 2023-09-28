@@ -2,7 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.GameRepository;
 import com.example.demo.MoveRepository;
-import com.example.demo.api.MoveRequest;
+import com.example.demo.domain.MoveRequest;
 import com.example.demo.api.MoveResponse;
 import com.example.demo.domain.Game;
 import com.example.demo.domain.Move;
@@ -39,7 +39,7 @@ public class MoveServiceImpl implements MoveService {
                     )
             );
 
-            moveRequest.setPreviousState("initial state");
+            moveRequest.setState("initial state");
             return generateMoveResponse(gameId, moveRequest);
         }
 
@@ -66,6 +66,6 @@ public class MoveServiceImpl implements MoveService {
 
     // TODO moves should not be empty
     private static boolean isInconsistentGame(MoveRequest moveRequest, List<Move> moves) {
-        return !moves.get(moves.size() - 1).getState().equals(moveRequest.getPreviousState());
+        return !moves.get(moves.size() - 1).getState().equals(moveRequest.getState());
     }
 }

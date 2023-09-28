@@ -1,6 +1,6 @@
 package com.example.demo.service;
 
-import com.example.demo.api.MoveRequest;
+import com.example.demo.domain.MoveRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -29,7 +29,7 @@ public class StateCalculator {
         var objectMapper = new ObjectMapper();
 
         String move = request.getMove();
-        String previousState = request.getPreviousState();
+        String previousState = request.getState();
         String side = request.getSide();
 
         JsonNode jsonNode = objectMapper.readTree(previousState);

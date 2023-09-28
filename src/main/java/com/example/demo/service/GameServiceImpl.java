@@ -2,7 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.GameRepository;
 import com.example.demo.GameStatus;
-import com.example.demo.api.GameResponse;
+import com.example.demo.domain.GameResponse;
 import com.example.demo.domain.Game;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

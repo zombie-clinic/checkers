@@ -1,6 +1,6 @@
 package com.example.demo.service;
 
-import com.example.demo.api.GameResponse;
+import com.example.demo.domain.GameResponse;
 
 import java.util.List;
 

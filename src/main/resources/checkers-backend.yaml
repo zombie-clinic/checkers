@@ -120,7 +120,7 @@ components:
           type: string
         move:
           type: string
-        previousState:
+        state:
           type: string
 
 

@@ -34,7 +34,7 @@ openApiGenerate {
     inputSpec.set("$projectDir/src/main/resources/checkers-backend.yaml")
     outputDir.set("$buildDir/generated/openapi")
     apiPackage.set("com.example.demo.api")
-    modelPackage.set("com.example.demo.api")
+    modelPackage.set("com.example.demo.domain")
     configOptions.set([
             dateLibrary               : "java8",
             generateApis              : "true",
@@ -72,7 +72,7 @@ dependencies {
     implementation 'io.swagger.core.v3:swagger-annotations:2.2.15'
     implementation 'javax.annotation:javax.annotation-api:1.3.2'
     implementation 'javax.validation:validation-api:2.0.1.Final'
-    implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.0.2'
+    implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.2.0'
 }
 
 tasks.named('test') {
