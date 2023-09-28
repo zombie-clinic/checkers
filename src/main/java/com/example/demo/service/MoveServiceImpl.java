@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
@@ -32,7 +31,6 @@ public class MoveServiceImpl implements MoveService {
             throw new IllegalArgumentException("No game found");
         }
         List<Move> moves = moveRepository.findAllByGameId(gameId);
-        String newGameState = UUID.randomUUID().toString();
 
         if (moves.isEmpty()) {
             moveRepository.save(
@@ -41,11 +39,8 @@ public class MoveServiceImpl implements MoveService {
                     )
             );
 
-            MoveResponse moveResponse = new MoveResponse();
-            moveResponse.setMove(moveRequest.getSide());
-            moveResponse.setPreviousState(newGameState);
-
-            return moveResponse;
+            moveRequest.setPreviousState("initial state");
+            return generateMoveResponse(gameId, moveRequest);
         }
 
         if (isInconsistentGame(moveRequest, moves)) {
@@ -56,20 +51,21 @@ public class MoveServiceImpl implements MoveService {
                 // TODO Introduce Move builder
                 // TODO Calculate state
                 new Move(
-                        game.get(), "white", newGameState, moveRequest.getMove()
+                        game.get(), moveRequest.getSide(), StateCalculator.calculateNextState(
+                                moveRequest).toString(), moveRequest.getMove()
                 )
         );
 
         // TODO MoveResponse should contain board state and should not contain a move
-        MoveResponse moveResponse = new MoveResponse();
-        moveResponse.setMove(moveRequest.getSide());
-        moveResponse.setPreviousState(newGameState);
+        return generateMoveResponse(gameId, moveRequest);
+    }
 
-        return moveResponse;
+    private static MoveResponse generateMoveResponse(String gameId, MoveRequest moveRequest) {
+        return new MoveResponse(gameId, StateCalculator.calculateNextState(moveRequest).toString());
     }
 
     // TODO moves should not be empty
     private static boolean isInconsistentGame(MoveRequest moveRequest, List<Move> moves) {
-        return !moves.get(moves.size() - 1).getPreviousGameState().equals(moveRequest.getPreviousState());
+        return !moves.get(moves.size() - 1).getState().equals(moveRequest.getPreviousState());
     }
 }

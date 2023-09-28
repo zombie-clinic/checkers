@@ -16,7 +16,6 @@ public class GameApiController implements GameApi {
 
     private final MoveService moveService;
 
-
     @Override
     public ResponseEntity<String> move(String gameId, MoveRequest moveRequest) {
         MoveResponse moveResponse = moveService.saveMove(

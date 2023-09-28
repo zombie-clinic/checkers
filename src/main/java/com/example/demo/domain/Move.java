@@ -21,14 +21,14 @@ public class Move {
 
     private String side;
 
-    private String previousGameState;
+    private String state;
 
     private String move;
 
-    public Move(Game game, String side, String previousGameState, String move) {
+    public Move(Game game, String side, String state, String move) {
         this.game = game;
         this.side = side;
-        this.previousGameState = previousGameState;
+        this.state = state;
         this.move = move;
     }
 }

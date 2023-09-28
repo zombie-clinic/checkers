@@ -11,5 +11,5 @@ INSERT into game (id, status) values ('0f71e103-2278-4a75-b5c0-e555f859fdac', 'C
 INSERT into game (id, status) values ('12157ca4-fb32-4b66-baa8-c73c54593fcd', 'ARCHIVED');
 INSERT into game (id, status) values ('4a639f32-7555-4a7d-82a7-c3a8613f5b7f', 'ARCHIVED');
 
-INSERT into move (game_id, side, previous_game_state, move) values ('7304942c-1bfd-4c23-8c83-c9902a866807', 'white', 'initial state', '11-18');
-INSERT into move (game_id, side, previous_game_state, move) values ('7304942c-1bfd-4c23-8c83-c9902a866807', 'black', 'previous was first move', '22-13');
+INSERT into move (game_id, side, state, move) values ('7304942c-1bfd-4c23-8c83-c9902a866807', 'white', '{"black":[1,2,3,4,5,6,7,8,9,10,11,12],"white":[21,23,24,25,26,27,28,29,30,31,32,18]}', '22-18');
+INSERT into move (game_id, side, state, move) values ('7304942c-1bfd-4c23-8c83-c9902a866807', 'black', '{"black":[1,2,3,4,5,6,7,8,9,11,12,15],"white":[21,23,24,25,26,27,28,29,30,31,32,18]}', '10-15');

@@ -98,7 +98,7 @@ paths:
         '200':
           description: Successful operation
           content:
-            text/plain:
+            application/json:
               schema:
                 type: string
         '405':
@@ -122,15 +122,5 @@ components:
           type: string
         previousState:
           type: string
-    MoveResponse:
-      type: object
-      properties:
-        game:
-          $ref: '#/components/schemas/GameResponse'
-        side:
-          type: string
-        move:
-          type: string
-        previousState:
-          type: string
+
 
