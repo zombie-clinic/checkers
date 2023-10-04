@@ -90,16 +90,9 @@ sourceSets {
 
 tasks.openApiGenerate {
     doLast {
-        delete (
+        delete(
                 "$buildDir/generated/openapi/src/main/java/com/example/demo/api/ApiUtil.java"
         )
-    }
-}
-
-task checkers {
-        dependsOn 'clean', tasks.openApiGenerate, 'build', 'bootRun'
-    doLast {
-        println 'All tasks completed!'
     }
 }
 
