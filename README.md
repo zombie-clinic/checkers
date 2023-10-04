@@ -1,6 +1,8 @@
 ### Run app locally
 
-`./gradlew bootRun`
+`./gradlew checkers` for Linux 
+
+`gradle.bat checkers` for Windows
 
 ### API
 

@@ -95,3 +95,27 @@ tasks.openApiGenerate {
         )
     }
 }
+
+task checkers {
+        dependsOn 'clean', tasks.openApiGenerate, 'build', 'bootRun'
+    doLast {
+        println 'All tasks completed!'
+    }
+}
+
+tasks.openApiGenerate.configure {
+    mustRunAfter tasks.named('clean')
+}
+
+tasks.named('compileJava').configure {
+    dependsOn tasks.named('openApiGenerate')
+}
+
+
+tasks.named('build').configure {
+    mustRunAfter tasks.named('openApiGenerate')
+}
+
+tasks.named('bootRun').configure {
+    mustRunAfter 'build'
+}
