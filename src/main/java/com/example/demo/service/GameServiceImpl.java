@@ -22,10 +22,11 @@ public class GameServiceImpl implements GameService {
     @Override
     public GameResponse startGame() {
         Game game = new Game();
+        game.setStatus(GameStatus.STARTING.toString());
         Game savedGame = gameRepository.save(game);
         var gameResponse = new GameResponse();
         gameResponse.setId(savedGame.getId());
-        gameResponse.setStatus(game.getStatus());
+        gameResponse.setStatus(GameStatus.STARTING.toString());
         return gameResponse;
     }
 
