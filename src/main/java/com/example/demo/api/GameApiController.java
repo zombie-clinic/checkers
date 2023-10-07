@@ -50,8 +50,8 @@ public class GameApiController implements GameApi {
     }
 
     @Override
-    public ResponseEntity<String> startGame() {
+    public ResponseEntity<GameResponse> startGame() {
         GameResponse gameResponse = gameService.startGame();
-        return ResponseEntity.ok(gameResponse.toString());
+        return ResponseEntity.ok(gameResponse);
     }
 }

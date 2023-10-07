@@ -43,9 +43,9 @@ paths:
         '200':
           description: Successful operation
           content:
-            text/plain:
+            application/json:
               schema:
-                type: string
+                $ref: '#/components/schemas/GameResponse'
         '405':
           description: Invalid input
   /game/{gameId}:
