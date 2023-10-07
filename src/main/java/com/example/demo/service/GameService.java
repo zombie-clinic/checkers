@@ -8,7 +8,7 @@ public interface GameService {
 
     GameResponse startGame();
 
-    List<GameResponse> getGamesByStatus(String gameStatus);
+    List<GameResponse> getGamesByStatus(List<String> statusList);
 
     GameResponse getGameById(String uuid);
 }

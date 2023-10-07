@@ -10,6 +10,7 @@ import lombok.SneakyThrows;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Collections;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -30,9 +31,13 @@ public class GameApiController implements GameApi {
         return ResponseEntity.ok(objectMapper.writeValueAsString(moveResponse));
     }
 
+
     @Override
-    public ResponseEntity<List<GameResponse>> getGamesByState(String state) {
-        return ResponseEntity.ok(gameService.getGamesByStatus(state));
+    public ResponseEntity<List<GameResponse>> getGamesByStatus(List<String> statusList) {
+        if (statusList == null) {
+            return ResponseEntity.ok(gameService.getGamesByStatus(Collections.emptyList()));
+        }
+        return ResponseEntity.ok(gameService.getGamesByStatus(statusList));
     }
 
     @Override

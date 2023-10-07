@@ -31,12 +31,21 @@ public class GameServiceImpl implements GameService {
     }
 
     @Override
-    public List<GameResponse> getGamesByStatus(String gameStatus) {
+    public List<GameResponse> getGamesByStatus(List<String> statusList) {
+        if (statusList.isEmpty()) {
+            return gameRepository.findAll().stream()
+                    .map(game -> {
+                        var gameResponse = new GameResponse();
+                        gameResponse.setId(game.getId());
+                        gameResponse.setStatus(game.getStatus());
+                        return gameResponse;
+                    })
+                    .collect(Collectors.toList());
+        }
+        // validate states
+        statusList.forEach(GameStatus::valueOf);
 
-        // validate
-        GameStatus.valueOf(gameStatus);
-
-        List<Game> games = gameRepository.findGameByStatus(gameStatus);
+        List<Game> games = gameRepository.findAllByStatusIn(statusList);
 
         return games.stream()
                 .map(game -> {

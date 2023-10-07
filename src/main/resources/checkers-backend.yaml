@@ -11,16 +11,17 @@ paths:
       tags:
         - game
       summary: Get games
-      description: Retrieve games based on a specified state.
-      operationId: getGamesByState
+      description: Get games by their status or fetch all games when no status specified
+      operationId: getGamesByStatus
       parameters:
-        - name: state
+        - name: status
           in: query
-          description: The state to filter games.
           required: false
           schema:
-            type: string
-            enum: [STARTING, ONGOING, COMPLETED, ARCHIVED]
+            type: array
+            items:
+              type: string
+              enum: [STARTING, ONGOING, COMPLETED, ARCHIVED]
       responses:
         '200':
           description: Successful operation
