@@ -114,6 +114,8 @@ components:
           type: string
         status:
           type: string
+        state:
+          type: string
     MoveRequest:
       type: object
       properties:

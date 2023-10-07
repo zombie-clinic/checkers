@@ -2,8 +2,10 @@ package com.example.demo.service;
 
 import com.example.demo.GameRepository;
 import com.example.demo.GameStatus;
+import com.example.demo.MoveRepository;
 import com.example.demo.domain.GameResponse;
 import com.example.demo.domain.Game;
+import com.example.demo.domain.Move;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +20,7 @@ public class GameServiceImpl implements GameService {
 
     private final GameRepository gameRepository;
 
+    private final MoveRepository moveRepository;
 
     @Override
     public GameResponse startGame() {
@@ -67,6 +70,15 @@ public class GameServiceImpl implements GameService {
         GameResponse gameResponse = new GameResponse();
         gameResponse.setId(game.get().getId());
         gameResponse.setStatus(game.get().getStatus());
+
+        List<Move> moves = moveRepository.findAllByGameId(game.get().getId());
+
+        if (moves.isEmpty()) {
+            gameResponse.setState("");
+        } else {
+            String state = moves.get(moves.size() - 1).getState().replace("\\\"", "");
+            gameResponse.setState(state);
+        }
 
         return gameResponse;
     }
