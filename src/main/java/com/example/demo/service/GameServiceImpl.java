@@ -3,12 +3,15 @@ package com.example.demo.service;
 import com.example.demo.GameProgress;
 import com.example.demo.GameRepository;
 import com.example.demo.MoveRepository;
+import com.example.demo.UserRepository;
 import com.example.demo.domain.Game;
 import com.example.demo.domain.GameResponse;
+import com.example.demo.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 
@@ -20,11 +23,23 @@ public class GameServiceImpl implements GameService {
 
     private final MoveRepository moveRepository;
 
+    private final UserRepository userRepository;
+
     @Override
-    public GameResponse startGame() {
+    public GameResponse startGame(Long userId) {
         Game game = new Game();
         game.setProgress(GameProgress.STARTING.toString());
+
+        Optional<User> user = userRepository.findById(userId);
+
+        if (user.isEmpty()) {
+            throw new IllegalArgumentException("No such user, couldn't start game.");
+        }
+
+        game.setUser(user.get());
+
         Game savedGame = gameRepository.save(game);
+
         var gameResponse = new GameResponse();
         gameResponse.setGameId(savedGame.getId());
         gameResponse.setProgress(GameProgress.STARTING.toString());

@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface GameService {
 
-    GameResponse startGame();
+    GameResponse startGame(Long userId);
 
     List<GameResponse> getGamesByStatus(List<String> statusList);
 

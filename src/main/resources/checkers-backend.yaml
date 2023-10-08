@@ -6,6 +6,24 @@ info:
 servers:
   - url: localhost:8080/api/v1
 paths:
+  /user/{userId}:
+    get:
+      tags:
+        - game
+      operationId: getUserById
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: long
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
   /game:
     get:
       tags:
@@ -39,6 +57,16 @@ paths:
       summary: Start a new game
       description: Start a new game
       operationId: startGame
+      requestBody:
+        description: Optional description in *Markdown*
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: long
       responses:
         '200':
           description: Successful operation
@@ -148,6 +176,16 @@ components:
       required:
         - gameId
         - state
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: long
+        username:
+          type: string
+      required:
+        - id
+        - username
     MoveRequest:
       type: object
       properties:
@@ -157,5 +195,7 @@ components:
           type: string
         state:
           type: string
+        userId:
+          type: long
 
 

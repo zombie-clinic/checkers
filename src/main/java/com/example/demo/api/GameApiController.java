@@ -1,10 +1,9 @@
 package com.example.demo.api;
 
-import com.example.demo.domain.GameResponse;
-import com.example.demo.domain.MoveRequest;
-import com.example.demo.domain.MoveResponse;
+import com.example.demo.domain.*;
 import com.example.demo.service.GameService;
 import com.example.demo.service.MoveService;
+import com.example.demo.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,6 +20,18 @@ public class GameApiController implements GameApi {
     private final GameService gameService;
 
     private final MoveService moveService;
+
+    private final UserService userService;
+
+    @Override
+    public ResponseEntity<UserResponse> getUserById(Long userId) {
+        UserResponse userById = userService.findUserById(userId);
+        if (userById != null) {
+            return ok(userById);
+        }
+
+        throw new IllegalArgumentException("No such user");
+    }
 
     @Override
     public ResponseEntity<MoveResponse> move(String gameId, MoveRequest moveRequest) {
@@ -56,8 +67,7 @@ public class GameApiController implements GameApi {
     }
 
     @Override
-    public ResponseEntity<GameResponse> startGame() {
-        GameResponse gameResponse = gameService.startGame();
-        return ok(gameResponse);
+    public ResponseEntity<GameResponse> startGame(StartGameRequest startGameRequest) {
+        return ok(gameService.startGame(startGameRequest.getUserId()));
     }
 }

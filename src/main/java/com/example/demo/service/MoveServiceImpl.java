@@ -2,10 +2,8 @@ package com.example.demo.service;
 
 import com.example.demo.GameRepository;
 import com.example.demo.MoveRepository;
-import com.example.demo.domain.MoveRequest;
-import com.example.demo.domain.Game;
-import com.example.demo.domain.Move;
-import com.example.demo.domain.MoveResponse;
+import com.example.demo.UserRepository;
+import com.example.demo.domain.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,9 +20,10 @@ public class MoveServiceImpl implements MoveService {
     private final MoveRepository moveRepository;
 
     private final GameRepository gameRepository;
+    
+    private final UserRepository userRepository;
 
     // TODO Use mapper or json parser to validate move request, e.g.
-    // TODO previousGameState vs previousState
     @Transactional
     @Override
     public MoveResponse saveMove(String gameId, MoveRequest moveRequest) {
@@ -32,12 +31,18 @@ public class MoveServiceImpl implements MoveService {
         if (game.isEmpty()) {
             throw new IllegalArgumentException("No game found");
         }
+
+        Optional<User> user = userRepository.findById(moveRequest.getUserId());
+        if (user.isEmpty()) {
+            throw new IllegalArgumentException("No user found");
+        }
+        
         List<Move> moves = moveRepository.findAllByGameId(gameId);
 
         if (moves.isEmpty()) {
             moveRepository.save(
                     new Move(
-                            game.get(), "white", "initial state", moveRequest.getMove()
+                            game.get(), user.get(), "white", "initial state", moveRequest.getMove()
                     )
             );
 
@@ -53,7 +58,7 @@ public class MoveServiceImpl implements MoveService {
                 // TODO Introduce Move builder
                 // TODO Calculate state
                 new Move(
-                        game.get(), moveRequest.getSide(), StateCalculator.calculateNextState(
+                        game.get(), user.get(), moveRequest.getSide(), StateCalculator.calculateNextState(
                         moveRequest).toString(), moveRequest.getMove()
                 )
         );
