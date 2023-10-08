@@ -11,4 +11,6 @@ public interface GameService {
     List<GameResponse> getGamesByStatus(List<String> statusList);
 
     GameResponse getGameById(String uuid);
+
+    boolean isGameValid(String uuid);
 }

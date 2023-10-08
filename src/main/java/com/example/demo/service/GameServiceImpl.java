@@ -1,10 +1,10 @@
 package com.example.demo.service;
 
-import com.example.demo.GameRepository;
 import com.example.demo.GameProgress;
+import com.example.demo.GameRepository;
 import com.example.demo.MoveRepository;
-import com.example.demo.domain.GameResponse;
 import com.example.demo.domain.Game;
+import com.example.demo.domain.GameResponse;
 import com.example.demo.domain.Move;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -81,5 +81,10 @@ public class GameServiceImpl implements GameService {
         }
 
         return gameResponse;
+    }
+
+    @Override
+    public boolean isGameValid(String uuid) {
+        return gameRepository.existsById(uuid);
     }
 }

@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Collections;
 import java.util.List;
 
+import static org.springframework.http.ResponseEntity.ok;
+
 @RequiredArgsConstructor
 @RestController
 public class GameApiController implements GameApi {
@@ -25,15 +27,23 @@ public class GameApiController implements GameApi {
         MoveResponse moveResponse = moveService.saveMove(
                 gameId, moveRequest
         );
-        return ResponseEntity.ok(moveResponse);
+        return ok(moveResponse);
+    }
+
+    @Override
+    public ResponseEntity<MoveResponse> getCurrentState(String gameId) {
+        if (gameService.isGameValid(gameId)) {
+            return ok(moveService.getCurrentState(gameId));
+        }
+        throw new IllegalArgumentException(String.format("Game %s deleted or not started", gameId));
     }
 
     @Override
     public ResponseEntity<List<GameResponse>> getGamesByProgress(List<String> progressList) {
         if (progressList == null) {
-            return ResponseEntity.ok(gameService.getGamesByStatus(Collections.emptyList()));
+            return ok(gameService.getGamesByStatus(Collections.emptyList()));
         }
-        return ResponseEntity.ok(gameService.getGamesByStatus(progressList));
+        return ok(gameService.getGamesByStatus(progressList));
     }
 
     @Override
@@ -42,12 +52,12 @@ public class GameApiController implements GameApi {
         if (gameResponse == null) {
             return null;
         }
-        return ResponseEntity.ok(gameResponse);
+        return ok(gameResponse);
     }
 
     @Override
     public ResponseEntity<GameResponse> startGame() {
         GameResponse gameResponse = gameService.startGame();
-        return ResponseEntity.ok(gameResponse);
+        return ok(gameResponse);
     }
 }

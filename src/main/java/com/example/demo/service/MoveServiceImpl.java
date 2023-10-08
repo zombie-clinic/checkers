@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
+import static com.example.demo.service.StateCalculator.initialState;
+
 @RequiredArgsConstructor
 @Service
 public class MoveServiceImpl implements MoveService {
@@ -52,12 +54,24 @@ public class MoveServiceImpl implements MoveService {
                 // TODO Calculate state
                 new Move(
                         game.get(), moveRequest.getSide(), StateCalculator.calculateNextState(
-                                moveRequest).toString(), moveRequest.getMove()
+                        moveRequest).toString(), moveRequest.getMove()
                 )
         );
 
         // TODO MoveResponse should contain board state and should not contain a move
         return generateMoveResponse(gameId, moveRequest);
+    }
+
+    @Override
+    public MoveResponse getCurrentState(String gameId) {
+
+        var moveList = moveRepository.findAllByGameId(gameId);
+        var state = moveList.isEmpty() ? initialState() : getCurrentState(moveList);
+        return new MoveResponse(gameId, state.toString());
+    }
+
+    private static String getCurrentState(List<Move> moveList) {
+        return moveList.get(moveList.size() - 1).getState();
     }
 
     private static MoveResponse generateMoveResponse(String gameId, MoveRequest moveRequest) {
@@ -69,6 +83,6 @@ public class MoveServiceImpl implements MoveService {
 
     // TODO moves should not be empty
     private static boolean isInconsistentGame(MoveRequest moveRequest, List<Move> moves) {
-        return !moves.get(moves.size() - 1).getState().equals(moveRequest.getState());
+        return !getCurrentState(moves).equals(moveRequest.getState());
     }
 }

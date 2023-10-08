@@ -5,7 +5,7 @@ import lombok.SneakyThrows;
 
 import java.util.List;
 
-public record State (List<Long> black, List<Long> white) {
+public record State (List<Integer> black, List<Integer> white) {
 
     @SneakyThrows
     @Override
