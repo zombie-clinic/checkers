@@ -14,7 +14,7 @@ import java.util.List;
 
 import static org.springframework.http.ResponseEntity.ok;
 
-@CrossOrigin(origins = "http://localhost:8080")
+@CrossOrigin(origins = "http://localhost:5173")
 @RequiredArgsConstructor
 @RestController
 public class GameApiController implements GameApi {
