@@ -6,6 +6,7 @@ import com.example.demo.service.MoveService;
 import com.example.demo.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Collections;
@@ -13,6 +14,7 @@ import java.util.List;
 
 import static org.springframework.http.ResponseEntity.ok;
 
+@CrossOrigin(origins = "http://localhost:8080")
 @RequiredArgsConstructor
 @RestController
 public class GameApiController implements GameApi {
