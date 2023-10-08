@@ -14,5 +14,5 @@ public class Game {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
-    private String status;
+    private String progress;
 }

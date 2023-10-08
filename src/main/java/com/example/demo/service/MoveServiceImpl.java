@@ -3,9 +3,9 @@ package com.example.demo.service;
 import com.example.demo.GameRepository;
 import com.example.demo.MoveRepository;
 import com.example.demo.domain.MoveRequest;
-import com.example.demo.api.MoveResponse;
 import com.example.demo.domain.Game;
 import com.example.demo.domain.Move;
+import com.example.demo.domain.MoveResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -61,7 +61,10 @@ public class MoveServiceImpl implements MoveService {
     }
 
     private static MoveResponse generateMoveResponse(String gameId, MoveRequest moveRequest) {
-        return new MoveResponse(gameId, StateCalculator.calculateNextState(moveRequest).toString());
+        var moveResponse = new MoveResponse();
+        moveResponse.setGameId(gameId);
+        moveResponse.setState(StateCalculator.calculateNextState(moveRequest).toString());
+        return moveResponse;
     }
 
     // TODO moves should not be empty

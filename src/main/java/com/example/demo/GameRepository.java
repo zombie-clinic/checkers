@@ -8,7 +8,7 @@ import java.util.Optional;
 
 public interface GameRepository extends JpaRepository<Game, String> {
 
-    List<Game> findAllByStatusIn(List<String> status);
+    List<Game> findAllByProgressIn(List<String> progressList);
 
     Optional<Game> findGameById(String id);
 }

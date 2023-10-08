@@ -87,7 +87,6 @@ sourceSets {
     }
 }
 
-
 tasks.openApiGenerate {
     doLast {
         delete(
@@ -103,7 +102,6 @@ tasks.openApiGenerate.configure {
 tasks.named('compileJava').configure {
     dependsOn tasks.named('openApiGenerate')
 }
-
 
 tasks.named('build').configure {
     mustRunAfter tasks.named('openApiGenerate')

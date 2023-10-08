@@ -28,7 +28,7 @@ class GameApiControllerTest {
     @Test
     void givenGamesExist_whenFilterOngoing_fetchOngoingGames() throws Exception {
         mockMvc.perform(
-                        MockMvcRequestBuilders.get("/game?status=ONGOING")
+                        MockMvcRequestBuilders.get("/game?progress=ONGOING")
                 ).andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.length()").value(2));
@@ -37,7 +37,7 @@ class GameApiControllerTest {
     @Test
     void givenGamesExist_whenMultipleFilters_fetchGamesWithMultipleStatuses() throws Exception {
         mockMvc.perform(
-                        MockMvcRequestBuilders.get("/game?status=ONGOING,COMPLETED")
+                        MockMvcRequestBuilders.get("/game?progress=ONGOING,COMPLETED")
                 ).andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.length()").value(6));

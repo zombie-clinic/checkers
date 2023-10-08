@@ -11,10 +11,10 @@ paths:
       tags:
         - game
       summary: Get games
-      description: Get games by their status or fetch all games when no status specified
-      operationId: getGamesByStatus
+      description: Get games by their progress or fetch all games if progress parameter is empty
+      operationId: getGamesByProgress
       parameters:
-        - name: status
+        - name: progress
           in: query
           required: false
           schema:
@@ -94,14 +94,13 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/MoveRequest'
-
       responses:
         '200':
           description: Successful operation
           content:
             application/json:
               schema:
-                type: string
+                $ref: '#/components/schemas/MoveResponse'
         '405':
           description: Invalid input
 
@@ -112,7 +111,12 @@ components:
       properties:
         id:
           type: string
-        status:
+        progress:
+          type: string
+    MoveResponse:
+      type: object
+      properties:
+        gameId:
           type: string
         state:
           type: string

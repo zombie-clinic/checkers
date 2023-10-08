@@ -1,5 +1,5 @@
 package com.example.demo;
 
-public enum GameStatus {
+public enum GameProgress {
     STARTING, ONGOING, COMPLETED, ARCHIVED;
 }

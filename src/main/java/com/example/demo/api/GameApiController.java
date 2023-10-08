@@ -2,11 +2,10 @@ package com.example.demo.api;
 
 import com.example.demo.domain.GameResponse;
 import com.example.demo.domain.MoveRequest;
+import com.example.demo.domain.MoveResponse;
 import com.example.demo.service.GameService;
 import com.example.demo.service.MoveService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -21,23 +20,20 @@ public class GameApiController implements GameApi {
 
     private final MoveService moveService;
 
-    @SneakyThrows
     @Override
-    public ResponseEntity<String> move(String gameId, MoveRequest moveRequest) {
+    public ResponseEntity<MoveResponse> move(String gameId, MoveRequest moveRequest) {
         MoveResponse moveResponse = moveService.saveMove(
                 gameId, moveRequest
         );
-        ObjectMapper objectMapper = new ObjectMapper();
-        return ResponseEntity.ok(objectMapper.writeValueAsString(moveResponse));
+        return ResponseEntity.ok(moveResponse);
     }
 
-
     @Override
-    public ResponseEntity<List<GameResponse>> getGamesByStatus(List<String> statusList) {
-        if (statusList == null) {
+    public ResponseEntity<List<GameResponse>> getGamesByProgress(List<String> progressList) {
+        if (progressList == null) {
             return ResponseEntity.ok(gameService.getGamesByStatus(Collections.emptyList()));
         }
-        return ResponseEntity.ok(gameService.getGamesByStatus(statusList));
+        return ResponseEntity.ok(gameService.getGamesByStatus(progressList));
     }
 
     @Override

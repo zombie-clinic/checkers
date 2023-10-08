@@ -1,6 +1,6 @@
 package com.example.demo.service;
 
-import com.example.demo.GameStatus;
+import com.example.demo.GameProgress;
 import com.example.demo.domain.GameResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +18,7 @@ class GameServiceImplTest {
     @Test
     void givenNewGame_whenStarted_shouldHaveStartingStatus() {
         GameResponse gameResponse = gameService.startGame();
-        assertNotNull(gameResponse.getStatus());
-        assertEquals(gameResponse.getStatus(), GameStatus.STARTING.toString());
+        assertNotNull(gameResponse.getProgress());
+        assertEquals(gameResponse.getProgress(), GameProgress.STARTING.toString());
     }
 }
