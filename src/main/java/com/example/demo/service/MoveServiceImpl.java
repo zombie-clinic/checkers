@@ -1,8 +1,8 @@
 package com.example.demo.service;
 
-import com.example.demo.GameRepository;
-import com.example.demo.MoveRepository;
-import com.example.demo.UserRepository;
+import com.example.demo.persistence.GameRepository;
+import com.example.demo.persistence.MoveRepository;
+import com.example.demo.persistence.UserRepository;
 import com.example.demo.domain.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;

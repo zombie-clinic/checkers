@@ -1,6 +1,6 @@
 package com.example.demo.service;
 
-import com.example.demo.GameProgress;
+import com.example.demo.domain.GameProgress;
 import com.example.demo.domain.GameResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
