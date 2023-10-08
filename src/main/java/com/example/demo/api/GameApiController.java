@@ -50,7 +50,7 @@ public class GameApiController implements GameApi {
     public ResponseEntity<GameResponse> getGameById(String gameId) {
         GameResponse gameResponse = gameService.getGameById(gameId);
         if (gameResponse == null) {
-            return null;
+            throw new IllegalArgumentException(String.format("Game %s not found", gameId));
         }
         return ok(gameResponse);
     }

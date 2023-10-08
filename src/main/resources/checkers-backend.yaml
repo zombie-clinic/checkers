@@ -131,10 +131,13 @@ components:
     GameResponse:
       type: object
       properties:
-        id:
+        gameId:
           type: string
         progress:
           type: string
+      required:
+        - gameId
+        - progress
     MoveResponse:
       type: object
       properties:
