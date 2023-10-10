@@ -5,14 +5,13 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name = "users")
 @Getter
 @Setter
-public class User {
+public class Player {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    private String username;
+    private String name;
 }

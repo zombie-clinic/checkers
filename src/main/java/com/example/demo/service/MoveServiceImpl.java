@@ -2,7 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.persistence.GameRepository;
 import com.example.demo.persistence.MoveRepository;
-import com.example.demo.persistence.UserRepository;
+import com.example.demo.persistence.PlayerRepository;
 import com.example.demo.domain.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +21,7 @@ public class MoveServiceImpl implements MoveService {
 
     private final GameRepository gameRepository;
     
-    private final UserRepository userRepository;
+    private final PlayerRepository playerRepository;
 
     // TODO Use mapper or json parser to validate move request, e.g.
     @Transactional
@@ -32,7 +32,7 @@ public class MoveServiceImpl implements MoveService {
             throw new IllegalArgumentException("No game found");
         }
 
-        Optional<User> user = userRepository.findById(moveRequest.getUserId());
+        Optional<Player> user = playerRepository.findById(moveRequest.getPlayerId());
         if (user.isEmpty()) {
             throw new IllegalArgumentException("No user found");
         }

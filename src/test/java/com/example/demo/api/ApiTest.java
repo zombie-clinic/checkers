@@ -9,9 +9,10 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+// TODO With MockMvc there was no need to adjust test when GameApiController was split
 @AutoConfigureMockMvc
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class GameApiControllerTest {
+class ApiTest {
 
     @Autowired
     private MockMvc mockMvc;

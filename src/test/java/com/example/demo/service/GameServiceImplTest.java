@@ -17,7 +17,7 @@ class GameServiceImplTest {
 
     @Test
     void givenNewGame_whenStarted_shouldHaveStartingStatus() {
-        GameResponse gameResponse = gameService.startGame();
+        GameResponse gameResponse = gameService.startGame(1L);
         assertNotNull(gameResponse.getProgress());
         assertEquals(gameResponse.getProgress(), GameProgress.STARTING.toString());
     }

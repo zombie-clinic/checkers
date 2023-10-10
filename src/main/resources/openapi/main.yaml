@@ -1,0 +1,29 @@
+openapi: 3.0.3
+info:
+  title: Checkers OpenAPI 3.0 specification
+  description: This is API for checkers-react-game backend
+  version: 0.1
+servers:
+  - url: http://localhost:8080/api/v1
+
+paths:
+  /player/{playerId}:
+    $ref: './paths/player.yaml'
+  /game:
+    $ref: './paths/game.yaml'
+  /game/{gameId}:
+    $ref: './paths/gameById.yaml'
+  /move/{gameId}:
+    $ref: './paths/moveByGameId.yaml'
+
+components:
+  schemas:
+    MoveRequest:
+      $ref: './components/schemas.yaml#/MoveRequest'
+  responses:
+    PlayerResponse:
+      $ref: './components/responses.yaml#/PlayerResponse'
+    GameResponse:
+      $ref: './components/responses.yaml#/GameResponse'
+    MoveResponse:
+      $ref: './components/responses.yaml#/MoveResponse'

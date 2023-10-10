@@ -3,10 +3,10 @@ package com.example.demo.service;
 import com.example.demo.domain.GameProgress;
 import com.example.demo.persistence.GameRepository;
 import com.example.demo.persistence.MoveRepository;
-import com.example.demo.persistence.UserRepository;
+import com.example.demo.persistence.PlayerRepository;
 import com.example.demo.domain.Game;
 import com.example.demo.domain.GameResponse;
-import com.example.demo.domain.User;
+import com.example.demo.domain.Player;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -23,20 +23,20 @@ public class GameServiceImpl implements GameService {
 
     private final MoveRepository moveRepository;
 
-    private final UserRepository userRepository;
+    private final PlayerRepository playerRepository;
 
     @Override
     public GameResponse startGame(Long userId) {
         Game game = new Game();
         game.setProgress(GameProgress.STARTING.toString());
 
-        Optional<User> user = userRepository.findById(userId);
+        Optional<Player> user = playerRepository.findById(userId);
 
         if (user.isEmpty()) {
             throw new IllegalArgumentException("No such user, couldn't start game.");
         }
 
-        game.setUser(user.get());
+        game.setPlayer(user.get());
 
         Game savedGame = gameRepository.save(game);
 
@@ -47,7 +47,7 @@ public class GameServiceImpl implements GameService {
     }
 
     @Override
-    public List<GameResponse> getGamesByStatus(List<String> progressList) {
+    public List<GameResponse> getGamesByProgress(List<String> progressList) {
         if (progressList.isEmpty()) {
             return gameRepository.findAll().stream()
                     .map(game -> {

@@ -11,7 +11,7 @@ import java.util.Map;
 
 @Hidden
 @RestController
-public class GameController {
+public class WelcomePageController {
 
     @GetMapping("/")
     @ResponseBody

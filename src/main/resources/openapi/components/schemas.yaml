@@ -1,0 +1,12 @@
+MoveRequest:
+  type: object
+  properties:
+    side:
+      type: string
+    move:
+      type: string
+    state:
+      type: string
+    playerId:
+      type: integer
+      format: int64

@@ -1,0 +1,52 @@
+get:
+  tags:
+    - game
+  summary: Get games
+  description: Get games by their progress or fetch all games if progress parameter is empty
+  operationId: getGamesByProgress
+  parameters:
+    - name: progress
+      in: query
+      required: false
+      schema:
+        type: array
+        items:
+          type: string
+          enum: [ STARTING, ONGOING, COMPLETED, ARCHIVED ]
+  responses:
+    '200':
+      description: Successful operation
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '../components/responses.yaml#/GameResponse'
+    '405':
+      description: Invalid input
+post:
+  tags:
+    - game
+  summary: Start a new game
+  description: Start a new game
+  operationId: startGame
+  requestBody:
+    description: Optional description in *Markdown*
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            playerId:
+              type: integer
+              format: int64
+  responses:
+    '200':
+      description: Successful operation
+      content:
+        application/json:
+          schema:
+            $ref: '../components/responses.yaml#/GameResponse'
+    '405':
+      description: Invalid input

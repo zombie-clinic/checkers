@@ -23,7 +23,7 @@ public class Move {
 
     @ManyToOne
     @JoinColumn
-    private User user;
+    private Player player;
 
     private String side;
 
@@ -31,9 +31,9 @@ public class Move {
 
     private String move;
 
-    public Move(Game game, User user, String side, String state, String move) {
+    public Move(Game game, Player player, String side, String state, String move) {
         this.game = game;
-        this.user = user;
+        this.player = player;
         this.side = side;
         this.state = state;
         this.move = move;

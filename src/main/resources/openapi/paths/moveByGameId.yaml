@@ -1,0 +1,51 @@
+get:
+  tags:
+    - move
+  summary: Get current state of a game (the result of the last move)
+  description: Get current state
+  operationId: getCurrentState
+  parameters:
+    - name: gameId
+      in: path
+      description: ID of an starting/ongoing game
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Successful operation
+      content:
+        application/json:
+          schema:
+            $ref: '../components/responses.yaml#/MoveResponse'
+    '405':
+      description: Invalid input
+put:
+  tags:
+    - move
+  summary: Make a move within a game
+  description: Start a new game
+  operationId: move
+  parameters:
+    - name: gameId
+      in: path
+      description: ID of an starting/ongoing game
+      required: true
+      schema:
+        type: string
+  requestBody:
+    description: Optional description in *Markdown*
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../components/schemas.yaml#/MoveRequest'
+  responses:
+    '200':
+      description: Successful operation
+      content:
+        application/json:
+          schema:
+            $ref: '../components/responses.yaml#/MoveResponse'
+    '405':
+      description: Invalid input

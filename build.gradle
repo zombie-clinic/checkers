@@ -25,13 +25,13 @@ repositories {
 apply plugin: 'org.openapi.generator'
 
 openApiValidate {
-    inputSpec = ("$projectDir/src/main/resources/checkers-backend.yaml")
+    inputSpec = ("$projectDir/src/main/resources/openapi/main.yaml")
     recommend = true
 }
 
 openApiGenerate {
     generatorName.set("spring")
-    inputSpec.set("$projectDir/src/main/resources/checkers-backend.yaml")
+    inputSpec.set("$projectDir/src/main/resources/openapi/main.yaml")
     outputDir.set("$buildDir/generated/openapi")
     apiPackage.set("com.example.demo.api")
     modelPackage.set("com.example.demo.domain")
