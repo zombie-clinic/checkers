@@ -20,6 +20,8 @@ components:
   schemas:
     MoveRequest:
       $ref: './components/schemas.yaml#/MoveRequest'
+    State:
+      $ref: './components/schemas.yaml#/State'
   responses:
     PlayerResponse:
       $ref: './components/responses.yaml#/PlayerResponse'

@@ -4,6 +4,9 @@ import com.example.demo.persistence.GameRepository;
 import com.example.demo.persistence.MoveRepository;
 import com.example.demo.persistence.PlayerRepository;
 import com.example.demo.domain.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,7 +23,7 @@ public class MoveServiceImpl implements MoveService {
     private final MoveRepository moveRepository;
 
     private final GameRepository gameRepository;
-    
+
     private final PlayerRepository playerRepository;
 
     // TODO Use mapper or json parser to validate move request, e.g.
@@ -36,7 +39,7 @@ public class MoveServiceImpl implements MoveService {
         if (user.isEmpty()) {
             throw new IllegalArgumentException("No user found");
         }
-        
+
         List<Move> moves = moveRepository.findAllByGameId(gameId);
 
         if (moves.isEmpty()) {
@@ -71,18 +74,28 @@ public class MoveServiceImpl implements MoveService {
     public MoveResponse getCurrentState(String gameId) {
 
         var moveList = moveRepository.findAllByGameId(gameId);
-        var state = moveList.isEmpty() ? initialState() : getCurrentState(moveList);
-        return new MoveResponse(gameId, state.toString());
+        State state = moveList.isEmpty() ? initialState() : getCurrentState(moveList);
+        return new MoveResponse(gameId, state);
     }
 
-    private static String getCurrentState(List<Move> moveList) {
-        return moveList.get(moveList.size() - 1).getState();
+    private static State getCurrentState(List<Move> moveList) {
+        String state = moveList.get(moveList.size() - 1).getState();
+        ObjectMapper om = new ObjectMapper();
+        JsonNode node;
+        try {
+            node = om.readTree(state);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
+        return new State(node.get("black"), node.get("white"));
     }
 
     private static MoveResponse generateMoveResponse(String gameId, MoveRequest moveRequest) {
         var moveResponse = new MoveResponse();
         moveResponse.setGameId(gameId);
-        moveResponse.setState(StateCalculator.calculateNextState(moveRequest).toString());
+        moveResponse.setState(
+                StateCalculator.calculateNextState(moveRequest));
         return moveResponse;
     }
 

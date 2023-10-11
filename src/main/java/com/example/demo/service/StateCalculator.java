@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import com.example.demo.domain.MoveRequest;
+import com.example.demo.domain.State;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

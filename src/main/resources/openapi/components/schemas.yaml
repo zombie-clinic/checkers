@@ -10,3 +10,22 @@ MoveRequest:
     playerId:
       type: integer
       format: int64
+State:
+  type: object
+  required:
+    - white
+    - black
+  properties:
+    white:
+      schema:
+        type: array
+        items:
+          type: integer
+          format: int32
+    black:
+      schema:
+        schema:
+          type: array
+          items:
+            type: integer
+            format: int32

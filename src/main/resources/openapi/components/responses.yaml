@@ -25,7 +25,8 @@ MoveResponse:
     gameId:
       type: string
     state:
-      type: string
+      schema:
+        $ref: './schemas#/State'
   required:
     - gameId
     - state
