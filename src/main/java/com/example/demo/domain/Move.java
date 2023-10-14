@@ -27,15 +27,18 @@ public class Move {
 
     private String side;
 
-    private String state;
-
     private String move;
 
-    public Move(Game game, Player player, String side, String state, String move) {
+    private String black;
+
+    private String white;
+
+    public Move(Game game, Player player, String side, String move, String black, String white) {
         this.game = game;
         this.player = player;
         this.side = side;
-        this.state = state;
         this.move = move;
+        this.black = black;
+        this.white = white;
     }
 }

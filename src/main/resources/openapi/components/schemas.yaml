@@ -6,26 +6,23 @@ MoveRequest:
     move:
       type: string
     state:
-      type: string
+      $ref: '#/State'
     playerId:
       type: integer
       format: int64
 State:
   type: object
   required:
-    - white
     - black
+    - white
   properties:
-    white:
-      schema:
-        type: array
-        items:
-          type: integer
-          format: int32
     black:
-      schema:
-        schema:
-          type: array
-          items:
-            type: integer
-            format: int32
+      type: array
+      items:
+        type: integer
+        format: int32
+    white:
+      type: array
+      items:
+        type: integer
+        format: int32

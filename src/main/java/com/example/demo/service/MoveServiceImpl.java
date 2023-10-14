@@ -1,24 +1,27 @@
 package com.example.demo.service;
 
+import com.example.demo.domain.*;
 import com.example.demo.persistence.GameRepository;
 import com.example.demo.persistence.MoveRepository;
 import com.example.demo.persistence.PlayerRepository;
-import com.example.demo.domain.*;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
-import static com.example.demo.service.StateCalculator.initialState;
 
 @RequiredArgsConstructor
 @Service
 public class MoveServiceImpl implements MoveService {
+
+    public static String INITIAL_BLACK_STATE = "1,2,3,4,5,6,7,8,9,10,11,12";
+    public static String INITIAL_WHITE_STATE = "11,12,13,14,15,16,17,18,19,20,21,22";
 
     private final MoveRepository moveRepository;
 
@@ -45,11 +48,11 @@ public class MoveServiceImpl implements MoveService {
         if (moves.isEmpty()) {
             moveRepository.save(
                     new Move(
-                            game.get(), user.get(), "white", "initial state", moveRequest.getMove()
+                            game.get(), user.get(), "white", moveRequest.getMove(),
+                            INITIAL_BLACK_STATE,
+                            INITIAL_WHITE_STATE
                     )
             );
-
-            moveRequest.setState("initial state");
             return generateMoveResponse(gameId, moveRequest);
         }
 
@@ -57,12 +60,28 @@ public class MoveServiceImpl implements MoveService {
             throw new IllegalStateException("Inconsistent game, provide a valid move, here is you previous state: []");
         }
 
+
+        String[] split = moveRequest.getMove().split("-");
+
+        if(moveRequest.getSide().equals("white")) {
+            moveRequest.getState().getWhite().remove(Integer.valueOf(split[0]));
+            moveRequest.getState().getWhite().add(Integer.valueOf(split[1]));
+        } else {
+            moveRequest.getState().getBlack().remove(Integer.valueOf(split[0]));
+            moveRequest.getState().getBlack().add(Integer.valueOf(split[1]));
+        }
+
         moveRepository.save(
                 // TODO Introduce Move builder
+
                 // TODO Calculate state
+
+
+
                 new Move(
-                        game.get(), user.get(), moveRequest.getSide(), StateCalculator.calculateNextState(
-                        moveRequest).toString(), moveRequest.getMove()
+                        game.get(), user.get(), moveRequest.getSide(), moveRequest.getMove(),
+                        moveRequest.getState().getBlack().stream().map(String::valueOf).collect(Collectors.joining(",")),
+                        moveRequest.getState().getWhite().stream().map(String::valueOf).collect(Collectors.joining(","))
                 )
         );
 
@@ -74,33 +93,46 @@ public class MoveServiceImpl implements MoveService {
     public MoveResponse getCurrentState(String gameId) {
 
         var moveList = moveRepository.findAllByGameId(gameId);
-        State state = moveList.isEmpty() ? initialState() : getCurrentState(moveList);
+        State state = moveList.isEmpty() ? new State(
+                Arrays.stream(INITIAL_BLACK_STATE.split(",")).map(Integer::valueOf).toList(),
+                Arrays.stream(INITIAL_WHITE_STATE.split(",")).map(Integer::valueOf).toList()
+        ) : getCurrentState(moveList);
         return new MoveResponse(gameId, state);
     }
 
     private static State getCurrentState(List<Move> moveList) {
-        String state = moveList.get(moveList.size() - 1).getState();
-        ObjectMapper om = new ObjectMapper();
-        JsonNode node;
-        try {
-            node = om.readTree(state);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
+        String black = moveList.get(moveList.size() - 1).getBlack();
+        String white = moveList.get(moveList.size() - 1).getWhite();
 
-        return new State(node.get("black"), node.get("white"));
+        return new State(
+                Arrays.stream(black.split(",")).map(Integer::valueOf).toList(),
+                Arrays.stream(white.split(",")).map(Integer::valueOf).toList()
+        );
     }
 
     private static MoveResponse generateMoveResponse(String gameId, MoveRequest moveRequest) {
         var moveResponse = new MoveResponse();
         moveResponse.setGameId(gameId);
-        moveResponse.setState(
-                StateCalculator.calculateNextState(moveRequest));
+        moveResponse.setState(new State(
+                moveRequest.getState().getBlack(),
+                moveRequest.getState().getWhite()
+        ));
         return moveResponse;
     }
 
+    @SneakyThrows
     // TODO moves should not be empty
     private static boolean isInconsistentGame(MoveRequest moveRequest, List<Move> moves) {
-        return !getCurrentState(moves).equals(moveRequest.getState());
+        State clientState = moveRequest.getState();
+        State serverState = getCurrentState(moves);
+        return !amountOfFiguresMatches(clientState, serverState) || !positionsMatch(clientState, serverState);
+    }
+
+    private static boolean positionsMatch(State clientState, State serverState) {
+        return new HashSet<>(serverState.getBlack()).containsAll(clientState.getBlack()) && new HashSet<>(serverState.getWhite()).containsAll(clientState.getWhite());
+    }
+
+    private static boolean amountOfFiguresMatches(State requestedCheck, State current) {
+        return requestedCheck.getBlack().size() == current.getBlack().size() && requestedCheck.getWhite().size() == current.getWhite().size();
     }
 }
