@@ -20,7 +20,7 @@ class ApiTest {
     @Test
     void givenGamesExist_whenFilterEmpty_fetchAllGames() throws Exception {
         mockMvc.perform(
-                        MockMvcRequestBuilders.get("/game")
+                        MockMvcRequestBuilders.get("/games")
                 ).andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.length()").value(10));
@@ -29,7 +29,7 @@ class ApiTest {
     @Test
     void givenGamesExist_whenFilterOngoing_fetchOngoingGames() throws Exception {
         mockMvc.perform(
-                        MockMvcRequestBuilders.get("/game?progress=ONGOING")
+                        MockMvcRequestBuilders.get("/games?progress=ONGOING")
                 ).andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.length()").value(2));
@@ -38,7 +38,7 @@ class ApiTest {
     @Test
     void givenGamesExist_whenMultipleFilters_fetchGamesWithMultipleStatuses() throws Exception {
         mockMvc.perform(
-                        MockMvcRequestBuilders.get("/game?progress=ONGOING,COMPLETED")
+                        MockMvcRequestBuilders.get("/games?progress=ONGOING,COMPLETED")
                 ).andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.length()").value(6));
