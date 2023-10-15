@@ -34,7 +34,7 @@ openApiGenerate {
     inputSpec.set("$projectDir/src/main/resources/openapi/main.yaml")
     outputDir.set("$buildDir/generated/openapi")
     apiPackage.set("com.example.demo.api")
-    modelPackage.set("com.example.demo.domain")
+    modelPackage.set("com.example.demo.model")
     configOptions.set([
             dateLibrary               : "java8",
             generateApis              : "true",

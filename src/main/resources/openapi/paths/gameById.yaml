@@ -1,6 +1,6 @@
 get:
   tags:
-    - game
+    - Game
   summary: Find game by ID
   description: Returns a single game
   operationId: getGameById

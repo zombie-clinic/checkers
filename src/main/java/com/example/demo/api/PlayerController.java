@@ -1,11 +1,13 @@
 package com.example.demo.api;
 
-import com.example.demo.domain.PlayerResponse;
+import com.example.demo.model.PlayerResponse;
 import com.example.demo.service.PlayerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 import static org.springframework.http.ResponseEntity.ok;
 
@@ -15,6 +17,12 @@ import static org.springframework.http.ResponseEntity.ok;
 public class PlayerController implements PlayerApi {
 
     private final PlayerService playerService;
+
+    @Override
+    public ResponseEntity<List<PlayerResponse>> getPlayers() {
+        return ok(playerService.findAll());
+    }
+
 
     @Override
     public ResponseEntity<PlayerResponse> getPlayerById(Long playerId) {
