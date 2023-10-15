@@ -1,12 +1,8 @@
 package com.example.demo.service;
 
-import com.example.demo.model.PlayerResponse;
-
-import java.util.List;
+import com.example.demo.domain.PlayerResponse;
 
 public interface PlayerService {
-
-    List<PlayerResponse> findAll();
 
     PlayerResponse findUserById(Long userId);
 }

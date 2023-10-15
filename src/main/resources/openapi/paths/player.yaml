@@ -1,13 +1,18 @@
 get:
   tags:
-    - Player
-  operationId: getPlayers
+    - player
+  operationId: getPlayerById
+  parameters:
+    - name: playerId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
   responses:
     '200':
       description: Successful operation
       content:
         application/json:
           schema:
-            type: array
-            items:
-              $ref: '../components/responses.yaml#/PlayerResponse'
+            $ref: '../components/responses.yaml#/PlayerResponse'

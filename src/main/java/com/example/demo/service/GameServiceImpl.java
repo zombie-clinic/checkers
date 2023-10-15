@@ -5,7 +5,7 @@ import com.example.demo.persistence.GameRepository;
 import com.example.demo.persistence.MoveRepository;
 import com.example.demo.persistence.PlayerRepository;
 import com.example.demo.domain.Game;
-import com.example.demo.model.GameResponse;
+import com.example.demo.domain.GameResponse;
 import com.example.demo.domain.Player;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

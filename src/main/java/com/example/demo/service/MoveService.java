@@ -1,7 +1,7 @@
 package com.example.demo.service;
 
-import com.example.demo.model.MoveRequest;
-import com.example.demo.model.MoveResponse;
+import com.example.demo.domain.MoveRequest;
+import com.example.demo.domain.MoveResponse;
 
 public interface MoveService {
 

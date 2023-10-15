@@ -1,6 +1,6 @@
 get:
   tags:
-    - Move
+    - move
   summary: Get current state of a game (the result of the last move)
   description: Get current state
   operationId: getCurrentState
@@ -22,7 +22,7 @@ get:
       description: Invalid input
 put:
   tags:
-    - Move
+    - move
   summary: Make a move within a game
   description: Start a new game
   operationId: move

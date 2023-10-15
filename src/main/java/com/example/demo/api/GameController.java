@@ -1,7 +1,7 @@
 package com.example.demo.api;
 
-import com.example.demo.model.GameResponse;
-import com.example.demo.model.StartGameRequest;
+import com.example.demo.domain.GameResponse;
+import com.example.demo.domain.StartGameRequest;
 import com.example.demo.service.GameService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

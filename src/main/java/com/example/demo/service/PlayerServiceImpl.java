@@ -1,11 +1,9 @@
 package com.example.demo.service;
 
-import com.example.demo.model.PlayerResponse;
+import com.example.demo.domain.PlayerResponse;
 import com.example.demo.persistence.PlayerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @RequiredArgsConstructor
 @Service
@@ -18,12 +16,5 @@ public class PlayerServiceImpl implements PlayerService {
         return playerRepository.findById(userId)
                 .map(u -> new PlayerResponse(u.getId(), u.getName()))
                 .orElse(null);
-    }
-
-    @Override
-    public List<PlayerResponse> findAll() {
-        return playerRepository.findAll()
-                .stream().map(u -> new PlayerResponse(u.getId(), u.getName()))
-                .toList();
     }
 }

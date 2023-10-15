@@ -1,6 +1,6 @@
 get:
   tags:
-    - Game
+    - game
   summary: Get games
   description: Get games by their progress or fetch all games if progress parameter is empty
   operationId: getGamesByProgress
@@ -26,7 +26,7 @@ get:
       description: Invalid input
 post:
   tags:
-    - Game
+    - game
   summary: Start a new game
   description: Start a new game
   operationId: startGame

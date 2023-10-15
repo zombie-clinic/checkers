@@ -1,7 +1,7 @@
 package com.example.demo.api;
 
-import com.example.demo.model.MoveRequest;
-import com.example.demo.model.MoveResponse;
+import com.example.demo.domain.MoveRequest;
+import com.example.demo.domain.MoveResponse;
 import com.example.demo.service.GameService;
 import com.example.demo.service.MoveService;
 import lombok.RequiredArgsConstructor;

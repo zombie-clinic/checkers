@@ -7,16 +7,14 @@ servers:
   - url: http://localhost:8080/api/v1
 
 paths:
-  /players:
+  /player/{playerId}:
     $ref: './paths/player.yaml'
-  /players/{playerId}:
-    $ref: './paths/playerById.yaml'
-  /games:
+  /game:
     $ref: './paths/game.yaml'
-  /games/{gameId}:
+  /game/{gameId}:
     $ref: './paths/gameById.yaml'
-  /games/{gameId}/moves:
-    $ref: './paths/move.yaml'
+  /move/{gameId}:
+    $ref: './paths/moveByGameId.yaml'
 
 components:
   schemas:
