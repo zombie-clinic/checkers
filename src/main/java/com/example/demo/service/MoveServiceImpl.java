@@ -1,6 +1,9 @@
 package com.example.demo.service;
 
 import com.example.demo.domain.*;
+import com.example.demo.model.MoveRequest;
+import com.example.demo.model.MoveResponse;
+import com.example.demo.model.State;
 import com.example.demo.persistence.GameRepository;
 import com.example.demo.persistence.MoveRepository;
 import com.example.demo.persistence.PlayerRepository;

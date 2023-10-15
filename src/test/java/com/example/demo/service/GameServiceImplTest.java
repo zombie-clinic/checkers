@@ -1,7 +1,7 @@
 package com.example.demo.service;
 
 import com.example.demo.domain.GameProgress;
-import com.example.demo.domain.GameResponse;
+import com.example.demo.model.GameResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
