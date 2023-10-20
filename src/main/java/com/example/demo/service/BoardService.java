@@ -4,18 +4,17 @@ import com.example.demo.domain.PossibleMove;
 import com.example.demo.domain.Side;
 import com.example.demo.model.State;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 public interface BoardService {
 
     default Integer[][] getBoard() {
         return new Integer[][]{
                 {0, 1, 0, 2, 0, 3, 0, 4},
-                {5, 0, 6, 0, 2, 0, 8, 0},
+                {5, 0, 6, 0, 7, 0, 8, 0},
                 {0, 9, 0, 10, 0, 11, 0, 12},
                 {13, 0, 14, 0, 15, 0, 16, 0},
                 {0, 17, 0, 18, 0, 19, 0, 20},
@@ -26,13 +25,7 @@ public interface BoardService {
     }
 
     default List<Integer> getValidCells() {
-        return IntStream.rangeClosed(1, 32).boxed().toList();
-    }
-
-    default List<Integer> getAdjacentCells(int cell) {
-        return Stream.of(cell + 3, cell + 4, cell - 3, cell - 4)
-                .filter(v -> getValidCells().contains(v))
-                .toList();
+        return new ArrayList<>(IntStream.rangeClosed(1, 32).boxed().toList());
     }
 
     Map<Integer, List<PossibleMove>> getPossibleMoves(Side side, State state);

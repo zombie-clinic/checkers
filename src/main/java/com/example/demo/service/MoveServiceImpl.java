@@ -12,10 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -31,6 +28,8 @@ public class MoveServiceImpl implements MoveService {
     private final GameRepository gameRepository;
 
     private final PlayerRepository playerRepository;
+
+    private final BoardService boardService;
 
     // TODO Use mapper or json parser to validate move request, e.g.
     @Transactional
@@ -63,10 +62,9 @@ public class MoveServiceImpl implements MoveService {
             throw new IllegalStateException("Inconsistent game, provide a valid move, here is you previous state: []");
         }
 
-
         String[] split = moveRequest.getMove().split("-");
 
-        if(moveRequest.getSide().equals("white")) {
+        if (moveRequest.getSide().equals("white")) {
             moveRequest.getState().getWhite().remove(Integer.valueOf(split[0]));
             moveRequest.getState().getWhite().add(Integer.valueOf(split[1]));
         } else {
@@ -76,10 +74,7 @@ public class MoveServiceImpl implements MoveService {
 
         moveRepository.save(
                 // TODO Introduce Move builder
-
                 // TODO Calculate state
-
-
 
                 new Move(
                         game.get(), user.get(), moveRequest.getSide(), moveRequest.getMove(),
@@ -100,7 +95,9 @@ public class MoveServiceImpl implements MoveService {
                 Arrays.stream(INITIAL_BLACK_STATE.split(",")).map(Integer::valueOf).toList(),
                 Arrays.stream(INITIAL_WHITE_STATE.split(",")).map(Integer::valueOf).toList()
         ) : getCurrentState(moveList);
-        return new MoveResponse(gameId, state);
+        Map<Integer, List<PossibleMove>> possibleMoves = boardService.getPossibleMoves(
+                Side.BLACK, state);
+        return new MoveResponse(gameId, state, possibleMoves);
     }
 
     private static State getCurrentState(List<Move> moveList) {
@@ -113,13 +110,17 @@ public class MoveServiceImpl implements MoveService {
         );
     }
 
-    private static MoveResponse generateMoveResponse(String gameId, MoveRequest moveRequest) {
+    private MoveResponse generateMoveResponse(String gameId, MoveRequest moveRequest) {
         var moveResponse = new MoveResponse();
         moveResponse.setGameId(gameId);
         moveResponse.setState(new State(
                 moveRequest.getState().getBlack(),
                 moveRequest.getState().getWhite()
         ));
+        moveResponse.setPossibleMoves(boardService.getPossibleMoves(
+                        Side.valueOf(moveRequest.getSide()), moveRequest.getState()
+                ));
+
         return moveResponse;
     }
 

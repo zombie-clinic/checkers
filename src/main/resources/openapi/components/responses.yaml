@@ -25,7 +25,14 @@ MoveResponse:
     gameId:
       type: string
     state:
-        $ref: './schemas.yaml#/State'
+      $ref: './schemas.yaml#/State'
+    possibleMoves:
+      schema:
+        type: array
+        items:
+          schema:
+            type: object
   required:
     - gameId
     - state
+    - possibleMoves

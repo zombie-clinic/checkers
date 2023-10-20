@@ -3,6 +3,7 @@ package com.example.demo.service;
 import com.example.demo.domain.PossibleMove;
 import com.example.demo.domain.Side;
 import com.example.demo.model.State;
+import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.function.Function;
@@ -11,17 +12,14 @@ import static com.example.demo.domain.Side.BLACK;
 import static com.example.demo.domain.Side.WHITE;
 import static java.util.stream.Collectors.toMap;
 
+@Service
 public class BoardServiceImpl implements BoardService {
 
     @Override
     public Map<Integer, List<PossibleMove>> getPossibleMoves(Side side, State state) {
         return switch (side) {
-            case BLACK -> getPossibleMoves(BLACK, state);
+            case BLACK -> getPossibleMovesForBlack(state);
             case WHITE -> getPossibleMoves(WHITE, state);
-            default -> throw new IllegalArgumentException(
-                    String.format("Impossible side: %s, must be one of %s, %s",
-                            side, BLACK, WHITE)
-            );
         };
     }
 
@@ -87,14 +85,16 @@ public class BoardServiceImpl implements BoardService {
     private List<Position> getValidNeighborsForPosition(Integer[] cell) {
         Integer i = cell[0];
         Integer j = cell[1];
+
         List<Position> positions = new ArrayList<>();
         positions.add(new Position(i - 1, j - 1));
         positions.add(new Position(i + 1, j - 1));
         positions.add(new Position(i - 1, j + 1));
         positions.add(new Position(i + 1, j + 1));
-        return positions.stream().filter(
-                this::isWithinBoard
-        ).toList();
+
+        return positions.stream()
+                .filter(this::isWithinBoard)
+                .toList();
     }
 
     private boolean isWithinBoard(Position position) {
@@ -108,7 +108,7 @@ public class BoardServiceImpl implements BoardService {
 
     private Integer[] getIJ(Integer cell) {
         for (int i = 0; i < getBoard().length; i++) {
-            int j = Arrays.asList(getBoard()[i]).indexOf(5);
+            int j = Arrays.asList(getBoard()[i]).indexOf(cell);
             if (j != -1) {
                 return new Integer[]{i, j};
             }
