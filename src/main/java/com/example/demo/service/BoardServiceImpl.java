@@ -19,7 +19,7 @@ public class BoardServiceImpl implements BoardService {
     public Map<Integer, List<PossibleMove>> getPossibleMoves(Side side, State state) {
         return switch (side) {
             case BLACK -> getPossibleMovesForBlack(state);
-            case WHITE -> getPossibleMoves(WHITE, state);
+            case WHITE -> Collections.emptyMap();
         };
     }
 

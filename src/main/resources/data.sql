@@ -14,4 +14,4 @@ insert into game (id, player_id, progress) values ('4a639f32-7555-4a7d-82a7-c3a8
 
 --will need to move to array column type when change to postgresql
 insert into move (game_id, player_id, side, move, black, white) values ('7304942c-1bfd-4c23-8c83-c9902a866807', 1, 'white', '22-18', '1,2,3,4,5,6,7,8,9,10,11,12','21,23,24,25,26,27,28,29,30,31,32,18');
---insert into move (game_id, player_id, side, move, black, white) values ('7304942c-1bfd-4c23-8c83-c9902a866807', 2, 'black', '10-14', '1,2,3,4,5,6,7,8,9,11,12,14','21,23,24,25,26,27,28,29,30,31,32,18');
+insert into move (game_id, player_id, side, move, black, white) values ('7304942c-1bfd-4c23-8c83-c9902a866807', 2, 'black', '10-14', '1,2,3,4,5,6,7,8,9,11,12,14','21,23,24,25,26,27,28,29,30,31,32,18');

@@ -118,7 +118,7 @@ public class MoveServiceImpl implements MoveService {
                 moveRequest.getState().getWhite()
         ));
         moveResponse.setPossibleMoves(boardService.getPossibleMoves(
-                        Side.valueOf(moveRequest.getSide()), moveRequest.getState()
+                        Side.valueOf(moveRequest.getSide().toUpperCase()), moveRequest.getState()
                 ));
 
         return moveResponse;
