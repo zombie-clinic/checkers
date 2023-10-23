@@ -1,0 +1,23 @@
+_id: req_0fe95e3ea31c47e9ae7863a20e63b378
+type: Request
+parentId: wrk_8679f4cf71844af7b10b2edb53d0a609
+modified: 1698089753732
+created: 1698017685231
+url: http://localhost:8080/games
+name: getAllGames
+description: ""
+method: GET
+body: {}
+parameters: []
+headers:
+  - name: User-Agent
+    value: insomnia/2023.5.8
+authentication: {}
+metaSortKey: -1698017685231
+isPrivate: false
+settingStoreCookies: true
+settingSendCookies: true
+settingDisableRenderRequestBody: false
+settingEncodeUrl: true
+settingRebuildPath: true
+settingFollowRedirects: global

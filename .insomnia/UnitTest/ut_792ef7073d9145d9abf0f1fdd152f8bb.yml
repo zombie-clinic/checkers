@@ -1,0 +1,10 @@
+_id: ut_792ef7073d9145d9abf0f1fdd152f8bb
+type: UnitTest
+parentId: uts_5f622789209e46df97eafa18fb7fdf27
+modified: 1698020600855
+created: 1698018498850
+requestId: req_0fe95e3ea31c47e9ae7863a20e63b378
+name: Returns 10 items
+code: |-
+  const response1 = await insomnia.send();
+  expect(JSON.parse(response1.data)).to.have.lengthOf(10);
