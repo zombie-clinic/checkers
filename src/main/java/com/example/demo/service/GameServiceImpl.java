@@ -1,18 +1,20 @@
 package com.example.demo.service;
 
-import com.example.demo.domain.GameProgress;
+import com.example.demo.domain.*;
+import com.example.demo.model.GameResponse;
+import com.example.demo.model.MoveResponse;
 import com.example.demo.persistence.GameRepository;
 import com.example.demo.persistence.MoveRepository;
 import com.example.demo.persistence.PlayerRepository;
-import com.example.demo.domain.Game;
-import com.example.demo.model.GameResponse;
-import com.example.demo.domain.Player;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static com.example.demo.domain.Board.getInitialState;
 
 
 @RequiredArgsConstructor
@@ -25,8 +27,11 @@ public class GameServiceImpl implements GameService {
 
     private final PlayerRepository playerRepository;
 
+    private final BoardService boardService;
+
+    @Transactional
     @Override
-    public GameResponse startGame(Long userId) {
+    public MoveResponse startGame(Long userId) {
         Game game = new Game();
         game.setProgress(GameProgress.STARTING.toString());
 
@@ -37,13 +42,16 @@ public class GameServiceImpl implements GameService {
         }
 
         game.setPlayer(user.get());
-
         Game savedGame = gameRepository.save(game);
+        return generateFirstMoveResponse(savedGame.getId());
+    }
 
-        var gameResponse = new GameResponse();
-        gameResponse.setGameId(savedGame.getId());
-        gameResponse.setProgress(GameProgress.STARTING.toString());
-        return gameResponse;
+    private MoveResponse generateFirstMoveResponse(String gameId) {
+        var response = new MoveResponse();
+        response.setGameId(gameId);
+        response.setState(getInitialState());
+        response.setPossibleMoves(boardService.getPossibleMoves(Side.WHITE, Board.getInitialState()));
+        return response;
     }
 
     @Override

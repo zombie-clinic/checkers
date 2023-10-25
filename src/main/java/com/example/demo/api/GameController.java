@@ -1,6 +1,7 @@
 package com.example.demo.api;
 
 import com.example.demo.model.GameResponse;
+import com.example.demo.model.MoveResponse;
 import com.example.demo.model.StartGameRequest;
 import com.example.demo.service.GameService;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +41,7 @@ public class GameController implements GameApi {
     }
 
     @Override
-    public ResponseEntity<GameResponse> startGame(StartGameRequest startGameRequest) {
+    public ResponseEntity<MoveResponse> startGame(StartGameRequest startGameRequest) {
         return ok(gameService.startGame(startGameRequest.getPlayerId()));
     }
 }

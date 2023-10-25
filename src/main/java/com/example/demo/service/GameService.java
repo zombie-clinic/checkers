@@ -1,12 +1,13 @@
 package com.example.demo.service;
 
 import com.example.demo.model.GameResponse;
+import com.example.demo.model.MoveResponse;
 
 import java.util.List;
 
 public interface GameService {
 
-    GameResponse startGame(Long userId);
+    MoveResponse startGame(Long userId);
 
     List<GameResponse> getGamesByProgress(List<String> progressList);
 

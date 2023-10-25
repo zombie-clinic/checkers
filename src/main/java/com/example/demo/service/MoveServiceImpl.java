@@ -15,6 +15,9 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.example.demo.domain.Board.getInitialState;
+import static com.example.demo.domain.Side.WHITE;
+
 @RequiredArgsConstructor
 @Service
 public class MoveServiceImpl implements MoveService {
@@ -31,20 +34,13 @@ public class MoveServiceImpl implements MoveService {
     @Transactional
     @Override
     public MoveResponse saveMove(String gameId, MoveRequest moveRequest) {
-        Optional<Game> game = gameRepository.findGameById(gameId);
-        if (game.isEmpty()) {
-            throw new IllegalArgumentException("No game found");
-        }
-
-        Optional<Player> user = playerRepository.findById(moveRequest.getPlayerId());
-        if (user.isEmpty()) {
-            throw new IllegalArgumentException("No user found");
-        }
+        Game game = validateAndGetGame(gameId);
+        Player player = validateAndGetPlayer(moveRequest);
 
         List<Move> moves = moveRepository.findAllByGameId(gameId);
 
         if (moves.isEmpty()) {
-            moveRepository.save(new Move(game.get(), user.get(), "white", moveRequest.getMove(), Board.getInitialState().getBlack().stream().map(String::valueOf).collect(Collectors.joining(",")), Board.getInitialState().getWhite().stream().map(String::valueOf).collect(Collectors.joining(","))));
+            moveRepository.save(new Move(game, player, "white", moveRequest.getMove(), getInitialState().getBlack().stream().map(String::valueOf).collect(Collectors.joining(",")), getInitialState().getWhite().stream().map(String::valueOf).collect(Collectors.joining(","))));
             return generateFirstMoveResponse(gameId, moveRequest);
         }
 
@@ -66,17 +62,38 @@ public class MoveServiceImpl implements MoveService {
                 // TODO Introduce Move builder
                 // TODO Calculate state
 
-                new Move(game.get(), user.get(), moveRequest.getSide(), moveRequest.getMove(), moveRequest.getState().getBlack().stream().map(String::valueOf).collect(Collectors.joining(",")), moveRequest.getState().getWhite().stream().map(String::valueOf).collect(Collectors.joining(","))));
+                new Move(game, player, moveRequest.getSide(), moveRequest.getMove(), moveRequest.getState().getBlack().stream().map(String::valueOf).collect(Collectors.joining(",")), moveRequest.getState().getWhite().stream().map(String::valueOf).collect(Collectors.joining(","))));
 
         // TODO MoveResponse should contain board state and should not contain a move
         return generateMoveResponse(gameId, moveRequest);
+    }
+
+    private Player validateAndGetPlayer(MoveRequest moveRequest) {
+        Optional<Player> player = playerRepository.findById(moveRequest.getPlayerId());
+        if (player.isEmpty()) {
+            throw new IllegalArgumentException("No player found");
+        }
+        return player.get();
+    }
+
+    private Game validateAndGetGame(String gameId) {
+        Optional<Game> game = gameRepository.findGameById(gameId);
+        if (game.isEmpty()) {
+            throw new IllegalArgumentException("No game found");
+        }
+        return game.get();
     }
 
     @Override
     public MoveResponse getCurrentState(String gameId) {
 
         var moveList = moveRepository.findAllByGameId(gameId);
-        State state = moveList.isEmpty() ? Board.getInitialState() : getCurrentState(moveList);
+        if (moveList.isEmpty()) {
+            var state = getInitialState();
+            return new MoveResponse(gameId, state, boardService.getPossibleMoves(WHITE, state));
+        }
+        var state = getCurrentState(moveList);
+        // TODO Fix it, need to determine whose move it is
         Map<Integer, List<PossibleMove>> possibleMoves = boardService.getPossibleMoves(Side.BLACK, state);
         return new MoveResponse(gameId, state, possibleMoves);
     }
@@ -102,9 +119,7 @@ public class MoveServiceImpl implements MoveService {
     private MoveResponse generateFirstMoveResponse(String gameId, MoveRequest moveRequest) {
         var moveResponse = new MoveResponse();
         moveResponse.setGameId(gameId);
-
-
-        moveResponse.setState(Board.getInitialState());
+        moveResponse.setState(getInitialState());
         moveResponse.setPossibleMoves(boardService.getPossibleMoves(Side.valueOf(moveRequest.getSide()), moveRequest.getState()));
 
         return moveResponse;
