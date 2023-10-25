@@ -15,13 +15,9 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.stream.Collectors;
 
-
 @RequiredArgsConstructor
 @Service
 public class MoveServiceImpl implements MoveService {
-
-    public static String INITIAL_BLACK_STATE = "1,2,3,4,5,6,7,8,9,10,11,12";
-    public static String INITIAL_WHITE_STATE = "11,12,13,14,15,16,17,18,19,20,21,22";
 
     private final MoveRepository moveRepository;
 
@@ -48,14 +44,8 @@ public class MoveServiceImpl implements MoveService {
         List<Move> moves = moveRepository.findAllByGameId(gameId);
 
         if (moves.isEmpty()) {
-            moveRepository.save(
-                    new Move(
-                            game.get(), user.get(), "white", moveRequest.getMove(),
-                            INITIAL_BLACK_STATE,
-                            INITIAL_WHITE_STATE
-                    )
-            );
-            return generateMoveResponse(gameId, moveRequest);
+            moveRepository.save(new Move(game.get(), user.get(), "white", moveRequest.getMove(), Board.getInitialState().getBlack().stream().map(String::valueOf).collect(Collectors.joining(",")), Board.getInitialState().getWhite().stream().map(String::valueOf).collect(Collectors.joining(","))));
+            return generateFirstMoveResponse(gameId, moveRequest);
         }
 
         if (isInconsistentGame(moveRequest, moves)) {
@@ -76,12 +66,7 @@ public class MoveServiceImpl implements MoveService {
                 // TODO Introduce Move builder
                 // TODO Calculate state
 
-                new Move(
-                        game.get(), user.get(), moveRequest.getSide(), moveRequest.getMove(),
-                        moveRequest.getState().getBlack().stream().map(String::valueOf).collect(Collectors.joining(",")),
-                        moveRequest.getState().getWhite().stream().map(String::valueOf).collect(Collectors.joining(","))
-                )
-        );
+                new Move(game.get(), user.get(), moveRequest.getSide(), moveRequest.getMove(), moveRequest.getState().getBlack().stream().map(String::valueOf).collect(Collectors.joining(",")), moveRequest.getState().getWhite().stream().map(String::valueOf).collect(Collectors.joining(","))));
 
         // TODO MoveResponse should contain board state and should not contain a move
         return generateMoveResponse(gameId, moveRequest);
@@ -91,12 +76,8 @@ public class MoveServiceImpl implements MoveService {
     public MoveResponse getCurrentState(String gameId) {
 
         var moveList = moveRepository.findAllByGameId(gameId);
-        State state = moveList.isEmpty() ? new State(
-                Arrays.stream(INITIAL_BLACK_STATE.split(",")).map(Integer::valueOf).toList(),
-                Arrays.stream(INITIAL_WHITE_STATE.split(",")).map(Integer::valueOf).toList()
-        ) : getCurrentState(moveList);
-        Map<Integer, List<PossibleMove>> possibleMoves = boardService.getPossibleMoves(
-                Side.BLACK, state);
+        State state = moveList.isEmpty() ? Board.getInitialState() : getCurrentState(moveList);
+        Map<Integer, List<PossibleMove>> possibleMoves = boardService.getPossibleMoves(Side.BLACK, state);
         return new MoveResponse(gameId, state, possibleMoves);
     }
 
@@ -104,22 +85,27 @@ public class MoveServiceImpl implements MoveService {
         String black = moveList.get(moveList.size() - 1).getBlack();
         String white = moveList.get(moveList.size() - 1).getWhite();
 
-        return new State(
-                Arrays.stream(black.split(",")).map(Integer::valueOf).toList(),
-                Arrays.stream(white.split(",")).map(Integer::valueOf).toList()
-        );
+        return new State(Arrays.stream(black.split(",")).map(Integer::valueOf).toList(), Arrays.stream(white.split(",")).map(Integer::valueOf).toList());
     }
 
     private MoveResponse generateMoveResponse(String gameId, MoveRequest moveRequest) {
         var moveResponse = new MoveResponse();
         moveResponse.setGameId(gameId);
-        moveResponse.setState(new State(
-                moveRequest.getState().getBlack(),
-                moveRequest.getState().getWhite()
-        ));
-        moveResponse.setPossibleMoves(boardService.getPossibleMoves(
-                        Side.valueOf(moveRequest.getSide()), moveRequest.getState()
-                ));
+
+
+        moveResponse.setState(new State(moveRequest.getState().getBlack(), moveRequest.getState().getWhite()));
+        moveResponse.setPossibleMoves(boardService.getPossibleMoves(Side.valueOf(moveRequest.getSide()), moveRequest.getState()));
+
+        return moveResponse;
+    }
+
+    private MoveResponse generateFirstMoveResponse(String gameId, MoveRequest moveRequest) {
+        var moveResponse = new MoveResponse();
+        moveResponse.setGameId(gameId);
+
+
+        moveResponse.setState(Board.getInitialState());
+        moveResponse.setPossibleMoves(boardService.getPossibleMoves(Side.valueOf(moveRequest.getSide()), moveRequest.getState()));
 
         return moveResponse;
     }
