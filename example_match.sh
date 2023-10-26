@@ -1,11 +1,18 @@
 #!/bin/bash
 
-# Define the URL
-URL="http://localhost:8080/games/1f3bea4e-48e3-4b7b-8ff8-6287f201b510/moves"
+START_RESPONSE=$(curl -s -X POST -H "Content-Type: application/json" -d '{"playerId": 1}' http://localhost:8080/games)
+
+GAME_ID=$(echo "$START_RESPONSE" | jq -r '.gameId')
+
+echo "$GAME_ID"
+
+URL=$(echo http://localhost:8080/games/"${GAME_ID}"/moves)
+
+echo "$URL"
 
 # Initial data payloads
 declare -a DATA=(
-  '{"side": "WHITE", "move": "9-14",  "playerId": 1}'
+  '{"side": "WHITE", "move": "9-14", "state": {"black":[1,2,3,4,5,6,7,8,9,10,11,12], "white":[21,22,23,24,25,26,27,28,29,30,31,32]}, "playerId": 1}'
   '{"side": "BLACK", "move": "2-17",  "playerId": 2}'
   '{"side": "WHITE", "move": "11-15", "playerId": 1}'
   '{"side": "BLACK", "move": "5-22",  "playerId": 2}'
@@ -59,6 +66,8 @@ NUM_REQUESTS=${#DATA[@]}
 
 for ((i=0; i<NUM_REQUESTS; i++))
 do
+    echo "${DATA[i]}"
+    echo "${URL}"
     # Send a PUT request with the corresponding data payload and capture the response
     RESPONSE=$(curl -s -X PUT -H "Content-Type: application/json" -d "${DATA[i]}" "$URL")
 
