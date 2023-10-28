@@ -33,8 +33,8 @@ openApiGenerate {
     generatorName.set("spring")
     inputSpec.set("$projectDir/src/main/resources/openapi/main.yaml")
     outputDir.set("$buildDir/generated/openapi")
-    apiPackage.set("com.example.demo.api")
-    modelPackage.set("com.example.demo.model")
+    apiPackage.set("com.example.checkers.api")
+    modelPackage.set("com.example.checkers.model")
     configOptions.set([
             dateLibrary               : "java8",
             generateApis              : "true",
@@ -90,7 +90,7 @@ sourceSets {
 tasks.openApiGenerate {
     doLast {
         delete(
-                "$buildDir/generated/openapi/src/main/java/com/example/demo/api/ApiUtil.java"
+                "$buildDir/generated/openapi/src/main/java/com/example/checkers/api/ApiUtil.java"
         )
     }
 }

@@ -15,7 +15,7 @@ spring:
 springdoc:
   api-docs:
     path: /api-docs
-  packagesToScan: com.example.demo.api
+  packagesToScan: com.example.checkers.api
   pathsToMatch: /games, /games/*, /games/*/moves, /players, /players/*
   swagger-ui:
     enabled: true
