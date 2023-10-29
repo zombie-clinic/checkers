@@ -16,6 +16,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.example.checkers.domain.Board.getInitialState;
+import static com.example.checkers.domain.Side.BLACK;
 import static com.example.checkers.domain.Side.WHITE;
 
 @RequiredArgsConstructor
@@ -40,8 +41,16 @@ public class MoveServiceImpl implements MoveService {
         List<Move> moves = moveRepository.findAllByGameId(gameId);
 
         if (moves.isEmpty()) {
-            moveRepository.save(new Move(game, player, "white", moveRequest.getMove(), getInitialState().getBlack().stream().map(String::valueOf).collect(Collectors.joining(",")), getInitialState().getWhite().stream().map(String::valueOf).collect(Collectors.joining(","))));
-            return generateFirstMoveResponse(gameId, moveRequest);
+
+            String[] split = moveRequest.getMove().split("-");
+
+            moveRequest.getState().getBlack().remove(Integer.valueOf(split[0]));
+            moveRequest.getState().getBlack().add(Integer.valueOf(split[1]));
+
+            moveRepository.save(new Move(game, player, "black", moveRequest.getMove(),
+                    moveRequest.getState().getBlack().stream().map(String::valueOf).collect(Collectors.joining(",")),
+                    moveRequest.getState().getWhite().stream().map(String::valueOf).collect(Collectors.joining(","))));
+            return generateMoveResponse(gameId);
         }
 
         if (isInconsistentGame(moveRequest, moves)) {
@@ -50,7 +59,7 @@ public class MoveServiceImpl implements MoveService {
 
         String[] split = moveRequest.getMove().split("-");
 
-        if (moveRequest.getSide().equals("white")) {
+        if (moveRequest.getSide().equals(WHITE.toString())) {
             moveRequest.getState().getWhite().remove(Integer.valueOf(split[0]));
             moveRequest.getState().getWhite().add(Integer.valueOf(split[1]));
         } else {
@@ -65,7 +74,7 @@ public class MoveServiceImpl implements MoveService {
                 new Move(game, player, moveRequest.getSide(), moveRequest.getMove(), moveRequest.getState().getBlack().stream().map(String::valueOf).collect(Collectors.joining(",")), moveRequest.getState().getWhite().stream().map(String::valueOf).collect(Collectors.joining(","))));
 
         // TODO MoveResponse should contain board state and should not contain a move
-        return generateMoveResponse(gameId, moveRequest);
+        return generateMoveResponse(gameId);
     }
 
     private Player validateAndGetPlayer(MoveRequest moveRequest) {
@@ -85,7 +94,7 @@ public class MoveServiceImpl implements MoveService {
     }
 
     @Override
-    public MoveResponse getCurrentState(String gameId) {
+    public MoveResponse generateMoveResponse(String gameId) {
 
         var moveList = moveRepository.findAllByGameId(gameId);
         if (moveList.isEmpty()) {
@@ -94,35 +103,17 @@ public class MoveServiceImpl implements MoveService {
         }
         var state = getCurrentState(moveList);
         // TODO Fix it, need to determine whose move it is
-        Map<Integer, List<PossibleMove>> possibleMoves = boardService.getPossibleMoves(Side.BLACK, state);
+        Map<Integer, List<PossibleMove>> possibleMoves = boardService.getPossibleMoves(BLACK, state);
         return new MoveResponse(gameId, state, possibleMoves);
     }
 
     private static State getCurrentState(List<Move> moveList) {
-        String black = moveList.get(moveList.size() - 1).getBlack();
-        String white = moveList.get(moveList.size() - 1).getWhite();
+        String black = moveList.getLast().getBlack();
+        String white = moveList.getLast().getWhite();
 
-        return new State(Arrays.stream(black.split(",")).map(Integer::valueOf).toList(), Arrays.stream(white.split(",")).map(Integer::valueOf).toList());
-    }
-
-    private MoveResponse generateMoveResponse(String gameId, MoveRequest moveRequest) {
-        var moveResponse = new MoveResponse();
-        moveResponse.setGameId(gameId);
-
-
-        moveResponse.setState(new State(moveRequest.getState().getBlack(), moveRequest.getState().getWhite()));
-        moveResponse.setPossibleMoves(boardService.getPossibleMoves(Side.valueOf(moveRequest.getSide()), moveRequest.getState()));
-
-        return moveResponse;
-    }
-
-    private MoveResponse generateFirstMoveResponse(String gameId, MoveRequest moveRequest) {
-        var moveResponse = new MoveResponse();
-        moveResponse.setGameId(gameId);
-        moveResponse.setState(getInitialState());
-        moveResponse.setPossibleMoves(boardService.getPossibleMoves(Side.valueOf(moveRequest.getSide()), moveRequest.getState()));
-
-        return moveResponse;
+        return new State(
+                Arrays.stream(black.split(",")).map(Integer::valueOf).toList(),
+                Arrays.stream(white.split(",")).map(Integer::valueOf).toList());
     }
 
     @SneakyThrows
