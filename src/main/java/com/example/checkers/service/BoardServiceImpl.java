@@ -54,7 +54,7 @@ public class BoardServiceImpl implements BoardService {
 
             for (Position free : freeCellsPositions) {
                 if (neighbors.contains(free)) {
-                    possibleMoves.computeIfAbsent(piece, k -> new ArrayList<>()).add(new PossibleMove(BLACK, piece, getBoard()[free.i][free.j], false, false));
+                    possibleMoves.computeIfAbsent(piece, k -> new ArrayList<>()).add(new PossibleMove(BLACK, piece, getBoard()[free.i][free.j], false, true));
                 }
             }
 
@@ -97,7 +97,7 @@ public class BoardServiceImpl implements BoardService {
 
             for (Position free : freeCellsPositions) {
                 if (neighbors.contains(free)) {
-                    possibleMoves.computeIfAbsent(piece, k -> new ArrayList<>()).add(new PossibleMove(WHITE, piece, getBoard()[free.i][free.j], false, false));
+                    possibleMoves.computeIfAbsent(piece, k -> new ArrayList<>()).add(new PossibleMove(WHITE, piece, getBoard()[free.i][free.j], false, true));
                 }
             }
 
