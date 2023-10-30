@@ -112,3 +112,17 @@ tasks.named('build').configure {
 tasks.named('bootRun').configure {
     mustRunAfter 'build'
 }
+
+// https://docs.gradle.org/current/userguide/building_java_projects.html#sec:feature_preview
+
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs += "--enable-preview"
+}
+
+tasks.withType(Test).configureEach {
+    jvmArgs += "--enable-preview"
+}
+
+tasks.withType(JavaExec).configureEach {
+    jvmArgs += "--enable-preview"
+}
