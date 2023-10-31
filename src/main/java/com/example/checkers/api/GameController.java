@@ -42,6 +42,6 @@ public class GameController implements GameApi {
 
     @Override
     public ResponseEntity<MoveResponse> startGame(StartGameRequest startGameRequest) {
-        return ok(gameService.startGame(startGameRequest.getPlayerId()));
+        return ok(gameService.startGame(startGameRequest.getPlayerId(), startGameRequest.getSide()));
     }
 }

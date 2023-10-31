@@ -29,21 +29,27 @@ public class GameServiceImpl implements GameService {
 
     private final BoardService boardService;
 
+    private final MoveService moveService;
+
     @Transactional
     @Override
-    public MoveResponse startGame(Long userId) {
-        Game game = new Game();
-        game.setProgress(GameProgress.STARTING.toString());
+    public MoveResponse startGame(Long playerId, String side) {
+        Player player = validateAndGet(playerId);
 
-        Optional<Player> user = playerRepository.findById(userId);
+        Game startingGame = Game.builder()
+                .player(player)
+                .build();
 
-        if (user.isEmpty()) {
-            throw new IllegalArgumentException("No such user, couldn't start game.");
+        Game savedGame = gameRepository.save(startingGame);
+        return moveService.generateMoveResponse(savedGame.getId(), Side.valueOf(side));
+    }
+
+    private Player validateAndGet(Long playerId) {
+        Optional<Player> player = playerRepository.findById(playerId);
+        if (player.isEmpty()) {
+            throw new IllegalArgumentException("No such player, couldn't start game.");
         }
-
-        game.setPlayer(user.get());
-        Game savedGame = gameRepository.save(game);
-        return generateFirstMoveResponse(savedGame.getId());
+        return player.get();
     }
 
     private MoveResponse generateFirstMoveResponse(String gameId) {

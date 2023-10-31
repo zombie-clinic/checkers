@@ -41,6 +41,8 @@ post:
             playerId:
               type: integer
               format: int64
+            side:
+              type: string
   responses:
     '200':
       description: Successful operation
