@@ -13,15 +13,15 @@ MoveRequest:
 State:
   type: object
   required:
-    - black
-    - white
+    - dark
+    - light
   properties:
-    black:
+    dark:
       type: array
       items:
         type: integer
         format: int32
-    white:
+    light:
       type: array
       items:
         type: integer

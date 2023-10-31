@@ -15,9 +15,9 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.example.checkers.domain.Board.getInitialState;
-import static com.example.checkers.domain.Side.BLACK;
-import static com.example.checkers.domain.Side.WHITE;
+import static com.example.checkers.domain.Checkerboard.getStartingState;
+import static com.example.checkers.domain.Side.DARK;
+import static com.example.checkers.domain.Side.LIGHT;
 
 @RequiredArgsConstructor
 @Service
@@ -46,15 +46,15 @@ public class MoveServiceImpl implements MoveService {
 
             String[] split = moveRequest.getMove().split("-");
 
-            moveRequest.getState().getBlack().remove(Integer.valueOf(split[0]));
-            moveRequest.getState().getBlack().add(Integer.valueOf(split[1]));
+            moveRequest.getState().getDark().remove(Integer.valueOf(split[0]));
+            moveRequest.getState().getDark().add(Integer.valueOf(split[1]));
 
             Move move = new Move(game, player, "BLACK", moveRequest.getMove(),
-                    moveRequest.getState().getBlack().stream().map(String::valueOf).collect(Collectors.joining(",")),
-                    moveRequest.getState().getWhite().stream().map(String::valueOf).collect(Collectors.joining(",")));
+                    moveRequest.getState().getDark().stream().map(String::valueOf).collect(Collectors.joining(",")),
+                    moveRequest.getState().getLight().stream().map(String::valueOf).collect(Collectors.joining(",")));
 
             moveRepository.save(move);
-            return generateMoveResponse(gameId, BLACK);
+            return generateMoveResponse(gameId, DARK);
         }
 
         if (isInconsistentGame(moveRequest, moves)) {
@@ -64,8 +64,8 @@ public class MoveServiceImpl implements MoveService {
         if (isCapture(moveRequest)) {
             State afterCaptureState = captureService.generateAfterCaptureState(moveRequest);
             Move move = new Move(game, player, moveRequest.getSide(), moveRequest.getMove(),
-                    afterCaptureState.getBlack().stream().map(String::valueOf).collect(Collectors.joining(",")),
-                    afterCaptureState.getWhite().stream().map(String::valueOf).collect(Collectors.joining(",")));
+                    afterCaptureState.getDark().stream().map(String::valueOf).collect(Collectors.joining(",")),
+                    afterCaptureState.getLight().stream().map(String::valueOf).collect(Collectors.joining(",")));
 
             moveRepository.save(move);
             return generateMoveResponse(gameId, Side.valueOf(moveRequest.getSide()), afterCaptureState);
@@ -74,19 +74,19 @@ public class MoveServiceImpl implements MoveService {
         // regular move
         String[] split = moveRequest.getMove().split("-");
 
-        if (moveRequest.getSide().equals(WHITE.toString())) {
-            moveRequest.getState().getWhite().remove(Integer.valueOf(split[0]));
-            moveRequest.getState().getWhite().add(Integer.valueOf(split[1]));
+        if (moveRequest.getSide().equals(LIGHT.toString())) {
+            moveRequest.getState().getLight().remove(Integer.valueOf(split[0]));
+            moveRequest.getState().getLight().add(Integer.valueOf(split[1]));
         } else {
-            moveRequest.getState().getBlack().remove(Integer.valueOf(split[0]));
-            moveRequest.getState().getBlack().add(Integer.valueOf(split[1]));
+            moveRequest.getState().getDark().remove(Integer.valueOf(split[0]));
+            moveRequest.getState().getDark().add(Integer.valueOf(split[1]));
         }
 
         moveRepository.save(
                 // TODO Introduce Move builder
                 // TODO Calculate state
 
-                new Move(game, player, moveRequest.getSide(), moveRequest.getMove(), moveRequest.getState().getBlack().stream().map(String::valueOf).collect(Collectors.joining(",")), moveRequest.getState().getWhite().stream().map(String::valueOf).collect(Collectors.joining(","))));
+                new Move(game, player, moveRequest.getSide(), moveRequest.getMove(), moveRequest.getState().getDark().stream().map(String::valueOf).collect(Collectors.joining(",")), moveRequest.getState().getLight().stream().map(String::valueOf).collect(Collectors.joining(","))));
 
         // TODO MoveResponse should contain board state and should not contain a move
         return generateMoveResponse(gameId, Side.valueOf(moveRequest.getSide()));
@@ -125,7 +125,7 @@ public class MoveServiceImpl implements MoveService {
 
         var moveList = moveRepository.findAllByGameId(gameId);
         if (moveList.isEmpty()) {
-            var state = getInitialState();
+            var state = getStartingState();
             return new MoveResponse(gameId, state, boardService.getPossibleMoves(side, state));
         }
         var state = getCurrentState(moveList);
@@ -142,12 +142,12 @@ public class MoveServiceImpl implements MoveService {
 
 
     private static State getCurrentState(List<Move> moveList) {
-        String black = moveList.getLast().getBlack();
-        String white = moveList.getLast().getWhite();
+        String dark = moveList.getLast().getDark();
+        String light = moveList.getLast().getLight();
 
         return new State(
-                Arrays.stream(black.split(",")).map(Integer::valueOf).toList(),
-                Arrays.stream(white.split(",")).map(Integer::valueOf).toList());
+                Arrays.stream(dark.split(",")).map(Integer::valueOf).toList(),
+                Arrays.stream(light.split(",")).map(Integer::valueOf).toList());
     }
 
     @SneakyThrows
@@ -159,10 +159,10 @@ public class MoveServiceImpl implements MoveService {
     }
 
     private static boolean positionsMatch(State clientState, State serverState) {
-        return new HashSet<>(serverState.getBlack()).containsAll(clientState.getBlack()) && new HashSet<>(serverState.getWhite()).containsAll(clientState.getWhite());
+        return new HashSet<>(serverState.getDark()).containsAll(clientState.getDark()) && new HashSet<>(serverState.getLight()).containsAll(clientState.getLight());
     }
 
     private static boolean amountOfFiguresMatches(State requestedCheck, State current) {
-        return requestedCheck.getBlack().size() == current.getBlack().size() && requestedCheck.getWhite().size() == current.getWhite().size();
+        return requestedCheck.getDark().size() == current.getDark().size() && requestedCheck.getLight().size() == current.getLight().size();
     }
 }

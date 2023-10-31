@@ -1,6 +1,6 @@
 package com.example.checkers.service;
 
-import com.example.checkers.domain.Board;
+import com.example.checkers.domain.Checkerboard;
 import com.example.checkers.domain.Side;
 import com.example.checkers.model.MoveRequest;
 import com.example.checkers.model.State;
@@ -19,18 +19,18 @@ public class CaptureService {
     private final BoardService boardService;
 
     public State generateAfterCaptureState(MoveRequest moveRequest) {
-        List<Integer> black = moveRequest.getState().getBlack();
-        List<Integer> white = moveRequest.getState().getWhite();
+        List<Integer> black = moveRequest.getState().getDark();
+        List<Integer> white = moveRequest.getState().getLight();
 
         Side side = Side.valueOf(moveRequest.getSide());
         MoveRecord moveRecord = MoveRecord.createMoveRecord(moveRequest.getMove());
 
         return switch (side) {
-            case BLACK -> {
+            case DARK -> {
                 AfterCaptureState state = process(black, white, moveRecord);
                 yield new State(state.attacker, state.defender);
             }
-            case WHITE -> {
+            case LIGHT -> {
                 AfterCaptureState state = process(white, black, moveRecord);
                 yield new State(state.defender, state.attacker);
             }
@@ -55,8 +55,8 @@ public class CaptureService {
     }
 
     private Integer getSingleCapture(Integer start, Integer dest) {
-        Set<BoardServiceImpl.Position> startNeighbors = new HashSet<>(boardService.getValidNeighborsForPosition(start));
-        Set<BoardServiceImpl.Position> destNeighbors = new HashSet<>(boardService.getValidNeighborsForPosition(dest));
+        Set<BoardServiceImpl.Position> startNeighbors = new HashSet<>(boardService.getAdjacentSquares(start));
+        Set<BoardServiceImpl.Position> destNeighbors = new HashSet<>(boardService.getAdjacentSquares(dest));
 
         Sets.SetView<BoardServiceImpl.Position> intersection = Sets.intersection(startNeighbors, destNeighbors);
         if (intersection.size() != 1) {
@@ -64,7 +64,7 @@ public class CaptureService {
         }
 
         BoardServiceImpl.Position capturePos = intersection.stream().findFirst().get();
-        return Board.getBoardArray()[capturePos.i()][capturePos.j()];
+        return Checkerboard.getAllSquaresArray()[capturePos.i()][capturePos.j()];
     }
 
     record MoveRecord(Integer start, Integer dest) {

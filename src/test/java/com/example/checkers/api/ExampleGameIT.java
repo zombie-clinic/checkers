@@ -1,6 +1,6 @@
 package com.example.checkers.api;
 
-import com.example.checkers.domain.Board;
+import com.example.checkers.domain.Checkerboard;
 import com.example.checkers.domain.Side;
 import com.example.checkers.model.State;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -31,8 +31,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class ExampleGameIT {
 
-    String playerJson = """
-                {"playerId": 1}
+    String startRequest = """
+                 {
+                    "playerId": 1, "side": "DARK"
+                 }
             """;
 
     @Autowired
@@ -47,12 +49,12 @@ public class ExampleGameIT {
         String response = startGame();
         var gameId = jsonMapper.readTree(response).get("gameId").asText();
 
-        State expectedState = Board.getInitialState();
+        State expectedState = Checkerboard.getStartingState();
         JsonNode actualState = jsonMapper.readTree(response).get("state");
         compareStates(expectedState, actualState);
 
         // 1
-        response = makeMove(gameId, Side.BLACK, "9-14", actualState, 1);
+        response = makeMove(gameId, Side.DARK, "9-14", actualState, 1);
         expectedState = new State(
                 List.of(1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 14),
                 List.of(21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32)
@@ -61,7 +63,7 @@ public class ExampleGameIT {
         compareStates(expectedState, actualState);
 
         // 2
-        response = makeMove(gameId, Side.WHITE, "22-17", actualState, 2);
+        response = makeMove(gameId, Side.LIGHT, "22-17", actualState, 2);
         expectedState = new State(
                 List.of(1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 14),
                 List.of(21, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 17)
@@ -70,7 +72,7 @@ public class ExampleGameIT {
         compareStates(expectedState, actualState);
 
         // 3
-        response = makeMove(gameId, Side.BLACK, "11-15", actualState, 1);
+        response = makeMove(gameId, Side.DARK, "11-15", actualState, 1);
         expectedState = new State(
                 List.of(1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 15),
                 List.of(21, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 17)
@@ -79,7 +81,7 @@ public class ExampleGameIT {
         compareStates(expectedState, actualState);
 
         // 4
-        response = makeMove(gameId, Side.WHITE, "25-22", actualState, 2);
+        response = makeMove(gameId, Side.LIGHT, "25-22", actualState, 2);
         expectedState = new State(
                 List.of(1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 15),
                 List.of(21, 23, 24, 26, 27, 28, 29, 30, 31, 32, 17, 22)
@@ -88,7 +90,7 @@ public class ExampleGameIT {
         compareStates(expectedState, actualState);
 
         // 5
-        response = makeMove(gameId, Side.BLACK, "15-19", actualState, 1);
+        response = makeMove(gameId, Side.DARK, "15-19", actualState, 1);
         expectedState = new State(
                 List.of(1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 19),
                 List.of(21, 23, 24, 26, 27, 28, 29, 30, 31, 32, 17, 22)
@@ -97,7 +99,7 @@ public class ExampleGameIT {
         compareStates(expectedState, actualState);
 
         // 6
-        response = makeMove(gameId, Side.WHITE, "23x16", actualState, 2);
+        response = makeMove(gameId, Side.LIGHT, "23x16", actualState, 2);
         expectedState = new State(
                 List.of(1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14),
                 List.of(21, 24, 26, 27, 28, 29, 30, 31, 32, 17, 22, 16)
@@ -107,7 +109,7 @@ public class ExampleGameIT {
     }
 
     private String startGame() throws Exception {
-        var startNewGame = post("/games").contentType(APPLICATION_JSON).content(playerJson);
+        var startNewGame = post("/games").contentType(APPLICATION_JSON).content(startRequest);
         return mockMvc.perform(startNewGame)
                 .andExpect(status().isOk())
                 .andReturn()
@@ -118,31 +120,31 @@ public class ExampleGameIT {
     private void compareStates(State expectedState, JsonNode actualState) throws IOException {
 
         // TODO Should be sorted elsewhere
-        var sortedListBlack = new ArrayList<>(expectedState.getBlack());
-        var sortedListWhite = new ArrayList<>(expectedState.getWhite());
+        var sortedListDark = new ArrayList<>(expectedState.getDark());
+        var sortedListLight = new ArrayList<>(expectedState.getLight());
 
-        Collections.sort(sortedListBlack);
-        Collections.sort(sortedListWhite);
+        Collections.sort(sortedListDark);
+        Collections.sort(sortedListLight);
 
-        expectedState.setBlack(sortedListBlack);
-        expectedState.setWhite(sortedListWhite);
+        expectedState.setDark(sortedListDark);
+        expectedState.setLight(sortedListLight);
 
-        ArrayNode black = (ArrayNode) actualState.get("black");
-        ArrayNode white = (ArrayNode) actualState.get("white");
+        ArrayNode dark = (ArrayNode) actualState.get("dark");
+        ArrayNode light = (ArrayNode) actualState.get("light");
 
         ObjectMapper mapper = new ObjectMapper();
         ObjectReader reader = mapper.readerFor(new TypeReference<List<Integer>>() {
         });
 
-        List<Integer> blackList = reader.readValue(black);
-        List<Integer> whiteList = reader.readValue(white);
+        List<Integer> darkList = reader.readValue(dark);
+        List<Integer> lightList = reader.readValue(light);
 
-        Collections.sort(blackList);
-        Collections.sort(whiteList);
+        Collections.sort(darkList);
+        Collections.sort(lightList);
 
         // TODO Black/White positions should be a type
         State actual = new State(
-                blackList, whiteList
+                darkList, lightList
         );
 
         assertEquals(expectedState, actual);

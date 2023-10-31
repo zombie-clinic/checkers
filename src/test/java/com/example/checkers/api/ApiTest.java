@@ -22,7 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class ApiTest {
 
     String playerJson = """
-                {"playerId": 1}
+                {"playerId": 1, "side": "DARK"}
             """;
 
     @Autowired
@@ -32,7 +32,6 @@ class ApiTest {
     void givenGameNotExist_whenStart_startNewGame() throws Exception {
         var startNewGame = post("/games").contentType(APPLICATION_JSON).content(playerJson);
         mockMvc.perform(startNewGame)
-                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.state.length()").value(2))
                 .andExpect(jsonPath("$.possibleMoves.*..destination.length()").value(hasSize(7)));

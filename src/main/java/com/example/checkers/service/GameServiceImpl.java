@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.example.checkers.domain.Board.getInitialState;
+import static com.example.checkers.domain.Checkerboard.getStartingState;
 
 
 @RequiredArgsConstructor
@@ -55,8 +55,8 @@ public class GameServiceImpl implements GameService {
     private MoveResponse generateFirstMoveResponse(String gameId) {
         var response = new MoveResponse();
         response.setGameId(gameId);
-        response.setState(getInitialState());
-        response.setPossibleMoves(boardService.getPossibleMoves(Side.WHITE, Board.getInitialState()));
+        response.setState(getStartingState());
+        response.setPossibleMoves(boardService.getPossibleMoves(Side.LIGHT, Checkerboard.getStartingState()));
         return response;
     }
 

@@ -16,11 +16,6 @@ public class WelcomePageController {
     @GetMapping("/")
     @ResponseBody
     public ResponseEntity<?> index() {
-        Map<String, String> response = new HashMap<>();
-        response.put("choice1", "white");
-        response.put("choice2", "black");
-        response.put("choice3", "random");
-        response.put("button", "start");
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok("hello react");
     }
 }

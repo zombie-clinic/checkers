@@ -6,15 +6,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 
-public class Board {
+public class Checkerboard {
 
-    public static State getInitialState() {
+    public static State getStartingState() {
         return new State(
                 List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12),
                 List.of(21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32));
     }
 
-    public static Integer[][] getBoardArray() {
+    public static Integer[][] getAllSquaresArray() {
         return new Integer[][]{
                 {0, 1, 0, 2, 0, 3, 0, 4},
                 {5, 0, 6, 0, 7, 0, 8, 0},
@@ -27,7 +27,7 @@ public class Board {
         };
     }
 
-    public static List<Integer> getValidCells() {
+    public static List<Integer> getPlayableSquaresList() {
         return new ArrayList<>(IntStream.rangeClosed(1, 32).boxed().toList());
     }
 }

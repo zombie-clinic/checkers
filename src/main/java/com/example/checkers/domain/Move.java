@@ -29,16 +29,16 @@ public class Move {
 
     private String move;
 
-    private String black;
+    private String dark;
 
-    private String white;
+    private String light;
 
-    public Move(Game game, Player player, String side, String move, String black, String white) {
+    public Move(Game game, Player player, String side, String move, String dark, String light) {
         this.game = game;
         this.player = player;
         this.side = side;
         this.move = move;
-        this.black = black;
-        this.white = white;
+        this.dark = dark;
+        this.light = light;
     }
 }

@@ -1,11 +1,11 @@
 package com.example.checkers.domain;
 
 import jakarta.persistence.*;
-import lombok.Builder;
+import lombok.*;
 import lombok.Builder.Default;
-import lombok.Getter;
-import lombok.Setter;
 
+@AllArgsConstructor
+@NoArgsConstructor
 @Builder
 @Entity
 @Getter
