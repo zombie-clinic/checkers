@@ -1,5 +1,6 @@
 package com.example.checkers.api;
 
+import com.example.checkers.domain.Side;
 import com.example.checkers.model.MoveRequest;
 import com.example.checkers.model.MoveResponse;
 import com.example.checkers.service.GameService;
@@ -23,7 +24,7 @@ public class MoveController implements MoveApi {
     @Override
     public ResponseEntity<MoveResponse> getCurrentState(String gameId) {
         if (gameService.isGameValid(gameId)) {
-            return ok(moveService.generateMoveResponse(gameId));
+            return ok(moveService.generateMoveResponse(gameId, Side.BLACK));
         }
         throw new IllegalArgumentException(String.format("Game %s deleted or not started", gameId));
     }

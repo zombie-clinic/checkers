@@ -1,8 +1,9 @@
 #!/bin/bash
 
-START_RESPONSE=$(curl -s -X POST -H "Content-Type: application/json" -d '{"playerId": 1}' http://localhost:8080/games)
+#START_RESPONSE=$(curl -s -X POST -H "Content-Type: application/json" -d '{"playerId": 1}' http://localhost:8080/games)
 
-GAME_ID=$(echo "$START_RESPONSE" | jq -r '.gameId')
+#GAME_ID=$(echo "$START_RESPONSE" | jq -r '.gameId')
+GAME_ID='7304942c-1bfd-4c23-8c83-c9902a866807'
 
 echo "$GAME_ID"
 

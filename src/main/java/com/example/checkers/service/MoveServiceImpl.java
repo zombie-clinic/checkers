@@ -31,6 +31,8 @@ public class MoveServiceImpl implements MoveService {
 
     private final BoardService boardService;
 
+    private final CaptureService captureService;
+
     // TODO Use mapper or json parser to validate move request, e.g.
     @Transactional
     @Override
@@ -50,13 +52,19 @@ public class MoveServiceImpl implements MoveService {
             moveRepository.save(new Move(game, player, "black", moveRequest.getMove(),
                     moveRequest.getState().getBlack().stream().map(String::valueOf).collect(Collectors.joining(",")),
                     moveRequest.getState().getWhite().stream().map(String::valueOf).collect(Collectors.joining(","))));
-            return generateMoveResponse(gameId);
+            return generateMoveResponse(gameId, BLACK);
         }
 
         if (isInconsistentGame(moveRequest, moves)) {
             throw new IllegalStateException("Inconsistent game, provide a valid move, here is you previous state: []");
         }
 
+        if (isCapture(moveRequest)) {
+            State afterCaptureState = captureService.generateAfterCaptureState(moveRequest);
+            return generateMoveResponse(gameId, Side.valueOf(moveRequest.getSide()), afterCaptureState);
+        }
+
+        // regular move
         String[] split = moveRequest.getMove().split("-");
 
         if (moveRequest.getSide().equals(WHITE.toString())) {
@@ -74,7 +82,17 @@ public class MoveServiceImpl implements MoveService {
                 new Move(game, player, moveRequest.getSide(), moveRequest.getMove(), moveRequest.getState().getBlack().stream().map(String::valueOf).collect(Collectors.joining(",")), moveRequest.getState().getWhite().stream().map(String::valueOf).collect(Collectors.joining(","))));
 
         // TODO MoveResponse should contain board state and should not contain a move
-        return generateMoveResponse(gameId);
+        return generateMoveResponse(gameId, Side.valueOf(moveRequest.getSide()));
+    }
+
+    private boolean isCapture(MoveRequest moveRequest) {
+        /** TODO
+         * Where should it be deduced from?
+         * From request object?
+         * From previous possible capture moves?
+         * From parsed move? (x) as it is now
+         */
+        return moveRequest.getMove().contains("x");
     }
 
     private Player validateAndGetPlayer(MoveRequest moveRequest) {
@@ -93,19 +111,28 @@ public class MoveServiceImpl implements MoveService {
         return game.get();
     }
 
+    // TODO Add a distinction between Player and User
+    // User becomes Player when a game starts, Player has a user id and a side
     @Override
-    public MoveResponse generateMoveResponse(String gameId) {
+    public MoveResponse generateMoveResponse(String gameId, Side side) {
 
         var moveList = moveRepository.findAllByGameId(gameId);
         if (moveList.isEmpty()) {
             var state = getInitialState();
-            return new MoveResponse(gameId, state, boardService.getPossibleMoves(WHITE, state));
+            return new MoveResponse(gameId, state, boardService.getPossibleMoves(side, state));
         }
         var state = getCurrentState(moveList);
         // TODO Fix it, need to determine whose move it is
-        Map<Integer, List<PossibleMove>> possibleMoves = boardService.getPossibleMoves(BLACK, state);
+        Map<Integer, List<PossibleMove>> possibleMoves = boardService.getPossibleMoves(side, state);
         return new MoveResponse(gameId, state, possibleMoves);
     }
+
+    public MoveResponse generateMoveResponse(String gameId, Side side, State afterCaptureState) {
+        Map<Integer, List<PossibleMove>> possibleMoves = boardService.getPossibleMoves(side, afterCaptureState);
+        return new MoveResponse(gameId, afterCaptureState, possibleMoves);
+    }
+
+
 
     private static State getCurrentState(List<Move> moveList) {
         String black = moveList.getLast().getBlack();

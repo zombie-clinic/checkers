@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static com.example.checkers.domain.Side.BLACK;
 import static com.example.checkers.domain.Side.WHITE;
@@ -30,7 +31,7 @@ public class BoardServiceImpl implements BoardService {
     }
 
     private Map<Integer, List<PossibleMove>> getPossibleMovesForBlack(State state) {
-        Map<Integer, List<Position>> blackPositionsAndNeighbors = state.getBlack().stream().collect(toMap(Function.identity(), this::getIJ)).entrySet().stream().collect(toMap(Map.Entry::getKey, entry -> getValidNeighborsForPosition(entry.getValue())));
+        Map<Integer, List<Position>> blackPositionsAndNeighbors = state.getBlack().stream().collect(toMap(Function.identity(), this::getValidNeighborsForPosition));
 
         List<Integer> freeCells = Board.getValidCells();
         freeCells.removeAll(state.getBlack());
@@ -72,7 +73,7 @@ public class BoardServiceImpl implements BoardService {
     }
 
     private Map<Integer, List<PossibleMove>> getPossibleMovesForWhite(State state) {
-        Map<Integer, List<Position>> blackPositionsAndNeighbors = state.getWhite().stream().collect(toMap(Function.identity(), this::getIJ)).entrySet().stream().collect(toMap(Map.Entry::getKey, entry -> getValidNeighborsForPosition(entry.getValue())));
+        Map<Integer, List<Position>> blackPositionsAndNeighbors = state.getWhite().stream().collect(toMap(Function.identity(), this::getValidNeighborsForPosition));
 
 
         List<Integer> freeCells = Board.getValidCells();
@@ -118,13 +119,14 @@ public class BoardServiceImpl implements BoardService {
         return Board.getBoardArray();
     }
 
-    record Position(int i, int j) {
+    public record Position(int i, int j) {
 
     }
 
-    private List<Position> getValidNeighborsForPosition(Integer[] cell) {
-        Integer i = cell[0];
-        Integer j = cell[1];
+    public List<Position> getValidNeighborsForPosition(Integer cell) {
+        Integer[] ij = getIJ(cell);
+        Integer i = ij[0];
+        Integer j = ij[1];
 
         List<Position> positions = new ArrayList<>();
         positions.add(new Position(i - 1, j - 1));

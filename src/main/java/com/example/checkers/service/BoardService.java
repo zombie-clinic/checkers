@@ -9,4 +9,6 @@ import java.util.Map;
 
 public interface BoardService {
     Map<Integer, List<PossibleMove>> getPossibleMoves(Side side, State state);
+
+    List<BoardServiceImpl.Position> getValidNeighborsForPosition(Integer cell);
 }

@@ -86,6 +86,24 @@ public class ExampleGameIT {
         );
         actualState = jsonMapper.readTree(response).get("state");
         compareStates(expectedState, actualState);
+
+        // 5
+        response = makeMove(gameId, Side.BLACK, "15-19", actualState, 1);
+        expectedState = new State(
+                List.of(1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 19),
+                List.of(21, 23, 24, 26, 27, 28, 29, 30, 31, 32, 17, 22)
+        );
+        actualState = jsonMapper.readTree(response).get("state");
+        compareStates(expectedState, actualState);
+
+        // 6
+        response = makeMove(gameId, Side.WHITE, "23x16", actualState, 2);
+        expectedState = new State(
+                List.of(1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14),
+                List.of(21, 24, 26, 27, 28, 29, 30, 31, 32, 17, 22, 16)
+        );
+        actualState = jsonMapper.readTree(response).get("state");
+        compareStates(expectedState, actualState);
     }
 
     private String startGame() throws Exception {
