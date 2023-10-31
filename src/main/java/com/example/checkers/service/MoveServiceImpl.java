@@ -49,9 +49,11 @@ public class MoveServiceImpl implements MoveService {
             moveRequest.getState().getBlack().remove(Integer.valueOf(split[0]));
             moveRequest.getState().getBlack().add(Integer.valueOf(split[1]));
 
-            moveRepository.save(new Move(game, player, "black", moveRequest.getMove(),
+            Move move = new Move(game, player, "BLACK", moveRequest.getMove(),
                     moveRequest.getState().getBlack().stream().map(String::valueOf).collect(Collectors.joining(",")),
-                    moveRequest.getState().getWhite().stream().map(String::valueOf).collect(Collectors.joining(","))));
+                    moveRequest.getState().getWhite().stream().map(String::valueOf).collect(Collectors.joining(",")));
+
+            moveRepository.save(move);
             return generateMoveResponse(gameId, BLACK);
         }
 
@@ -61,6 +63,11 @@ public class MoveServiceImpl implements MoveService {
 
         if (isCapture(moveRequest)) {
             State afterCaptureState = captureService.generateAfterCaptureState(moveRequest);
+            Move move = new Move(game, player, moveRequest.getSide(), moveRequest.getMove(),
+                    afterCaptureState.getBlack().stream().map(String::valueOf).collect(Collectors.joining(",")),
+                    afterCaptureState.getWhite().stream().map(String::valueOf).collect(Collectors.joining(",")));
+
+            moveRepository.save(move);
             return generateMoveResponse(gameId, Side.valueOf(moveRequest.getSide()), afterCaptureState);
         }
 
