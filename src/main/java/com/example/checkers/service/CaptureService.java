@@ -19,56 +19,58 @@ public class CaptureService {
     private final BoardService boardService;
 
     public State generateAfterCaptureState(MoveRequest moveRequest) {
-        State state = moveRequest.getState();
+        List<Integer> black = moveRequest.getState().getBlack();
+        List<Integer> white = moveRequest.getState().getWhite();
+
         Side side = Side.valueOf(moveRequest.getSide());
-        String[] pos = moveRequest.getMove().split("x");
-        MoveRecord moveRecord = new MoveRecord(Integer.valueOf(pos[0]), Integer.valueOf(pos[1]));
+        MoveRecord moveRecord = MoveRecord.createMoveRecord(moveRequest.getMove());
 
         return switch (side) {
             case BLACK -> {
-                NewState newState = calculateState(state.getBlack(), state.getWhite(), moveRecord);
-                yield new State(newState.attacker, newState.defender);
+                AfterCaptureState state = process(black, white, moveRecord);
+                yield new State(state.attacker, state.defender);
             }
             case WHITE -> {
-                NewState newState = calculateState(state.getWhite(), state.getBlack(), moveRecord);
-                yield new State(newState.defender, newState.attacker);            }
+                AfterCaptureState state = process(white, black, moveRecord);
+                yield new State(state.defender, state.attacker);
+            }
         };
     }
 
-    private NewState calculateState(List<Integer> attacker, List<Integer> defender, MoveRecord moveRecord) {
+    private AfterCaptureState process(List<Integer> attacker, List<Integer> defender, MoveRecord moveRecord) {
         Integer start = moveRecord.start;
         Integer dest = moveRecord.dest;
 
         attacker.remove(start);
         attacker.add(dest);
 
-        Integer capture = getCapture(start, dest);
-
+        Integer capture = getSingleCapture(start, dest);
         defender.remove(capture);
 
-        return new NewState(
-                attacker, defender
-        );
+        return new AfterCaptureState(attacker, defender);
     }
 
-    record NewState(List<Integer> attacker, List<Integer> defender) {
+    record AfterCaptureState(List<Integer> attacker, List<Integer> defender) {
 
     }
 
-    private Integer getCapture(Integer start, Integer dest) {
-        Set<BoardServiceImpl.Position> val1 = new HashSet<>(boardService.getValidNeighborsForPosition(start));
-        Set<BoardServiceImpl.Position> val2 = new HashSet<>(boardService.getValidNeighborsForPosition(dest));
+    private Integer getSingleCapture(Integer start, Integer dest) {
+        Set<BoardServiceImpl.Position> startNeighbors = new HashSet<>(boardService.getValidNeighborsForPosition(start));
+        Set<BoardServiceImpl.Position> destNeighbors = new HashSet<>(boardService.getValidNeighborsForPosition(dest));
 
-        Sets.SetView<BoardServiceImpl.Position> intersection = Sets.intersection(val1, val2);
+        Sets.SetView<BoardServiceImpl.Position> intersection = Sets.intersection(startNeighbors, destNeighbors);
         if (intersection.size() != 1) {
-            throw new IllegalStateException(STR."Failed to determine capture: \{ start }x\{ dest }");
+            throw new IllegalStateException(STR. "Failed to determine capture: \{ start }x\{ dest }" );
         }
 
         BoardServiceImpl.Position capturePos = intersection.stream().findFirst().get();
         return Board.getBoardArray()[capturePos.i()][capturePos.j()];
     }
 
-    record MoveRecord (Integer start, Integer dest) {
-
+    record MoveRecord(Integer start, Integer dest) {
+        static MoveRecord createMoveRecord(String captureString) {
+            String[] pos = captureString.split("x");
+            return new MoveRecord(Integer.valueOf(pos[0]), Integer.valueOf(pos[1]));
+        }
     }
 }
