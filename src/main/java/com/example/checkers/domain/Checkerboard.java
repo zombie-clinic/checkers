@@ -1,12 +1,48 @@
 package com.example.checkers.domain;
 
 import com.example.checkers.model.State;
+import com.example.checkers.service.BoardService;
+import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class Checkerboard {
+
+    private final List<Integer> darkPieces;
+
+    private final List<Integer> lightPieces;
+
+    @Getter
+    Map<Integer, Square> squareMap;
+
+    public List<Integer> getSide(Side side) {
+        return switch (side) {
+            case DARK -> darkPieces;
+            case LIGHT -> lightPieces;
+        };
+    }
+
+    public Checkerboard(List<Integer> darkPieces, List<Integer> lightPieces) {
+        this.darkPieces = darkPieces;
+        this.lightPieces = lightPieces;
+
+
+        squareMap = getPlayableSquaresList().stream()
+                .collect(Collectors.toMap(Function.identity(), (Integer v) -> {
+                    if (darkPieces.contains(v)) {
+                        return new Square(v, PieceType.DARK, BoardService.getAdjacentSquaresNumbers(v));
+                    } else if (lightPieces.contains(v)) {
+                        return new Square(v, PieceType.LIGHT, BoardService.getAdjacentSquaresNumbers(v));
+                    } else {
+                        return new Square(v, PieceType.EMPTY, BoardService.getAdjacentSquaresNumbers(v));
+                    }
+                }));
+    }
 
     public static State getStartingState() {
         return new State(
@@ -29,5 +65,13 @@ public class Checkerboard {
 
     public static List<Integer> getPlayableSquaresList() {
         return new ArrayList<>(IntStream.rangeClosed(1, 32).boxed().toList());
+    }
+
+    public boolean isDark(Integer key) {
+        return squareMap.get(key).pieceType().equals(PieceType.DARK);
+    }
+
+    public boolean isLight(Integer key) {
+        return squareMap.get(key).pieceType().equals(PieceType.LIGHT);
     }
 }

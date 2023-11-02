@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -55,8 +56,8 @@ public class CaptureService {
     }
 
     private Integer getSingleCapture(Integer start, Integer dest) {
-        Set<BoardServiceImpl.Position> startNeighbors = new HashSet<>(boardService.getAdjacentSquares(start));
-        Set<BoardServiceImpl.Position> destNeighbors = new HashSet<>(boardService.getAdjacentSquares(dest));
+        Set<BoardServiceImpl.Position> startNeighbors = new HashSet<>(BoardService.getAdjacentSquares(start));
+        Set<BoardServiceImpl.Position> destNeighbors = new HashSet<>(BoardService.getAdjacentSquares(dest));
 
         Sets.SetView<BoardServiceImpl.Position> intersection = Sets.intersection(startNeighbors, destNeighbors);
         if (intersection.size() != 1) {
