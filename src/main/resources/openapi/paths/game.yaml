@@ -12,7 +12,7 @@ get:
         type: array
         items:
           type: string
-          enum: [ STARTING, ONGOING, COMPLETED, ARCHIVED ]
+          enum: [ LOBBY, STARTING, ONGOING, COMPLETED, ARCHIVED ]
   responses:
     '200':
       description: Successful operation
@@ -27,9 +27,9 @@ get:
 post:
   tags:
     - Game
-  summary: Start a new game
-  description: Start a new game
-  operationId: startGame
+  summary: Start a new lobby
+  description: Start a new lobby
+  operationId: startLobby
   requestBody:
     description: Optional description in *Markdown*
     required: true
@@ -43,6 +43,34 @@ post:
               format: int64
             side:
               type: string
+  responses:
+    '200':
+      description: Successful operation
+      content:
+        application/json:
+          schema:
+            $ref: '../components/responses.yaml#/GameResponse'
+    '405':
+      description: Invalid input
+put:
+  tags:
+    - Game
+  summary: Start a new game
+  description: Start a new game
+  operationId: joinLobby
+  requestBody:
+    description: Optional description in *Markdown*
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            gameId:
+              type: string
+            playerId:
+              type: integer
+              format: int64
   responses:
     '200':
       description: Successful operation

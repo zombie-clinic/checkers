@@ -16,9 +16,13 @@ public class Game {
     private String id;
 
     @Default
-    private String progress = GameProgress.STARTING.toString();
+    private String progress = GameProgress.LOBBY.toString();
 
     @ManyToOne
     @JoinColumn
-    private Player player;
+    private Player playerOne;
+    
+    @ManyToOne
+    @JoinColumn
+    private Player playerTwo;
 }

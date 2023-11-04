@@ -1,5 +1,5 @@
 package com.example.checkers.domain;
 
 public enum GameProgress {
-    STARTING, ONGOING, COMPLETED, ARCHIVED;
+    LOBBY, STARTING, ONGOING, FINISHED, ARCHIVED;
 }

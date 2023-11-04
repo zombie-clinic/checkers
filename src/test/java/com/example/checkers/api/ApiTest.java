@@ -1,5 +1,7 @@
 package com.example.checkers.api;
 
+import com.example.checkers.domain.GameProgress;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -15,35 +17,39 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-// TODO With MockMvc there was no need to adjust test when GameApiController was split
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @AutoConfigureMockMvc
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class ApiTest {
 
-    String playerJson = """
-                {"playerId": 1, "side": "DARK"}
-            """;
+    String startLobbyRequest = "{\"playerId\": 1, \"side\": \"DARK\"}";
+    String joinLobbyRequest = "{\"playerId\": 2, \"gameId\": \"%s\"}";
 
     @Autowired
     private MockMvc mockMvc;
 
     @Test
-    void givenGameNotExist_whenStart_startNewGame() throws Exception {
-        var startNewGame = post("/games").contentType(APPLICATION_JSON).content(playerJson);
-        mockMvc.perform(startNewGame)
+    void givenLobbyNotExist_startLobby() throws Exception {
+        var startLobby = post("/games").contentType(APPLICATION_JSON).content(startLobbyRequest);
+        mockMvc.perform(startLobby)
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.state.length()").value(2))
-                .andExpect(jsonPath("$.possibleMoves.*..destination.length()").value(hasSize(7)));
+                .andExpect(jsonPath("$.progress").value(GameProgress.LOBBY.toString()))
+                .andExpect(jsonPath("$.gameId").isNotEmpty());
     }
 
     @Test
-    void givenGamesExist_whenFilterEmpty_fetchAllGames() throws Exception {
-        mockMvc.perform(
-                        MockMvcRequestBuilders.get("/games")
-                ).andDo(print())
+    void givenLobbyExist_joinLobby() throws Exception {
+        var startLobby = post("/games").contentType(APPLICATION_JSON).content(startLobbyRequest);
+        String response = mockMvc.perform(startLobby).andReturn().getResponse().getContentAsString();
+        String gameId = new ObjectMapper().readTree(response).get("gameId").asText();
+        var request = MockMvcRequestBuilders.put("/games")
+                .contentType(APPLICATION_JSON)
+                .content(joinLobbyRequest.formatted(gameId));
+
+        mockMvc.perform(request)
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(10));
+                .andExpect(jsonPath("$.state.length()").value(2))
+                .andExpect(jsonPath("$.possibleMoves.*..destination.length()").value(hasSize(7)));
     }
 
     @Test
@@ -52,15 +58,15 @@ class ApiTest {
                         MockMvcRequestBuilders.get("/games?progress=ONGOING")
                 ).andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(2));
+                .andExpect(jsonPath("$.length()").value(0));
     }
 
     @Test
     void givenGamesExist_whenMultipleFilters_fetchGamesWithMultipleStatuses() throws Exception {
         mockMvc.perform(
-                        MockMvcRequestBuilders.get("/games?progress=ONGOING,COMPLETED")
+                        MockMvcRequestBuilders.get("/games?progress=LOBBY,STARTING,ONGOING,FINISHED,ARCHIVED")
                 ).andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(6));
+                .andExpect(jsonPath("$.length()").value(2));
     }
 }

@@ -1,15 +1,17 @@
 package com.example.checkers.api;
 
+import com.example.checkers.domain.Game;
+import com.example.checkers.domain.GameProgress;
 import com.example.checkers.model.GameResponse;
+import com.example.checkers.model.JoinLobbyRequest;
 import com.example.checkers.model.MoveResponse;
-import com.example.checkers.model.StartGameRequest;
+import com.example.checkers.model.StartLobbyRequest;
 import com.example.checkers.service.GameService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Collections;
 import java.util.List;
 
 import static org.springframework.http.ResponseEntity.ok;
@@ -30,18 +32,31 @@ public class GameController implements GameApi {
         return ok(gameResponse);
     }
 
-    // TODO Better to separate getAll and getByProgress in order to be able to return
-    //  an error when filters fail, instead of all games
     @Override
     public ResponseEntity<List<GameResponse>> getGamesByProgress(List<String> progress) {
-        if (progress == null) {
-            return ok(gameService.getGamesByProgress(Collections.emptyList()));
-        }
+        validateProgress(progress);
         return ok(gameService.getGamesByProgress(progress));
     }
 
+    private void validateProgress(List<String> progress) {
+        progress.forEach(GameProgress::valueOf);
+    }
+
     @Override
-    public ResponseEntity<MoveResponse> startGame(StartGameRequest startGameRequest) {
-        return ok(gameService.startGame(startGameRequest.getPlayerId(), startGameRequest.getSide()));
+    public ResponseEntity<GameResponse> startLobby(StartLobbyRequest request) {
+        String side = request.getSide();
+        if (side == null) {
+            throw new IllegalArgumentException("Starting player must choose a side.");
+        }
+        return ok(gameService.startLobby(request.getPlayerId(), side));
+    }
+
+    @Override
+    public ResponseEntity<MoveResponse> joinLobby(JoinLobbyRequest request) {
+        // validation
+        String gameId = request.getGameId();
+        Long playerId = request.getPlayerId();
+        gameService.lobbyExistsAndPlayerIsDifferent(gameId, playerId);
+        return ok(gameService.startGame(gameId, playerId));
     }
 }
