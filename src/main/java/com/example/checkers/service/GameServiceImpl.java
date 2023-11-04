@@ -11,10 +11,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.example.checkers.domain.Checkerboard.getStartingState;
+import static com.example.checkers.domain.GameProgress.LOBBY;
 
 
 @RequiredArgsConstructor
@@ -33,15 +35,36 @@ public class GameServiceImpl implements GameService {
 
     @Transactional
     @Override
-    public MoveResponse startGame(Long playerId, String side) {
+    public GameResponse startLobby(Long playerId, String side) {
         Player player = validateAndGet(playerId);
 
-        Game startingGame = Game.builder()
-                .player(player)
+        Game lobbyGame = Game.builder()
+                .playerOne(player)
                 .build();
 
-        Game savedGame = gameRepository.save(startingGame);
-        return moveService.generateMoveResponse(savedGame.getId(), Side.valueOf(side));
+        Game savedGame = gameRepository.save(lobbyGame);
+        return new GameResponse(savedGame.getId(), LOBBY.toString());
+    }
+
+    @Transactional
+    @Override
+    public GameResponse startGame(String gameId, Long playerTwoId) {
+        Player playerTwo = validateAndGet(playerTwoId);
+        Game game = validateAndGetGame(gameId);
+        if (game.getPlayerOne() == null) {
+            throw new IllegalStateException(STR. "Invalid game, there is no player one in the lobby: \{ gameId }" );
+        }
+
+        game.setPlayerTwo(playerTwo);
+        game.setProgress(GameProgress.STARTING.toString());
+
+        return new GameResponse(gameId, GameProgress.STARTING.toString());
+    }
+
+    private Game validateAndGetGame(String gameId) {
+        return gameRepository.findGameById(gameId).orElseThrow(
+                () -> new IllegalArgumentException(STR. "No such game: \{ gameId }" )
+        );
     }
 
     private Player validateAndGet(Long playerId) {
@@ -97,5 +120,16 @@ public class GameServiceImpl implements GameService {
     @Override
     public boolean isGameValid(String uuid) {
         return gameRepository.existsById(uuid);
+    }
+
+    @Override
+    public void lobbyExistsAndPlayerIsDifferent(String gameId, Long playerTwoId) {
+        Optional<Game> game = gameRepository.findGameById(gameId);
+        if (game.isEmpty()) {
+            throw new IllegalArgumentException(STR. "There is no lobby for game : \{ gameId }" );
+        }
+        if (Objects.equals(game.get().getPlayerOne().getId(), playerTwoId)) {
+            throw new IllegalArgumentException(STR. "The game \{ gameId } already has player \{ playerTwoId } " );
+        }
     }
 }
