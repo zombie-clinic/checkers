@@ -17,6 +17,12 @@ public class Checkerboard {
 
     private final List<Integer> lightPieces;
 
+
+
+    public State getState() {
+        return State.of(darkPieces, lightPieces);
+    }
+
     @Getter
     Map<Integer, Square> squareMap;
 
@@ -35,11 +41,11 @@ public class Checkerboard {
         squareMap = getPlayableSquaresList().stream()
                 .collect(Collectors.toMap(Function.identity(), (Integer v) -> {
                     if (darkPieces.contains(v)) {
-                        return new Square(v, PieceType.DARK, BoardService.getAdjacentSquaresNumbers(v));
+                        return new Square(v, Piece.DARK, BoardService.getAdjacentSquaresNumbers(v));
                     } else if (lightPieces.contains(v)) {
-                        return new Square(v, PieceType.LIGHT, BoardService.getAdjacentSquaresNumbers(v));
+                        return new Square(v, Piece.LIGHT, BoardService.getAdjacentSquaresNumbers(v));
                     } else {
-                        return new Square(v, PieceType.EMPTY, BoardService.getAdjacentSquaresNumbers(v));
+                        return new Square(v, Piece.EMPTY, BoardService.getAdjacentSquaresNumbers(v));
                     }
                 }));
     }
@@ -68,10 +74,10 @@ public class Checkerboard {
     }
 
     public boolean isDark(Integer key) {
-        return squareMap.get(key).pieceType().equals(PieceType.DARK);
+        return squareMap.get(key).pieceType().equals(Piece.DARK);
     }
 
     public boolean isLight(Integer key) {
-        return squareMap.get(key).pieceType().equals(PieceType.LIGHT);
+        return squareMap.get(key).pieceType().equals(Piece.LIGHT);
     }
 }

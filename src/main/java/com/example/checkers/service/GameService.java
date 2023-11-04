@@ -1,6 +1,5 @@
 package com.example.checkers.service;
 
-import com.example.checkers.domain.Side;
 import com.example.checkers.model.GameResponse;
 import com.example.checkers.model.MoveResponse;
 

@@ -39,7 +39,7 @@ public class BoardServiceImpl implements BoardService {
             // empty neighbors
             square.neighborSquares().stream()
                     .map(dest -> checkerboard.getSquareMap().get(dest))
-                    .filter(dest -> dest.pieceType().equals(PieceType.EMPTY))
+                    .filter(dest -> dest.pieceType().equals(Piece.EMPTY))
                     .forEach(dest -> moves
                             .computeIfAbsent(start, v -> new ArrayList<>())
                             .add(new PossibleMove(side, start, dest.number(), true, true)
@@ -48,11 +48,11 @@ public class BoardServiceImpl implements BoardService {
             // busy of same color - skip
             // busy of opponent color - maybe
 
-            PieceType opponent;
-            if (checkerboard.getSquareMap().get(start).pieceType().equals(PieceType.DARK)) {
-                opponent = PieceType.LIGHT;
+            Piece opponent;
+            if (checkerboard.getSquareMap().get(start).pieceType().equals(Piece.DARK)) {
+                opponent = Piece.LIGHT;
             } else {
-                opponent = PieceType.DARK;
+                opponent = Piece.DARK;
             }
 
             square.neighborSquares().stream()
@@ -72,7 +72,7 @@ public class BoardServiceImpl implements BoardService {
                 // empty neighbors
                 square.neighborSquares().stream()
                         .map(captureDest -> checkerboard.getSquareMap().get(captureDest))
-                        .filter(captureDest -> captureDest.pieceType().equals(PieceType.EMPTY))
+                        .filter(captureDest -> captureDest.pieceType().equals(Piece.EMPTY))
                         .forEach(captureDest -> moves
                                 .computeIfAbsent(possibleMove.position(), v -> new ArrayList<>())
                                 .add(new PossibleMove(side, possibleMove.position(), captureDest.number(), true, null)

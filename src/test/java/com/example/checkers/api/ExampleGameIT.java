@@ -3,6 +3,7 @@ package com.example.checkers.api;
 import com.example.checkers.domain.Checkerboard;
 import com.example.checkers.domain.Side;
 import com.example.checkers.model.State;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,14 +15,17 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -43,6 +47,12 @@ public class ExampleGameIT {
 
     @Test
     void playExampleMatch() throws Exception {
+
+        var state0 = startGame(startRequest, startGameChecks());
+        var state1 = makeMove(1, "9-14", state0, firstMoveChecks());
+        var state2 = makeMove(2, "22-17", state1, secondMoveChecks());
+
+
         var jsonMapper = new ObjectMapper();
 
         // start game
@@ -50,7 +60,9 @@ public class ExampleGameIT {
         var gameId = jsonMapper.readTree(response).get("gameId").asText();
 
         State expectedState = Checkerboard.getStartingState();
-        JsonNode actualState = jsonMapper.readTree(response).get("state");
+        JsonNode jsonNode = jsonMapper.readTree(response);
+        assertEquals(7, jsonNode.get("possibleMoves").size());
+        JsonNode actualState = jsonNode.get("state");
         compareStates(expectedState, actualState);
 
         // 1
@@ -108,9 +120,43 @@ public class ExampleGameIT {
         compareStates(expectedState, actualState);
     }
 
-    private String startGame() throws Exception {
-        var startNewGame = post("/games").contentType(APPLICATION_JSON).content(startRequest);
-        return mockMvc.perform(startNewGame)
+    private List<Predicate<JsonNode>> startGameChecks() {
+        return List.of(
+                jsonNode -> jsonNode.get("state").properties().size() == 2,
+                jsonNode -> jsonNode.get("possibleMoves").properties().size() == 4
+        );
+    }
+
+    private List<Predicate<JsonNode>> firstMoveChecks() {
+        return List.of(
+                jsonNode -> jsonNode.get("state").properties().size() == 2,
+                jsonNode -> jsonNode.get("possibleMoves").properties().size() == 4
+        );
+    }
+
+    private List<Predicate<JsonNode>> secondMoveChecks() {
+        return List.of(
+                jsonNode -> jsonNode.get("state").properties().size() == 2,
+                jsonNode -> jsonNode.get("possibleMoves").properties().size() == 4
+        );
+    }
+
+
+    private JsonNode startGame(String startRequest,
+                               List<Predicate<JsonNode>> conditions) throws Exception {
+        var request = post("/games").contentType(APPLICATION_JSON).content(startRequest);
+        String response = getResponse(request);
+        JsonNode jsonNode = parseResponse(response);
+        conditions.forEach(a -> assertTrue(a.test(jsonNode)));
+        return jsonNode;
+    }
+
+    private JsonNode parseResponse(String response) throws JsonProcessingException {
+        return new ObjectMapper().readTree(response);
+    }
+
+    private String getResponse(MockHttpServletRequestBuilder request) throws Exception {
+        return mockMvc.perform(request)
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
@@ -150,20 +196,27 @@ public class ExampleGameIT {
         assertEquals(expectedState, actual);
     }
 
-    private String makeMove(String gameId, Side side, String move, JsonNode state, int playerId) throws Exception {
+    private String makeMove(JsonNode currentState,
+                            Long playerId,
+                            String move,
+                            List<Predicate<JsonNode>> afterMoveChecks) throws Exception {
+        String gameId = currentState.get("gameId").asText();
+        String side = currentState.get("sides").get(playerId);
+
         String url = STR. "/games/\{ gameId }/moves" ;
 
         var jsonMapper = new ObjectMapper();
         var sideValue = jsonMapper.writeValueAsString(side);
         var moveValue = jsonMapper.writeValueAsString(move);
-        var stateValue = jsonMapper.writeValueAsString(state);
+        var stateValue = jsonMapper.writeValueAsString(currentState);
 
         String content = STR. "{\"side\":\{ sideValue },\"move\":\{ moveValue },\"state\":\{ stateValue },\"playerId\":\{ playerId }}" ;
         var put = MockMvcRequestBuilders.put(url).contentType(APPLICATION_JSON).content(content);
-        return mockMvc.perform(put)
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
+        String response = getResponse(put);
+        JsonNode jsonNode = parseResponse(response);
+
+        afterMoveChecks.forEach(p -> assertTrue(p.test(jsonNode)));
+        return response;
     }
 }
 
