@@ -28,3 +28,10 @@ logging:
         web:
           filter:
             CommonsRequestLoggingFilter: DEBUG
+
+server:
+  error:
+    include-message: always
+    include-binding-errors: always
+    include-stacktrace: never
+    include-exception: false
