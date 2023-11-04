@@ -48,7 +48,7 @@ public class GameServiceImpl implements GameService {
 
     @Transactional
     @Override
-    public GameResponse startGame(String gameId, Long playerTwoId) {
+    public MoveResponse startGame(String gameId, Long playerTwoId) {
         Player playerTwo = validateAndGet(playerTwoId);
         Game game = validateAndGetGame(gameId);
         if (game.getPlayerOne() == null) {
@@ -58,7 +58,9 @@ public class GameServiceImpl implements GameService {
         game.setPlayerTwo(playerTwo);
         game.setProgress(GameProgress.STARTING.toString());
 
-        return new GameResponse(gameId, GameProgress.STARTING.toString());
+        return new MoveResponse(gameId,
+                Checkerboard.getStartingState(),
+                boardService.getPossibleMoves(Side.LIGHT, Checkerboard.getStartingState()));
     }
 
     private Game validateAndGetGame(String gameId) {

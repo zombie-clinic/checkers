@@ -1,6 +1,7 @@
 package com.example.checkers.service;
 
 import com.example.checkers.model.GameResponse;
+import com.example.checkers.model.MoveResponse;
 
 import java.util.List;
 
@@ -8,7 +9,7 @@ public interface GameService {
 
     GameResponse startLobby(Long playerOneId, String side);
 
-    GameResponse startGame(String  gameId, Long playerTwoId);
+    MoveResponse startGame(String  gameId, Long playerTwoId);
 
     List<GameResponse> getGamesByProgress(List<String> progressList);
 

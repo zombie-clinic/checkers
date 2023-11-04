@@ -14,7 +14,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -24,6 +24,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
@@ -31,23 +32,22 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class ExampleGameIT {
 
-    String startRequest = """
-                 {
-                    "playerId": 1, "side": "DARK"
-                 }
-            """;
+    String startLobbyRequest = "{\"playerId\": 1, \"side\": \"DARK\"}";
+    String joinLobbyRequest = "{\"playerId\": 2, \"gameId\": \"%s\"}";
 
     @Autowired
     private MockMvc mockMvc;
-
 
     @Test
     void playExampleMatch() throws Exception {
         var jsonMapper = new ObjectMapper();
 
-        // start game
-        String response = startGame();
+        // start lobby
+        String response = startLobby();
         var gameId = jsonMapper.readTree(response).get("gameId").asText();
+
+        // join lobby
+        response = joinLobby(gameId);
 
         State expectedState = Checkerboard.getStartingState();
         JsonNode actualState = jsonMapper.readTree(response).get("state");
@@ -108,13 +108,23 @@ public class ExampleGameIT {
         compareStates(expectedState, actualState);
     }
 
-    private String startGame() throws Exception {
-        var startNewGame = post("/games").contentType(APPLICATION_JSON).content(startRequest);
-        return mockMvc.perform(startNewGame)
+    private String joinLobby(String gameId) throws Exception {
+        var joinLobby = put("/games").contentType(APPLICATION_JSON)
+                .content(joinLobbyRequest.formatted(gameId));
+        return getResponseContentString(joinLobby);
+    }
+
+    private String getResponseContentString(MockHttpServletRequestBuilder request) throws Exception {
+        return mockMvc.perform(request)
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
+    }
+
+    private String startLobby() throws Exception {
+        var startLobby = post("/games").contentType(APPLICATION_JSON).content(startLobbyRequest);
+        return getResponseContentString(startLobby);
     }
 
     private void compareStates(State expectedState, JsonNode actualState) throws IOException {
@@ -159,13 +169,14 @@ public class ExampleGameIT {
         var stateValue = jsonMapper.writeValueAsString(state);
 
         String content = STR. "{\"side\":\{ sideValue },\"move\":\{ moveValue },\"state\":\{ stateValue },\"playerId\":\{ playerId }}" ;
-        var put = MockMvcRequestBuilders.put(url).contentType(APPLICATION_JSON).content(content);
+        var put = put(url).contentType(APPLICATION_JSON).content(content);
         return mockMvc.perform(put)
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
     }
 }
+
 
 
 
