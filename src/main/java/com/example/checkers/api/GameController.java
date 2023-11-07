@@ -1,10 +1,8 @@
 package com.example.checkers.api;
 
-import com.example.checkers.domain.Game;
 import com.example.checkers.domain.GameProgress;
 import com.example.checkers.model.GameResponse;
 import com.example.checkers.model.JoinLobbyRequest;
-import com.example.checkers.model.MoveResponse;
 import com.example.checkers.model.StartLobbyRequest;
 import com.example.checkers.service.GameService;
 import lombok.RequiredArgsConstructor;
@@ -52,7 +50,7 @@ public class GameController implements GameApi {
     }
 
     @Override
-    public ResponseEntity<MoveResponse> joinLobby(JoinLobbyRequest request) {
+    public ResponseEntity<GameResponse> joinLobby(JoinLobbyRequest request) {
         // validation
         String gameId = request.getGameId();
         Long playerId = request.getPlayerId();

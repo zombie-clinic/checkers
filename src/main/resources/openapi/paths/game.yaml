@@ -77,6 +77,6 @@ put:
       content:
         application/json:
           schema:
-            $ref: '../components/responses.yaml#/MoveResponse'
+            $ref: '../components/responses.yaml#/GameResponse'
     '405':
       description: Invalid input
