@@ -10,7 +10,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -48,8 +47,8 @@ class ApiTest {
 
         mockMvc.perform(request)
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.state.length()").value(2))
-                .andExpect(jsonPath("$.possibleMoves.*..destination.length()").value(hasSize(7)));
+                .andExpect(jsonPath("$.gameId").value(gameId))
+                .andExpect(jsonPath("$.progress").value(GameProgress.STARTING.toString()));
     }
 
     @Test
