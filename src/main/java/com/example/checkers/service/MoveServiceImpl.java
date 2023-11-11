@@ -49,7 +49,7 @@ public class MoveServiceImpl implements MoveService {
             moveRequest.getState().getDark().remove(Integer.valueOf(split[0]));
             moveRequest.getState().getDark().add(Integer.valueOf(split[1]));
 
-            Move move = new Move(game, player, "BLACK", moveRequest.getMove(),
+            Move move = new Move(game, player, "LIGHT", moveRequest.getMove(),
                     moveRequest.getState().getDark().stream().map(String::valueOf).collect(Collectors.joining(",")),
                     moveRequest.getState().getLight().stream().map(String::valueOf).collect(Collectors.joining(",")));
 
