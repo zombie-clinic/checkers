@@ -12,7 +12,6 @@ paths:
   /players/{playerId}:
     $ref: './paths/playerById.yaml'
   /games:
-  /games/:
     $ref: './paths/game.yaml'
   /games/{gameId}:
     $ref: './paths/gameById.yaml'
