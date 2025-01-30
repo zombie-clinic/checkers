@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 
+import javax.validation.constraints.NotNull;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -45,9 +46,22 @@ public class MoveServiceImpl implements MoveService {
         if (moves.isEmpty()) {
 
             String[] split = moveRequest.getMove().split("-");
+            State state = moveRequest.getState();
+            List<Integer> dark = state.getDark();
+            List<Integer> light = state.getLight();
+            int start = Integer.parseInt(split[0]);
+            int dest = Integer.parseInt(split[1]);
+            if (Side.valueOf(moveRequest.getSide()) == DARK) {
+                dark.removeIf(e -> e.equals(start));
+                dark.add(dest);
+                state.setDark(dark);
+            } else {
+                light.removeIf(e -> e.equals(start));
+                light.add(dest);
+                state.setLight(light);
+            }
 
-            moveRequest.getState().getLight().remove(Integer.valueOf(split[0]));
-            moveRequest.getState().getLight().add(Integer.valueOf(split[1]));
+            moveRequest.setState(state);
 
             Move move = new Move(game, player, "LIGHT", moveRequest.getMove(),
                     moveRequest.getState().getDark().stream().map(String::valueOf).collect(Collectors.joining(",")),

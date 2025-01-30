@@ -170,12 +170,14 @@ public class ExampleGameIT {
         var moveValue = jsonMapper.writeValueAsString(move);
         var stateValue = jsonMapper.writeValueAsString(state);
 
-        String content = "{\"side\":%s,\"move\":%s },\"state\":%s,\"playerId\":%d}".formatted(sideValue, moveValue, stateValue, playerId);
+        String content = "{\"side\":%s,\"move\":%s,\"state\":%s,\"playerId\":%d}"
+                .formatted(sideValue, moveValue, stateValue, playerId);
         var put = put(url).contentType(APPLICATION_JSON).content(content);
-        return mockMvc.perform(put)
+        String contentAsString = mockMvc.perform(put)
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
+        return contentAsString;
     }
 }
 
