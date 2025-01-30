@@ -52,7 +52,7 @@ public class GameServiceImpl implements GameService {
         Player playerTwo = validateAndGet(playerTwoId);
         Game game = validateAndGetGame(gameId);
         if (game.getPlayerOne() == null) {
-            throw new IllegalStateException(STR. "Invalid game, there is no player one in the lobby: \{ gameId }" );
+            throw new IllegalStateException("Invalid game, there is no player one in the lobby: %s".formatted(gameId) );
         }
 
         game.setPlayerTwo(playerTwo);
@@ -63,7 +63,7 @@ public class GameServiceImpl implements GameService {
 
     private Game validateAndGetGame(String gameId) {
         return gameRepository.findGameById(gameId).orElseThrow(
-                () -> new IllegalArgumentException(STR. "No such game: \{ gameId }" )
+                () -> new IllegalArgumentException("No such game: %s".formatted(gameId) )
         );
     }
 
@@ -126,10 +126,10 @@ public class GameServiceImpl implements GameService {
     public void lobbyExistsAndPlayerIsDifferent(String gameId, Long playerTwoId) {
         Optional<Game> game = gameRepository.findGameById(gameId);
         if (game.isEmpty()) {
-            throw new IllegalArgumentException(STR. "There is no lobby for game : \{ gameId }" );
+            throw new IllegalArgumentException("There is no lobby for game : %s".formatted(gameId) );
         }
         if (Objects.equals(game.get().getPlayerOne().getId(), playerTwoId)) {
-            throw new IllegalArgumentException(STR. "The game \{ gameId } already has player \{ playerTwoId } " );
+            throw new IllegalArgumentException("The game %s already has player %d".formatted(gameId, playerTwoId));
         }
     }
 }

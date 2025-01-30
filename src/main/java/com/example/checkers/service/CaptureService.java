@@ -61,7 +61,7 @@ public class CaptureService {
 
         Sets.SetView<BoardServiceImpl.Position> intersection = Sets.intersection(startNeighbors, destNeighbors);
         if (intersection.size() != 1) {
-            throw new IllegalStateException(STR. "Failed to determine capture: \{ start }x\{ dest }" );
+            throw new IllegalStateException("Failed to determine capture: %sx%s".formatted(start, dest) );
         }
 
         BoardServiceImpl.Position capturePos = intersection.stream().findFirst().get();

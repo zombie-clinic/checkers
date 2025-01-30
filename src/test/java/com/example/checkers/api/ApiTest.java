@@ -66,6 +66,6 @@ class ApiTest {
                         MockMvcRequestBuilders.get("/games?progress=LOBBY,STARTING,ONGOING,FINISHED,ARCHIVED")
                 ).andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(2));
+                .andExpect(jsonPath("$.length()").value(3));
     }
 }

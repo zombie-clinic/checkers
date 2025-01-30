@@ -48,11 +48,11 @@ public class ExampleGameIT {
 
         JsonNode actualState = jsonMapper.readTree(
                 """
-                {
-                    "dark":[1,2,3,4,5,6,7,8,9,10,11,12],
-                    "light":[21,22,23,24,25,26,27,28,29,30,31,32]
-                }
-                """
+                        {
+                            "dark":[1,2,3,4,5,6,7,8,9,10,11,12],
+                            "light":[21,22,23,24,25,26,27,28,29,30,31,32]
+                        }
+                        """
         );
 
         // 1
@@ -163,14 +163,14 @@ public class ExampleGameIT {
     }
 
     private String makeMove(String gameId, Side side, String move, JsonNode state, int playerId) throws Exception {
-        String url = STR. "/games/\{ gameId }/moves" ;
+        String url = "/games/%s/moves".formatted(gameId);
 
         var jsonMapper = new ObjectMapper();
         var sideValue = jsonMapper.writeValueAsString(side);
         var moveValue = jsonMapper.writeValueAsString(move);
         var stateValue = jsonMapper.writeValueAsString(state);
 
-        String content = STR. "{\"side\":\{ sideValue },\"move\":\{ moveValue },\"state\":\{ stateValue },\"playerId\":\{ playerId }}" ;
+        String content = "{\"side\":%s,\"move\":%s },\"state\":%s,\"playerId\":%d}".formatted(sideValue, moveValue, stateValue, playerId);
         var put = put(url).contentType(APPLICATION_JSON).content(content);
         return mockMvc.perform(put)
                 .andReturn()
