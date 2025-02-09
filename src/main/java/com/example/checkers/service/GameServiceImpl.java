@@ -1,8 +1,9 @@
 package com.example.checkers.service;
 
-import com.example.checkers.domain.*;
+import com.example.checkers.domain.Game;
+import com.example.checkers.domain.GameProgress;
+import com.example.checkers.domain.Player;
 import com.example.checkers.model.GameResponse;
-import com.example.checkers.model.MoveResponse;
 import com.example.checkers.persistence.GameRepository;
 import com.example.checkers.persistence.MoveRepository;
 import com.example.checkers.persistence.PlayerRepository;
@@ -15,7 +16,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.example.checkers.domain.Checkerboard.getStartingState;
 import static com.example.checkers.domain.GameProgress.LOBBY;
 
 
@@ -73,14 +73,6 @@ public class GameServiceImpl implements GameService {
             throw new IllegalArgumentException("No such player, couldn't start game.");
         }
         return player.get();
-    }
-
-    private MoveResponse generateFirstMoveResponse(String gameId) {
-        var response = new MoveResponse();
-        response.setGameId(gameId);
-        response.setState(getStartingState());
-        response.setPossibleMoves(boardService.getPossibleMoves(Side.LIGHT, Checkerboard.getStartingState()));
-        return response;
     }
 
     @Override

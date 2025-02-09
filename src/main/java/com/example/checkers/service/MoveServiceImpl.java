@@ -12,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 
-import javax.validation.constraints.NotNull;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -140,17 +139,25 @@ public class MoveServiceImpl implements MoveService {
         var moveList = moveRepository.findAllByGameId(gameId);
         if (moveList.isEmpty()) {
             var state = getStartingState();
-            return new MoveResponse(gameId, state, boardService.getPossibleMoves(side, state));
+            return new MoveResponse(gameId, state, side.name(), getSimplifiedPossibleMoves(boardService.getPossibleMoves(side, state)));
         }
         var state = getCurrentState(moveList);
         // TODO Fix it, need to determine whose move it is
         Map<Integer, List<PossibleMove>> possibleMoves = boardService.getPossibleMoves(side, state);
-        return new MoveResponse(gameId, state, possibleMoves);
+        return new MoveResponse(gameId, state, side.name(), getSimplifiedPossibleMoves(possibleMoves));
     }
 
+    private Map<Integer, List<PossibleMoveSimplified>> getSimplifiedPossibleMoves(Map<Integer, List<PossibleMove>> moves) {
+       Map<Integer, List<PossibleMoveSimplified>> map = new HashMap<>();
+       for (Map.Entry<Integer, List<PossibleMove>> entry: moves.entrySet()) {
+           map.put(entry.getKey(), entry.getValue().stream()
+                   .map(PossibleMoveSimplified::fromMove).toList());
+       }
+       return map;
+}
     public MoveResponse generateMoveResponse(String gameId, Side side, State afterCaptureState) {
         Map<Integer, List<PossibleMove>> possibleMoves = boardService.getPossibleMoves(side, afterCaptureState);
-        return new MoveResponse(gameId, afterCaptureState, possibleMoves);
+        return new MoveResponse(gameId, afterCaptureState, side.name(), getSimplifiedPossibleMoves(possibleMoves));
     }
 
 
