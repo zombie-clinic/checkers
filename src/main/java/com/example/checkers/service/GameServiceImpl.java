@@ -133,7 +133,7 @@ public class GameServiceImpl implements GameService {
         if (lastMoveId.isEmpty()) {
             return Side.LIGHT;
         }
-        Move lastMove = moves.get(lastMoveId.get().intValue() - 1);
+        Move lastMove = moves.getLast();
         return Side.valueOf(lastMove.getSide()) == Side.LIGHT ? Side.DARK : Side.LIGHT;
     }
 }
