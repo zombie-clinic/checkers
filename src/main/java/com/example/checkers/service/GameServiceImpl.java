@@ -6,6 +6,7 @@ import com.example.checkers.persistence.GameRepository;
 import com.example.checkers.persistence.MoveRepository;
 import com.example.checkers.persistence.PlayerRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 import static com.example.checkers.domain.GameProgress.LOBBY;
 
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class GameServiceImpl implements GameService {
@@ -131,7 +133,7 @@ public class GameServiceImpl implements GameService {
         if (lastMoveId.isEmpty()) {
             return Side.LIGHT;
         }
-        Move lastMove = moves.get(Math.toIntExact(lastMoveId.get()));
+        Move lastMove = moves.get(lastMoveId.get().intValue() - 1);
         return Side.valueOf(lastMove.getSide()) == Side.LIGHT ? Side.DARK : Side.LIGHT;
     }
 }
