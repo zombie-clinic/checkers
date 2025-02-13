@@ -1,5 +1,6 @@
 package com.example.checkers.service;
 
+import com.example.checkers.domain.Side;
 import com.example.checkers.model.GameResponse;
 
 import java.util.List;
@@ -17,4 +18,6 @@ public interface GameService {
     boolean isGameValid(String uuid);
 
     void lobbyExistsAndPlayerIsDifferent(String gameId, Long playerId);
+
+    Side getCurrentSide(String gameId);
 }

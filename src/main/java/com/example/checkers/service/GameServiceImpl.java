@@ -1,8 +1,6 @@
 package com.example.checkers.service;
 
-import com.example.checkers.domain.Game;
-import com.example.checkers.domain.GameProgress;
-import com.example.checkers.domain.Player;
+import com.example.checkers.domain.*;
 import com.example.checkers.model.GameResponse;
 import com.example.checkers.persistence.GameRepository;
 import com.example.checkers.persistence.MoveRepository;
@@ -11,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -123,5 +122,16 @@ public class GameServiceImpl implements GameService {
         if (Objects.equals(game.get().getPlayerOne().getId(), playerTwoId)) {
             throw new IllegalArgumentException("The game %s already has player %d".formatted(gameId, playerTwoId));
         }
+    }
+
+    @Override
+    public Side getCurrentSide(String gameId) {
+        List<Move> moves = moveRepository.findAllByGameId(gameId);
+        Optional<Long> lastMoveId = moves.stream().map(Move::getId).max(Comparator.naturalOrder());
+        if (lastMoveId.isEmpty()) {
+            return Side.LIGHT;
+        }
+        Move lastMove = moves.get(Math.toIntExact(lastMoveId.get()));
+        return Side.valueOf(lastMove.getSide()) == Side.LIGHT ? Side.DARK : Side.LIGHT;
     }
 }

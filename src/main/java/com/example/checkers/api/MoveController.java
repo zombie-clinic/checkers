@@ -24,7 +24,8 @@ public class MoveController implements MoveApi {
     @Override
     public ResponseEntity<MoveResponse> getCurrentState(String gameId) {
         if (gameService.isGameValid(gameId)) {
-            return ok(moveService.generateMoveResponse(gameId, Side.DARK));
+            Side side = gameService.getCurrentSide(gameId);
+            return ok(moveService.generateMoveResponse(gameId, side));
         }
         throw new IllegalArgumentException(String.format("Game %s deleted or not started", gameId));
     }
