@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class BoardServiceImpl implements BoardService {
@@ -34,7 +35,13 @@ public class BoardServiceImpl implements BoardService {
 
         for (Integer start : checkerboard.getSide(side)) {
 
-            Square square = checkerboard.getSquareMap().get(start);
+            Square square1 = checkerboard.getSquareMap().get(start);
+            Square square = new Square(
+                    start, side == Side.DARK ? PieceType.DARK : PieceType.LIGHT,
+                    square1.neighborSquares().stream()
+                            .filter(el -> side == Side.DARK ? el > start : el < start)
+                            .toList()
+            );
 
             // empty neighbors
             square.neighborSquares().stream()
@@ -42,7 +49,8 @@ public class BoardServiceImpl implements BoardService {
                     .filter(dest -> dest.pieceType().equals(PieceType.EMPTY))
                     .forEach(dest -> moves
                             .computeIfAbsent(start, v -> new ArrayList<>())
-                            .add(new PossibleMove(side, start, dest.number(), true, true)
+                            // FIXME isCapture, isTerminal
+                            .add(new PossibleMove(side, start, dest.number(), false, true)
                             ));
 
             // busy of same color - skip
@@ -65,6 +73,9 @@ public class BoardServiceImpl implements BoardService {
         }
 
         for (var entry : maybeMoves.entrySet()) {
+
+
+
             for (PossibleMove possibleMove : entry.getValue()) {
 
                 Square square = checkerboard.getSquareMap().get(possibleMove.destination());
@@ -73,6 +84,8 @@ public class BoardServiceImpl implements BoardService {
                 square.neighborSquares().stream()
                         .map(captureDest -> checkerboard.getSquareMap().get(captureDest))
                         .filter(captureDest -> captureDest.pieceType().equals(PieceType.EMPTY))
+                        .filter(captureDest -> Math.abs(captureDest.number() - possibleMove.position()) != 1)
+                        .filter(captureDest -> Math.abs(captureDest.number() - possibleMove.position()) != 8)
                         .forEach(captureDest -> moves
                                 .computeIfAbsent(possibleMove.position(), v -> new ArrayList<>())
                                 .add(new PossibleMove(side, possibleMove.position(), captureDest.number(), true, null)
