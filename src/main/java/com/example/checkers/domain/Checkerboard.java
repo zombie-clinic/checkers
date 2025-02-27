@@ -20,13 +20,6 @@ public class Checkerboard {
     @Getter
     Map<Integer, Square> squareMap;
 
-    public List<Integer> getSide(Side side) {
-        return switch (side) {
-            case DARK -> darkPieces;
-            case LIGHT -> lightPieces;
-        };
-    }
-
     public Checkerboard(List<Integer> darkPieces, List<Integer> lightPieces) {
         this.darkPieces = darkPieces;
         this.lightPieces = lightPieces;
@@ -35,11 +28,14 @@ public class Checkerboard {
         squareMap = getPlayableSquaresList().stream()
                 .collect(Collectors.toMap(Function.identity(), (Integer v) -> {
                     if (darkPieces.contains(v)) {
-                        return new Square(v, PieceType.DARK, BoardService.getAdjacentSquaresNumbers(v));
+                        return new Square(v, PieceType.DARK,
+                                BoardService.getAdjacentSquaresNumbers(v));
                     } else if (lightPieces.contains(v)) {
-                        return new Square(v, PieceType.LIGHT, BoardService.getAdjacentSquaresNumbers(v));
+                        return new Square(v, PieceType.LIGHT,
+                                BoardService.getAdjacentSquaresNumbers(v));
                     } else {
-                        return new Square(v, PieceType.EMPTY, BoardService.getAdjacentSquaresNumbers(v));
+                        return new Square(v, PieceType.EMPTY,
+                                BoardService.getAdjacentSquaresNumbers(v));
                     }
                 }));
     }
@@ -67,11 +63,26 @@ public class Checkerboard {
         return new ArrayList<>(IntStream.rangeClosed(1, 32).boxed().toList());
     }
 
+    public static Checkerboard state(List<Integer> darkPieces, List<Integer> lightPieces) {
+        return new Checkerboard(darkPieces, lightPieces);
+    }
+
+    public List<Integer> getSide(Side side) {
+        return switch (side) {
+            case DARK -> darkPieces;
+            case LIGHT -> lightPieces;
+        };
+    }
+
     public boolean isDark(Integer key) {
         return squareMap.get(key).pieceType().equals(PieceType.DARK);
     }
 
     public boolean isLight(Integer key) {
         return squareMap.get(key).pieceType().equals(PieceType.LIGHT);
+    }
+    
+    public boolean isEmptyCell(int num) {
+        return !darkPieces.contains(num) && !lightPieces.contains(num);
     }
 }

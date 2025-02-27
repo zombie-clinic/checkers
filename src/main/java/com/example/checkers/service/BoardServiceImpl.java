@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 public class BoardServiceImpl implements BoardService {
@@ -73,9 +72,6 @@ public class BoardServiceImpl implements BoardService {
         }
 
         for (var entry : maybeMoves.entrySet()) {
-
-
-
             for (PossibleMove possibleMove : entry.getValue()) {
 
                 Square square = checkerboard.getSquareMap().get(possibleMove.destination());
