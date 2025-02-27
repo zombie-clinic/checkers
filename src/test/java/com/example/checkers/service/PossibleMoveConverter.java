@@ -1,4 +1,4 @@
-package com.example.checkers.model;
+package com.example.checkers.service;
 
 import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.params.converter.ArgumentConversionException;

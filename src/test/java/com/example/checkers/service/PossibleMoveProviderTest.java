@@ -1,8 +1,9 @@
-package com.example.checkers.model;
+package com.example.checkers.service;
 
 import com.example.checkers.domain.Checkerboard;
 import com.example.checkers.domain.PossibleMove;
 import com.example.checkers.domain.Side;
+import com.example.checkers.service.PossibleMoveProvider;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
