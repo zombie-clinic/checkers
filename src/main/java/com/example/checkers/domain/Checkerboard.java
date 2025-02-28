@@ -1,20 +1,15 @@
 package com.example.checkers.domain;
 
 import com.example.checkers.model.State;
-import lombok.Getter;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 public class Checkerboard {
 
     private final List<Integer> darkPieces;
 
     private final List<Integer> lightPieces;
-
-    @Getter
-    Map<Integer, Square> squareMap;
 
     public Checkerboard(List<Integer> darkPieces, List<Integer> lightPieces) {
         this.darkPieces = darkPieces;
