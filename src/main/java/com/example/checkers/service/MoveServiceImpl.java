@@ -29,8 +29,6 @@ public class MoveServiceImpl implements MoveService {
 
     private final PlayerRepository playerRepository;
 
-    private final CaptureService captureService;
-
     private final PossibleMoveProvider possibleMoveProvider;
 
     private static State getCurrentState(List<Move> moveList) {
@@ -102,7 +100,9 @@ public class MoveServiceImpl implements MoveService {
         }
 
         if (isCapture(moveRequest)) {
-            State afterCaptureState = captureService.generateAfterCaptureState(moveRequest);
+
+            State afterCaptureState = generateAfterCaptureState(gameId, moveRequest);
+
             Move move = new Move(game, player, moveRequest.getSide(), moveRequest.getMove(),
                     afterCaptureState.getDark().stream().map(String::valueOf).collect(Collectors.joining(",")),
                     afterCaptureState.getLight().stream().map(String::valueOf).collect(Collectors.joining(",")));
@@ -132,6 +132,58 @@ public class MoveServiceImpl implements MoveService {
 
         // TODO MoveResponse should contain board state and should not contain a move
         return generateMoveResponse(gameId, Side.valueOf(moveRequest.getSide()));
+    }
+
+    private State generateAfterCaptureState(String gameId, MoveRequest moveRequest) {
+
+        // TODO Database call could be done earlier
+        State state = getCurrentState(moveRepository.findAllByGameId(gameId));
+        State calculated;
+
+        Integer start = Integer.valueOf(moveRequest.getMove().split("[x\\-]")[0]);
+        Integer dest = Integer.valueOf(moveRequest.getMove().split("[x\\-]")[1]);
+
+
+        if (Side.valueOf(moveRequest.getSide()) == DARK) {
+            var darkPieces = new ArrayList<>(state.getDark());
+            var lightPieces = new ArrayList<>(state.getLight());
+            darkPieces.remove(darkPieces.indexOf(start));
+            darkPieces.add(dest);
+            if (moveRequest.getMove().contains("x")) {
+                lightPieces.remove(lightPieces.indexOf(determineCapturedPiece(start, dest)));
+            }
+            calculated = new State(
+                    darkPieces, lightPieces
+            );
+        } else {
+
+            var darkPieces = new ArrayList<>(state.getDark());
+            var lightPieces = new ArrayList<>(state.getLight());
+            lightPieces.remove(lightPieces.indexOf(start));
+            lightPieces.add(dest);
+            if (moveRequest.getMove().contains("x")) {
+                darkPieces.remove(darkPieces.indexOf(determineCapturedPiece(start, dest)));
+            }
+            calculated = new State(
+                    darkPieces, lightPieces
+            );
+
+        }
+
+        return calculated;
+    }
+
+    private int determineCapturedPiece(Integer start, Integer dest) {
+        for (LinkedList<Integer> diagonal : Checkerboard.getDiagonals()) {
+            if (diagonal.contains(start) && diagonal.contains(dest)) {
+                int startIdx = diagonal.indexOf(start);
+                // counting from the top of the board
+                return diagonal.get(startIdx - 1);
+            }
+        }
+        throw new IllegalStateException(String.format("Trying to determine impossible capture: " +
+                        "%s%s",
+                start, dest));
     }
 
     private boolean isCapture(MoveRequest moveRequest) {
