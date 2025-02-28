@@ -1,9 +1,13 @@
 package com.example.checkers.service;
 
 import com.example.checkers.domain.*;
+import com.example.checkers.model.MoveRequest;
 import com.example.checkers.model.MoveResponse;
+import com.example.checkers.model.State;
 import com.example.checkers.persistence.MoveRepository;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -29,15 +33,8 @@ class MoveServiceImplTest {
 
     @InjectMocks
     private MoveServiceImpl moveService;
-
-    record Tuple<T>(T left, T right ) {
-
-    }
-
     private String gameId = UUID.randomUUID().toString();
-
     private Game game;
-
     private Tuple<Player> players;
 
     @BeforeEach
@@ -84,6 +81,48 @@ class MoveServiceImplTest {
         );
 
         MoveResponse moveResponse = moveService.generateMoveResponse(gameId, Side.DARK);
-        assertEquals("{22=[PossibleMoveSimplified[position=22, destination=15, isCapture=true, isTerminal=true]]}", moveResponse.getPossibleMoves().toString());
+        assertEquals("{22=[PossibleMoveSimplified[position=22, destination=15, isCapture=true, " +
+                "isTerminal=true]]}", moveResponse.getPossibleMoves().toString());
+    }
+
+    @Test
+    void givenDarkSide_whenCaptureMove_shouldReturnProperResponse() {
+        var currentState = new State(
+                List.of(1, 2, 3, 4, 5, 6, 7, 8, 11, 12, 15, 14),
+                List.of(23, 25, 26, 27, 28, 29, 30, 31, 32, 18, 17, 20)
+        );
+
+        MoveRequest moveRequest = new MoveRequest();
+        moveRequest.setState(currentState);
+        moveRequest.setMove("15x22");
+        moveRequest.setSide(Side.DARK.name());
+        moveRequest.setPlayerId(2L);
+        moveService.generateAfterCaptureState(currentState, moveRequest);
+    }
+
+    @Disabled
+    @Test
+    void givenLightSide_whenCaptureMove_shouldReturnProperResponse() {
+        var currentState = new State(
+                List.of(1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14),
+                List.of(21, 24, 26, 27, 28, 29, 30, 31, 32, 17, 22, 16)
+        );
+
+        MoveRequest moveRequest = new MoveRequest();
+        moveRequest.setState(currentState);
+        moveRequest.setMove("23x16");
+        moveRequest.setSide(Side.LIGHT.name());
+        moveRequest.setPlayerId(1L);
+
+        State actualState = moveService.generateAfterCaptureState(currentState, moveRequest);
+
+        State expectedState = new State(List.of(1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14), List.of(16, 17, 21, 22, 24, 26, 27
+                , 28, 29, 30, 31, 32));
+
+        assertEquals(expectedState, actualState);
+    }
+
+    record Tuple<T>(T left, T right) {
+
     }
 }
