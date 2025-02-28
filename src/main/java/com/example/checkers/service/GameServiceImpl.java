@@ -30,10 +30,6 @@ public class GameServiceImpl implements GameService {
 
     private final PlayerRepository playerRepository;
 
-    private final BoardService boardService;
-
-    private final MoveService moveService;
-
     @Transactional
     @Override
     public GameResponse startLobby(Long playerId, String side) {

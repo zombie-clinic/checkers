@@ -29,9 +29,33 @@ public class MoveServiceImpl implements MoveService {
 
     private final PlayerRepository playerRepository;
 
-    private final BoardService boardService;
+    private final PossibleMoveProvider possibleMoveProvider;
 
-    private final CaptureService captureService;
+    private static State getCurrentState(List<Move> moveList) {
+        String dark = moveList.getLast().getDark();
+        String light = moveList.getLast().getLight();
+
+        return new State(
+                Arrays.stream(dark.split(",")).map(Integer::valueOf).toList(),
+                Arrays.stream(light.split(",")).map(Integer::valueOf).toList());
+    }
+
+    @SneakyThrows
+    // TODO moves should not be empty
+    private static boolean isInconsistentGame(MoveRequest moveRequest, List<Move> moves) {
+        State clientState = moveRequest.getState();
+        State serverState = getCurrentState(moves);
+        return !amountOfFiguresMatches(clientState, serverState) || !positionsMatch(clientState,
+                serverState);
+    }
+
+    private static boolean positionsMatch(State clientState, State serverState) {
+        return new HashSet<>(serverState.getDark()).containsAll(clientState.getDark()) && new HashSet<>(serverState.getLight()).containsAll(clientState.getLight());
+    }
+
+    private static boolean amountOfFiguresMatches(State requestedCheck, State current) {
+        return requestedCheck.getDark().size() == current.getDark().size() && requestedCheck.getLight().size() == current.getLight().size();
+    }
 
     // TODO Use mapper or json parser to validate move request, e.g.
     @Transactional
@@ -71,17 +95,21 @@ public class MoveServiceImpl implements MoveService {
         }
 
         if (isInconsistentGame(moveRequest, moves)) {
-            throw new IllegalStateException("Inconsistent game, provide a valid move, here is you previous state: []");
+            throw new IllegalStateException("Inconsistent game, provide a valid move, here is you" +
+                    " previous state: []");
         }
 
         if (isCapture(moveRequest)) {
-            State afterCaptureState = captureService.generateAfterCaptureState(moveRequest);
+
+            State afterCaptureState = generateAfterCaptureState(gameId, moveRequest);
+
             Move move = new Move(game, player, moveRequest.getSide(), moveRequest.getMove(),
                     afterCaptureState.getDark().stream().map(String::valueOf).collect(Collectors.joining(",")),
                     afterCaptureState.getLight().stream().map(String::valueOf).collect(Collectors.joining(",")));
 
             moveRepository.save(move);
-            return generateMoveResponse(gameId, Side.valueOf(moveRequest.getSide()), afterCaptureState);
+            return generateMoveResponse(gameId, Side.valueOf(moveRequest.getSide()),
+                    afterCaptureState);
         }
 
         // regular move
@@ -99,10 +127,63 @@ public class MoveServiceImpl implements MoveService {
                 // TODO Introduce Move builder
                 // TODO Calculate state
 
-                new Move(game, player, moveRequest.getSide(), moveRequest.getMove(), moveRequest.getState().getDark().stream().map(String::valueOf).collect(Collectors.joining(",")), moveRequest.getState().getLight().stream().map(String::valueOf).collect(Collectors.joining(","))));
+                new Move(game, player, moveRequest.getSide(), moveRequest.getMove(),
+                        moveRequest.getState().getDark().stream().map(String::valueOf).collect(Collectors.joining(",")), moveRequest.getState().getLight().stream().map(String::valueOf).collect(Collectors.joining(","))));
 
         // TODO MoveResponse should contain board state and should not contain a move
         return generateMoveResponse(gameId, Side.valueOf(moveRequest.getSide()));
+    }
+
+    private State generateAfterCaptureState(String gameId, MoveRequest moveRequest) {
+
+        // TODO Database call could be done earlier
+        State state = getCurrentState(moveRepository.findAllByGameId(gameId));
+        State calculated;
+
+        Integer start = Integer.valueOf(moveRequest.getMove().split("[x\\-]")[0]);
+        Integer dest = Integer.valueOf(moveRequest.getMove().split("[x\\-]")[1]);
+
+
+        if (Side.valueOf(moveRequest.getSide()) == DARK) {
+            var darkPieces = new ArrayList<>(state.getDark());
+            var lightPieces = new ArrayList<>(state.getLight());
+            darkPieces.remove(darkPieces.indexOf(start));
+            darkPieces.add(dest);
+            if (moveRequest.getMove().contains("x")) {
+                lightPieces.remove(lightPieces.indexOf(determineCapturedPiece(start, dest)));
+            }
+            calculated = new State(
+                    darkPieces, lightPieces
+            );
+        } else {
+
+            var darkPieces = new ArrayList<>(state.getDark());
+            var lightPieces = new ArrayList<>(state.getLight());
+            lightPieces.remove(lightPieces.indexOf(start));
+            lightPieces.add(dest);
+            if (moveRequest.getMove().contains("x")) {
+                darkPieces.remove(darkPieces.indexOf(determineCapturedPiece(start, dest)));
+            }
+            calculated = new State(
+                    darkPieces, lightPieces
+            );
+
+        }
+
+        return calculated;
+    }
+
+    private int determineCapturedPiece(Integer start, Integer dest) {
+        for (LinkedList<Integer> diagonal : Checkerboard.getDiagonals()) {
+            if (diagonal.contains(start) && diagonal.contains(dest)) {
+                int startIdx = diagonal.indexOf(start);
+                // counting from the top of the board
+                return diagonal.get(startIdx - 1);
+            }
+        }
+        throw new IllegalStateException(String.format("Trying to determine impossible capture: " +
+                        "%s%s",
+                start, dest));
     }
 
     private boolean isCapture(MoveRequest moveRequest) {
@@ -135,55 +216,38 @@ public class MoveServiceImpl implements MoveService {
     // User becomes Player when a game starts, Player has a user id and a side
     @Override
     public MoveResponse generateMoveResponse(String gameId, Side side) {
-
         var moveList = moveRepository.findAllByGameId(gameId);
         if (moveList.isEmpty()) {
             var state = getStartingState();
-            return new MoveResponse(gameId, state, side.name(), getSimplifiedPossibleMoves(boardService.getPossibleMoves(side, state)));
+            return new MoveResponse(gameId, state, side.name(),
+                    getSimplifiedPossibleMoves(possibleMoveProvider.getPossibleMovesMap(side,
+                            Checkerboard.state(state.getDark(), state.getLight()))));
         }
         var state = getCurrentState(moveList);
-        // TODO Fix it, need to determine whose move it is
-        Map<Integer, List<PossibleMove>> possibleMoves = boardService.getPossibleMoves(side, state);
-        return new MoveResponse(gameId, state, side.name(), getSimplifiedPossibleMoves(possibleMoves));
+        Map<Integer, List<PossibleMove>> possibleMoves = possibleMoveProvider.getPossibleMovesMap(
+                side, Checkerboard.state(state.getDark(), state.getLight())
+        );
+        return new MoveResponse(gameId, state, side.name(),
+                getSimplifiedPossibleMoves(possibleMoves));
     }
 
-    private Map<Integer, List<PossibleMoveSimplified>> getSimplifiedPossibleMoves(Map<Integer, List<PossibleMove>> moves) {
-       Map<Integer, List<PossibleMoveSimplified>> map = new HashMap<>();
-       for (Map.Entry<Integer, List<PossibleMove>> entry: moves.entrySet()) {
-           map.put(entry.getKey(), entry.getValue().stream()
-                   .map(PossibleMoveSimplified::fromMove).toList());
-       }
-       return map;
-}
+    private Map<Integer, List<PossibleMoveSimplified>> getSimplifiedPossibleMoves(Map<Integer,
+            List<PossibleMove>> moves) {
+        Map<Integer, List<PossibleMoveSimplified>> map = new HashMap<>();
+        for (Map.Entry<Integer, List<PossibleMove>> entry : moves.entrySet()) {
+            map.put(entry.getKey(), entry.getValue().stream()
+                    .map(PossibleMoveSimplified::fromMove).toList());
+        }
+        return map;
+    }
+
     public MoveResponse generateMoveResponse(String gameId, Side side, State afterCaptureState) {
-        Map<Integer, List<PossibleMove>> possibleMoves = boardService.getPossibleMoves(side, afterCaptureState);
-        return new MoveResponse(gameId, afterCaptureState, side.name(), getSimplifiedPossibleMoves(possibleMoves));
-    }
-
-
-
-    private static State getCurrentState(List<Move> moveList) {
-        String dark = moveList.getLast().getDark();
-        String light = moveList.getLast().getLight();
-
-        return new State(
-                Arrays.stream(dark.split(",")).map(Integer::valueOf).toList(),
-                Arrays.stream(light.split(",")).map(Integer::valueOf).toList());
-    }
-
-    @SneakyThrows
-    // TODO moves should not be empty
-    private static boolean isInconsistentGame(MoveRequest moveRequest, List<Move> moves) {
-        State clientState = moveRequest.getState();
-        State serverState = getCurrentState(moves);
-        return !amountOfFiguresMatches(clientState, serverState) || !positionsMatch(clientState, serverState);
-    }
-
-    private static boolean positionsMatch(State clientState, State serverState) {
-        return new HashSet<>(serverState.getDark()).containsAll(clientState.getDark()) && new HashSet<>(serverState.getLight()).containsAll(clientState.getLight());
-    }
-
-    private static boolean amountOfFiguresMatches(State requestedCheck, State current) {
-        return requestedCheck.getDark().size() == current.getDark().size() && requestedCheck.getLight().size() == current.getLight().size();
+        Map<Integer, List<PossibleMove>> possibleMoves =
+                possibleMoveProvider.getPossibleMovesMap(side, Checkerboard.state(
+                        afterCaptureState.getDark(),
+                        afterCaptureState.getLight()
+                ));
+        return new MoveResponse(gameId, afterCaptureState, side.name(),
+                getSimplifiedPossibleMoves(possibleMoves));
     }
 }
