@@ -131,6 +131,7 @@ public class PossibleMoveProvider {
         }
 
 
+        // TODO Refactor duplication
         if (diagonal.contains(pieceNum)) {
             // for backwards moves only capture check is performed
             var dr = diagonal.reversed();

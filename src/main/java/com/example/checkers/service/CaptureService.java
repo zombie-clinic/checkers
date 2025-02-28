@@ -14,57 +14,6 @@ import java.util.*;
 @Service
 public class CaptureService {
 
-    static List<CaptureService.Position> getAdjacentSquares(Integer square) {
-        Integer[] ij = getIJ(square);
-        Integer i = ij[0];
-        Integer j = ij[1];
-
-        List<CaptureService.Position> positions = new ArrayList<>();
-        positions.add(new Position(i - 1, j - 1));
-        positions.add(new Position(i + 1, j - 1));
-        positions.add(new Position(i - 1, j + 1));
-        positions.add(new Position(i + 1, j + 1));
-
-        return positions.stream().filter(CaptureService::isWithinBoard).toList();
-    }
-
-    public static List<Integer> getAdjacentSquaresNumbers(Integer square) {
-        Integer[] ij = getIJ(square);
-        Integer i = ij[0];
-        Integer j = ij[1];
-
-        List<Position> positions = new ArrayList<>();
-        positions.add(new Position(i - 1, j - 1));
-        positions.add(new Position(i + 1, j - 1));
-        positions.add(new Position(i - 1, j + 1));
-        positions.add(new Position(i + 1, j + 1));
-
-        return positions.stream()
-                .filter(CaptureService::isWithinBoard)
-                .toList().stream()
-                .map(p -> Checkerboard.getAllSquaresArray()[p.i()][p.j()])
-                .toList();
-    }
-
-    static Integer[] getIJ(Integer cell) {
-        for (int i = 0; i < Checkerboard.getAllSquaresArray().length; i++) {
-            int j = Arrays.asList(Checkerboard.getAllSquaresArray()[i]).indexOf(cell);
-            if (j != -1) {
-                return new Integer[]{i, j};
-            }
-        }
-        throw new IllegalArgumentException("Can't find provided cell: " + cell);
-    }
-
-    static boolean isWithinBoard(Position position) {
-        try {
-            Integer i = Checkerboard.getAllSquaresArray()[position.i()][position.j()];
-            return true;
-        } catch (ArrayIndexOutOfBoundsException e) {
-            return false;
-        }
-    }
-
     public State generateAfterCaptureState(MoveRequest moveRequest) {
         List<Integer> black = moveRequest.getState().getDark();
         List<Integer> white = moveRequest.getState().getLight();
@@ -83,6 +32,9 @@ public class CaptureService {
             }
         };
     }
+
+
+    // Private methods
 
     private AfterCaptureState process(List<Integer> attacker, List<Integer> defender,
                                       MoveRecord moveRecord) {
@@ -112,20 +64,49 @@ public class CaptureService {
         return Checkerboard.getAllSquaresArray()[capturePos.i()][capturePos.j()];
     }
 
-    record AfterCaptureState(List<Integer> attacker, List<Integer> defender) {
+    private record AfterCaptureState(List<Integer> attacker, List<Integer> defender) {
 
     }
-
-    record MoveRecord(Integer start, Integer dest) {
+   private record MoveRecord(Integer start, Integer dest) {
         static MoveRecord createMoveRecord(String captureString) {
             String[] pos = captureString.split("x");
             return new MoveRecord(Integer.valueOf(pos[0]), Integer.valueOf(pos[1]));
         }
-    }
 
-    public record Position(int i, int j) {
 
     }
+    private record Position(int i, int j) {
 
+    }
+    private static boolean isWithinBoard(Position position) {
+        try {
+            Integer i = Checkerboard.getAllSquaresArray()[position.i()][position.j()];
+            return true;
+        } catch (ArrayIndexOutOfBoundsException e) {
+            return false;
+        }
+    }
+    private static Integer[] getIJ(Integer cell) {
+        for (int i = 0; i < Checkerboard.getAllSquaresArray().length; i++) {
+            int j = Arrays.asList(Checkerboard.getAllSquaresArray()[i]).indexOf(cell);
+            if (j != -1) {
+                return new Integer[]{i, j};
+            }
+        }
+        throw new IllegalArgumentException("Can't find provided cell: " + cell);
+    }
 
+    private static List<CaptureService.Position> getAdjacentSquares(Integer square) {
+        Integer[] ij = getIJ(square);
+        Integer i = ij[0];
+        Integer j = ij[1];
+
+        List<CaptureService.Position> positions = new ArrayList<>();
+        positions.add(new Position(i - 1, j - 1));
+        positions.add(new Position(i + 1, j - 1));
+        positions.add(new Position(i - 1, j + 1));
+        positions.add(new Position(i + 1, j + 1));
+
+        return positions.stream().filter(CaptureService::isWithinBoard).toList();
+    }
 }
