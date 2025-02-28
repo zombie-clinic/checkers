@@ -29,11 +29,35 @@ public class MoveServiceImpl implements MoveService {
 
     private final PlayerRepository playerRepository;
 
-    private final BoardService boardService;
-
     private final CaptureService captureService;
 
     private final PossibleMoveProvider possibleMoveProvider;
+
+    private static State getCurrentState(List<Move> moveList) {
+        String dark = moveList.getLast().getDark();
+        String light = moveList.getLast().getLight();
+
+        return new State(
+                Arrays.stream(dark.split(",")).map(Integer::valueOf).toList(),
+                Arrays.stream(light.split(",")).map(Integer::valueOf).toList());
+    }
+
+    @SneakyThrows
+    // TODO moves should not be empty
+    private static boolean isInconsistentGame(MoveRequest moveRequest, List<Move> moves) {
+        State clientState = moveRequest.getState();
+        State serverState = getCurrentState(moves);
+        return !amountOfFiguresMatches(clientState, serverState) || !positionsMatch(clientState,
+                serverState);
+    }
+
+    private static boolean positionsMatch(State clientState, State serverState) {
+        return new HashSet<>(serverState.getDark()).containsAll(clientState.getDark()) && new HashSet<>(serverState.getLight()).containsAll(clientState.getLight());
+    }
+
+    private static boolean amountOfFiguresMatches(State requestedCheck, State current) {
+        return requestedCheck.getDark().size() == current.getDark().size() && requestedCheck.getLight().size() == current.getLight().size();
+    }
 
     // TODO Use mapper or json parser to validate move request, e.g.
     @Transactional
@@ -73,7 +97,8 @@ public class MoveServiceImpl implements MoveService {
         }
 
         if (isInconsistentGame(moveRequest, moves)) {
-            throw new IllegalStateException("Inconsistent game, provide a valid move, here is you previous state: []");
+            throw new IllegalStateException("Inconsistent game, provide a valid move, here is you" +
+                    " previous state: []");
         }
 
         if (isCapture(moveRequest)) {
@@ -83,7 +108,8 @@ public class MoveServiceImpl implements MoveService {
                     afterCaptureState.getLight().stream().map(String::valueOf).collect(Collectors.joining(",")));
 
             moveRepository.save(move);
-            return generateMoveResponse(gameId, Side.valueOf(moveRequest.getSide()), afterCaptureState);
+            return generateMoveResponse(gameId, Side.valueOf(moveRequest.getSide()),
+                    afterCaptureState);
         }
 
         // regular move
@@ -101,7 +127,8 @@ public class MoveServiceImpl implements MoveService {
                 // TODO Introduce Move builder
                 // TODO Calculate state
 
-                new Move(game, player, moveRequest.getSide(), moveRequest.getMove(), moveRequest.getState().getDark().stream().map(String::valueOf).collect(Collectors.joining(",")), moveRequest.getState().getLight().stream().map(String::valueOf).collect(Collectors.joining(","))));
+                new Move(game, player, moveRequest.getSide(), moveRequest.getMove(),
+                        moveRequest.getState().getDark().stream().map(String::valueOf).collect(Collectors.joining(",")), moveRequest.getState().getLight().stream().map(String::valueOf).collect(Collectors.joining(","))));
 
         // TODO MoveResponse should contain board state and should not contain a move
         return generateMoveResponse(gameId, Side.valueOf(moveRequest.getSide()));
@@ -140,52 +167,35 @@ public class MoveServiceImpl implements MoveService {
         var moveList = moveRepository.findAllByGameId(gameId);
         if (moveList.isEmpty()) {
             var state = getStartingState();
-            return new MoveResponse(gameId, state, side.name(), getSimplifiedPossibleMoves(boardService.getPossibleMoves(side, state)));
+            return new MoveResponse(gameId, state, side.name(),
+                    getSimplifiedPossibleMoves(possibleMoveProvider.getPossibleMovesMap(side,
+                            Checkerboard.state(state.getDark(), state.getLight()))));
         }
         var state = getCurrentState(moveList);
         Map<Integer, List<PossibleMove>> possibleMoves = possibleMoveProvider.getPossibleMovesMap(
                 side, Checkerboard.state(state.getDark(), state.getLight())
         );
-        return new MoveResponse(gameId, state, side.name(), getSimplifiedPossibleMoves(possibleMoves));
+        return new MoveResponse(gameId, state, side.name(),
+                getSimplifiedPossibleMoves(possibleMoves));
     }
 
-    private Map<Integer, List<PossibleMoveSimplified>> getSimplifiedPossibleMoves(Map<Integer, List<PossibleMove>> moves) {
-       Map<Integer, List<PossibleMoveSimplified>> map = new HashMap<>();
-       for (Map.Entry<Integer, List<PossibleMove>> entry: moves.entrySet()) {
-           map.put(entry.getKey(), entry.getValue().stream()
-                   .map(PossibleMoveSimplified::fromMove).toList());
-       }
-       return map;
-}
+    private Map<Integer, List<PossibleMoveSimplified>> getSimplifiedPossibleMoves(Map<Integer,
+            List<PossibleMove>> moves) {
+        Map<Integer, List<PossibleMoveSimplified>> map = new HashMap<>();
+        for (Map.Entry<Integer, List<PossibleMove>> entry : moves.entrySet()) {
+            map.put(entry.getKey(), entry.getValue().stream()
+                    .map(PossibleMoveSimplified::fromMove).toList());
+        }
+        return map;
+    }
+
     public MoveResponse generateMoveResponse(String gameId, Side side, State afterCaptureState) {
-        Map<Integer, List<PossibleMove>> possibleMoves = boardService.getPossibleMoves(side, afterCaptureState);
-        return new MoveResponse(gameId, afterCaptureState, side.name(), getSimplifiedPossibleMoves(possibleMoves));
-    }
-
-
-
-    private static State getCurrentState(List<Move> moveList) {
-        String dark = moveList.getLast().getDark();
-        String light = moveList.getLast().getLight();
-
-        return new State(
-                Arrays.stream(dark.split(",")).map(Integer::valueOf).toList(),
-                Arrays.stream(light.split(",")).map(Integer::valueOf).toList());
-    }
-
-    @SneakyThrows
-    // TODO moves should not be empty
-    private static boolean isInconsistentGame(MoveRequest moveRequest, List<Move> moves) {
-        State clientState = moveRequest.getState();
-        State serverState = getCurrentState(moves);
-        return !amountOfFiguresMatches(clientState, serverState) || !positionsMatch(clientState, serverState);
-    }
-
-    private static boolean positionsMatch(State clientState, State serverState) {
-        return new HashSet<>(serverState.getDark()).containsAll(clientState.getDark()) && new HashSet<>(serverState.getLight()).containsAll(clientState.getLight());
-    }
-
-    private static boolean amountOfFiguresMatches(State requestedCheck, State current) {
-        return requestedCheck.getDark().size() == current.getDark().size() && requestedCheck.getLight().size() == current.getLight().size();
+        Map<Integer, List<PossibleMove>> possibleMoves =
+                possibleMoveProvider.getPossibleMovesMap(side, Checkerboard.state(
+                        afterCaptureState.getDark(),
+                        afterCaptureState.getLight()
+                ));
+        return new MoveResponse(gameId, afterCaptureState, side.name(),
+                getSimplifiedPossibleMoves(possibleMoves));
     }
 }

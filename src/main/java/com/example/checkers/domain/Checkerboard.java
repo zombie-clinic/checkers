@@ -1,7 +1,7 @@
 package com.example.checkers.domain;
 
 import com.example.checkers.model.State;
-import com.example.checkers.service.BoardService;
+import com.example.checkers.service.CaptureService;
 import lombok.Getter;
 
 import java.util.ArrayList;
@@ -29,13 +29,13 @@ public class Checkerboard {
                 .collect(Collectors.toMap(Function.identity(), (Integer v) -> {
                     if (darkPieces.contains(v)) {
                         return new Square(v, PieceType.DARK,
-                                BoardService.getAdjacentSquaresNumbers(v));
+                                CaptureService.getAdjacentSquaresNumbers(v));
                     } else if (lightPieces.contains(v)) {
                         return new Square(v, PieceType.LIGHT,
-                                BoardService.getAdjacentSquaresNumbers(v));
+                                CaptureService.getAdjacentSquaresNumbers(v));
                     } else {
                         return new Square(v, PieceType.EMPTY,
-                                BoardService.getAdjacentSquaresNumbers(v));
+                                CaptureService.getAdjacentSquaresNumbers(v));
                     }
                 }));
     }

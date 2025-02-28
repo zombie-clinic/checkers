@@ -27,9 +27,6 @@ class MoveServiceImplTest {
     @Spy
     private PossibleMoveProvider possibleMoveProvider;
 
-    @Spy
-    private BoardService boardService = new BoardServiceImpl();
-
     @InjectMocks
     private MoveServiceImpl moveService;
 

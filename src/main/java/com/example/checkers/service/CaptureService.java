@@ -8,16 +8,62 @@ import com.google.common.collect.Sets;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @RequiredArgsConstructor
 @Service
 public class CaptureService {
 
-    private final BoardService boardService;
+    static List<CaptureService.Position> getAdjacentSquares(Integer square) {
+        Integer[] ij = getIJ(square);
+        Integer i = ij[0];
+        Integer j = ij[1];
+
+        List<CaptureService.Position> positions = new ArrayList<>();
+        positions.add(new Position(i - 1, j - 1));
+        positions.add(new Position(i + 1, j - 1));
+        positions.add(new Position(i - 1, j + 1));
+        positions.add(new Position(i + 1, j + 1));
+
+        return positions.stream().filter(CaptureService::isWithinBoard).toList();
+    }
+
+    public static List<Integer> getAdjacentSquaresNumbers(Integer square) {
+        Integer[] ij = getIJ(square);
+        Integer i = ij[0];
+        Integer j = ij[1];
+
+        List<Position> positions = new ArrayList<>();
+        positions.add(new Position(i - 1, j - 1));
+        positions.add(new Position(i + 1, j - 1));
+        positions.add(new Position(i - 1, j + 1));
+        positions.add(new Position(i + 1, j + 1));
+
+        return positions.stream()
+                .filter(CaptureService::isWithinBoard)
+                .toList().stream()
+                .map(p -> Checkerboard.getAllSquaresArray()[p.i()][p.j()])
+                .toList();
+    }
+
+    static Integer[] getIJ(Integer cell) {
+        for (int i = 0; i < Checkerboard.getAllSquaresArray().length; i++) {
+            int j = Arrays.asList(Checkerboard.getAllSquaresArray()[i]).indexOf(cell);
+            if (j != -1) {
+                return new Integer[]{i, j};
+            }
+        }
+        throw new IllegalArgumentException("Can't find provided cell: " + cell);
+    }
+
+    static boolean isWithinBoard(Position position) {
+        try {
+            Integer i = Checkerboard.getAllSquaresArray()[position.i()][position.j()];
+            return true;
+        } catch (ArrayIndexOutOfBoundsException e) {
+            return false;
+        }
+    }
 
     public State generateAfterCaptureState(MoveRequest moveRequest) {
         List<Integer> black = moveRequest.getState().getDark();
@@ -38,7 +84,8 @@ public class CaptureService {
         };
     }
 
-    private AfterCaptureState process(List<Integer> attacker, List<Integer> defender, MoveRecord moveRecord) {
+    private AfterCaptureState process(List<Integer> attacker, List<Integer> defender,
+                                      MoveRecord moveRecord) {
         Integer start = moveRecord.start;
         Integer dest = moveRecord.dest;
 
@@ -51,21 +98,22 @@ public class CaptureService {
         return new AfterCaptureState(attacker, defender);
     }
 
-    record AfterCaptureState(List<Integer> attacker, List<Integer> defender) {
-
-    }
-
     private Integer getSingleCapture(Integer start, Integer dest) {
-        Set<BoardServiceImpl.Position> startNeighbors = new HashSet<>(BoardService.getAdjacentSquares(start));
-        Set<BoardServiceImpl.Position> destNeighbors = new HashSet<>(BoardService.getAdjacentSquares(dest));
+        Set<Position> startNeighbors = new HashSet<>(getAdjacentSquares(start));
+        Set<Position> destNeighbors = new HashSet<>(getAdjacentSquares(dest));
 
-        Sets.SetView<BoardServiceImpl.Position> intersection = Sets.intersection(startNeighbors, destNeighbors);
+        Sets.SetView<Position> intersection = Sets.intersection(startNeighbors, destNeighbors);
         if (intersection.size() != 1) {
-            throw new IllegalStateException("Failed to determine capture: %sx%s".formatted(start, dest) );
+            throw new IllegalStateException("Failed to determine capture: %sx%s".formatted(start,
+                    dest));
         }
 
-        BoardServiceImpl.Position capturePos = intersection.stream().findFirst().get();
+        Position capturePos = intersection.stream().findFirst().get();
         return Checkerboard.getAllSquaresArray()[capturePos.i()][capturePos.j()];
+    }
+
+    record AfterCaptureState(List<Integer> attacker, List<Integer> defender) {
+
     }
 
     record MoveRecord(Integer start, Integer dest) {
@@ -74,4 +122,10 @@ public class CaptureService {
             return new MoveRecord(Integer.valueOf(pos[0]), Integer.valueOf(pos[1]));
         }
     }
+
+    public record Position(int i, int j) {
+
+    }
+
+
 }
