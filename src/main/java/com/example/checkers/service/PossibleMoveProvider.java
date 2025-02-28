@@ -4,10 +4,7 @@ import com.example.checkers.domain.Checkerboard;
 import com.example.checkers.domain.PossibleMove;
 import com.example.checkers.domain.Side;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class PossibleMoveProvider {
 
@@ -35,34 +32,33 @@ public class PossibleMoveProvider {
         );
 
         List<PossibleMove> res = new ArrayList<>();
-        for (LinkedList<Integer> l : board) {
+        for (LinkedList<Integer> diagonal : board) {
             if (side == Side.LIGHT) {
                 // TODO check if creating a defensive copy needed?
-                getMoves(state, Side.LIGHT, num, l.reversed()).ifPresent(res::add);
-                if (isCaptureTerminalityCheck) {
-                    getMoves(state, Side.LIGHT, num, l).ifPresent(res::add);
-                }
+                res.addAll(getMoves(state, Side.LIGHT, num, diagonal.reversed(), isCaptureTerminalityCheck));
             } else {
-                getMoves(state, Side.DARK, num, l).ifPresent(res::add);
-                if (isCaptureTerminalityCheck) {
-                    getMoves(state, Side.DARK, num, l.reversed()).ifPresent(res::add);
-                }
+                res.addAll(getMoves(state, Side.DARK, num, diagonal, isCaptureTerminalityCheck));
             }
         }
 
         if (res.stream().anyMatch(PossibleMove::isCapture)) {
-            List<PossibleMove> captureMoves = res.stream()
-                    .filter(PossibleMove::isCapture)
-                    .toList();
-            if (isCaptureTerminalityCheck) {
-                return captureMoves;
-            }
-            return captureMovesVerifiedForTerminality(state, side, captureMoves);
+            return onlyMovesWithCaptures(side, state, isCaptureTerminalityCheck, res);
         }
 
         return res.stream()
                 .filter(i -> !(state.getSide(Side.DARK).contains(i.destination()) || state.getSide(Side.LIGHT).contains(i.destination())))
                 .toList();
+    }
+
+    private List<PossibleMove> onlyMovesWithCaptures(Side side, Checkerboard state, boolean isCaptureTerminalityCheck, List<PossibleMove> res) {
+        List<PossibleMove> captureMoves = res.stream()
+                .filter(PossibleMove::isCapture)
+                .toList();
+        if (isCaptureTerminalityCheck) {
+            // return after check to avoid recursion
+            return captureMoves;
+        }
+        return captureMovesVerifiedForTerminality(state, side, captureMoves);
     }
 
 
@@ -87,26 +83,56 @@ public class PossibleMoveProvider {
         return res;
     }
 
-    private Optional<PossibleMove> getMoves(Checkerboard state, Side side, int num,
-                                            LinkedList<Integer> list) {
-        if (list.contains(num)) {
-            if (num != list.peekLast()) {
+    private List<PossibleMove> getMoves(Checkerboard state, Side side, int pieceNum,
+                                            LinkedList<Integer> diagonal,
+                                            boolean isCaptureTerminalityCheck) {
 
-                var nextAfterNumIdx = list.indexOf(num) + 1;
+        var res = new ArrayList<PossibleMove>();
+
+        if (diagonal.contains(pieceNum)) {
+            if (pieceNum != diagonal.peekLast()) {
+
+                var nextAfterNumIdx = diagonal.indexOf(pieceNum) + 1;
                 var oppositeSide = side == Side.DARK ? Side.LIGHT : Side.DARK;
                 // TODO Here is functionality missing for capturing backwards
-                if (state.getSide(oppositeSide).contains(list.get(nextAfterNumIdx))) {
-                    return determineCaptureMove(nextAfterNumIdx + 1, list, state, side, num);
-                }
+                if (state.getSide(oppositeSide).contains(diagonal.get(nextAfterNumIdx))) {
+                    determineCaptureMove(nextAfterNumIdx + 1, diagonal, state, side, pieceNum).ifPresent(
+                            res::add
+                    );
 
-                // TODO before this a check against state needs to be done
-                return Optional.of(
-                        new PossibleMove(side, num, list.get(list.lastIndexOf(num) + 1), false,
-                                true));
+                } else {
+
+                    // TODO before this a check against state needs to be done
+                    res.add(
+                            new PossibleMove(side, pieceNum, diagonal.get(diagonal.lastIndexOf(pieceNum) + 1), false,
+                                    true));
+
+                }
             }
         }
 
-        return Optional.empty();
+
+        if (diagonal.contains(pieceNum)) {
+            // for backwards moves only capture check is performed
+            var dr = diagonal.reversed();
+            if (pieceNum != dr.peekLast()) {
+
+                var nextAfterNumIdx = dr.indexOf(pieceNum) + 1;
+                var oppositeSide = side == Side.DARK ? Side.LIGHT : Side.DARK;
+                // TODO Here is functionality missing for capturing backwards
+                if (state.getSide(oppositeSide).contains(dr.get(nextAfterNumIdx))) {
+                    determineCaptureMove(nextAfterNumIdx + 1, dr, state, side, pieceNum).ifPresent(
+                            res::add
+                    );
+
+                }
+            }
+        }
+
+
+
+        return res;
+
     }
 
     private Optional<PossibleMove> determineCaptureMove(int nextNextIdx,
