@@ -65,12 +65,11 @@ public class PossibleMoveProviderTest {
     public static Stream<Arguments> getStatesWithCurvedCaptures() {
         // TODO Consider introducing a type - TerminalMove, CaptureMove, CaptureTerminalMove etc
         return Stream.of(
-             //   Arguments.of(state(List.of(1), List.of(6, 14)), 1, DARK, List.of(10), true,
-                //   false),
-                Arguments.of(state(List.of(22), List.of(18)), 22, DARK, List.of(15), true, true)
-//                Arguments.of(state(List.of(10), List.of(14)), 10, DARK, List.of(17), true, true),
-//                Arguments.of(state(List.of(14, 15), List.of(17)), 17, LIGHT, List.of(10), true, false),
-//                Arguments.of(state(List.of(15), List.of(10)), 10, LIGHT, List.of(19), true, true)
+                Arguments.of(state(List.of(1), List.of(6, 14)), 1, DARK, List.of(10), true, false),
+                Arguments.of(state(List.of(22), List.of(18)), 22, DARK, List.of(15), true, true),
+                Arguments.of(state(List.of(10), List.of(14)), 10, DARK, List.of(17), true, true),
+                Arguments.of(state(List.of(14, 15), List.of(17)), 17, LIGHT, List.of(10), true, false),
+                Arguments.of(state(List.of(15), List.of(10)), 10, LIGHT, List.of(19), true, true)
         );
     }
 
