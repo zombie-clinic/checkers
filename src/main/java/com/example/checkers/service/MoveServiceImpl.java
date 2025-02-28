@@ -33,6 +33,8 @@ public class MoveServiceImpl implements MoveService {
 
     private final CaptureService captureService;
 
+    private final PossibleMoveProvider possibleMoveProvider;
+
     // TODO Use mapper or json parser to validate move request, e.g.
     @Transactional
     @Override
@@ -135,15 +137,15 @@ public class MoveServiceImpl implements MoveService {
     // User becomes Player when a game starts, Player has a user id and a side
     @Override
     public MoveResponse generateMoveResponse(String gameId, Side side) {
-
         var moveList = moveRepository.findAllByGameId(gameId);
         if (moveList.isEmpty()) {
             var state = getStartingState();
             return new MoveResponse(gameId, state, side.name(), getSimplifiedPossibleMoves(boardService.getPossibleMoves(side, state)));
         }
         var state = getCurrentState(moveList);
-        // TODO Fix it, need to determine whose move it is
-        Map<Integer, List<PossibleMove>> possibleMoves = boardService.getPossibleMoves(side, state);
+        Map<Integer, List<PossibleMove>> possibleMoves = possibleMoveProvider.getPossibleMovesMap(
+                side, Checkerboard.state(state.getDark(), state.getLight())
+        );
         return new MoveResponse(gameId, state, side.name(), getSimplifiedPossibleMoves(possibleMoves));
     }
 

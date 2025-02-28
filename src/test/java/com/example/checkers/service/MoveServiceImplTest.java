@@ -25,6 +25,9 @@ class MoveServiceImplTest {
     private MoveRepository moveRepository;
 
     @Spy
+    private PossibleMoveProvider possibleMoveProvider;
+
+    @Spy
     private BoardService boardService = new BoardServiceImpl();
 
     @InjectMocks
@@ -70,7 +73,8 @@ class MoveServiceImplTest {
         );
 
         MoveResponse moveResponse = moveService.generateMoveResponse(gameId, Side.DARK);
-        assertEquals("{13=[PossibleMoveSimplified[position=13, destination=22, isCapture=true, isTerminal=null]]}", moveResponse.getPossibleMoves().toString());
+        assertEquals("{13=[PossibleMoveSimplified[position=13, destination=22, isCapture=true, " +
+                "isTerminal=true]]}", moveResponse.getPossibleMoves().toString());
     }
 
     @Test

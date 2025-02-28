@@ -3,12 +3,15 @@ package com.example.checkers.service;
 import com.example.checkers.domain.Checkerboard;
 import com.example.checkers.domain.PossibleMove;
 import com.example.checkers.domain.Side;
+import org.springframework.stereotype.Component;
 
 import java.util.*;
 
+@Component
 public class PossibleMoveProvider {
 
-    List <PossibleMove> getPossibleMoves(int num, Side side, Checkerboard state, boolean isCaptureTerminalityCheck) {
+    List<PossibleMove> getPossibleMoves(int num, Side side, Checkerboard state,
+                                        boolean isCaptureTerminalityCheck) {
         LinkedList<Integer> left1 = new LinkedList<>(List.of(1, 5));
         LinkedList<Integer> left2 = new LinkedList<>(List.of(2, 6, 9, 13));
         LinkedList<Integer> left3 = new LinkedList<>(List.of(3, 7, 10, 14, 17, 21));
@@ -35,7 +38,8 @@ public class PossibleMoveProvider {
         for (LinkedList<Integer> diagonal : board) {
             if (side == Side.LIGHT) {
                 // TODO check if creating a defensive copy needed?
-                res.addAll(getMoves(state, Side.LIGHT, num, diagonal.reversed(), isCaptureTerminalityCheck));
+                res.addAll(getMoves(state, Side.LIGHT, num, diagonal.reversed(),
+                        isCaptureTerminalityCheck));
             } else {
                 res.addAll(getMoves(state, Side.DARK, num, diagonal, isCaptureTerminalityCheck));
             }
@@ -50,7 +54,9 @@ public class PossibleMoveProvider {
                 .toList();
     }
 
-    private List<PossibleMove> onlyMovesWithCaptures(Side side, Checkerboard state, boolean isCaptureTerminalityCheck, List<PossibleMove> res) {
+    private List<PossibleMove> onlyMovesWithCaptures(Side side, Checkerboard state,
+                                                     boolean isCaptureTerminalityCheck,
+                                                     List<PossibleMove> res) {
         List<PossibleMove> captureMoves = res.stream()
                 .filter(PossibleMove::isCapture)
                 .toList();
@@ -66,6 +72,16 @@ public class PossibleMoveProvider {
         return getPossibleMoves(num, side, state, false);
     }
 
+    Map<Integer, List<PossibleMove>> getPossibleMovesMap(Side side, Checkerboard state) {
+        var map = new HashMap<Integer, List<PossibleMove>>();
+
+        for (int i : state.getSide(side)) {
+            map.put(i, getPossibleMoves(i, side, state));
+        }
+
+        return map;
+    }
+
     private List<PossibleMove> captureMovesVerifiedForTerminality(Checkerboard state,
                                                                   Side side,
                                                                   List<PossibleMove> captureMoves) {
@@ -74,9 +90,11 @@ public class PossibleMoveProvider {
         for (PossibleMove c : captureMoves) {
             var moves = getPossibleMoves(c.destination(), side, state, true);
             if (moves.stream().anyMatch(PossibleMove::isCapture)) {
-                res.add(new PossibleMove(c.side(), c.position(), c.destination(), c.isCapture(), false));
+                res.add(new PossibleMove(c.side(), c.position(), c.destination(), c.isCapture(),
+                        false));
             } else {
-                res.add(new PossibleMove(c.side(), c.position(), c.destination(), c.isCapture(), true));
+                res.add(new PossibleMove(c.side(), c.position(), c.destination(), c.isCapture(),
+                        true));
             }
         }
 
@@ -84,8 +102,8 @@ public class PossibleMoveProvider {
     }
 
     private List<PossibleMove> getMoves(Checkerboard state, Side side, int pieceNum,
-                                            LinkedList<Integer> diagonal,
-                                            boolean isCaptureTerminalityCheck) {
+                                        LinkedList<Integer> diagonal,
+                                        boolean isCaptureTerminalityCheck) {
 
         var res = new ArrayList<PossibleMove>();
 
@@ -104,7 +122,8 @@ public class PossibleMoveProvider {
 
                     // TODO before this a check against state needs to be done
                     res.add(
-                            new PossibleMove(side, pieceNum, diagonal.get(diagonal.lastIndexOf(pieceNum) + 1), false,
+                            new PossibleMove(side, pieceNum,
+                                    diagonal.get(diagonal.lastIndexOf(pieceNum) + 1), false,
                                     true));
 
                 }
@@ -128,7 +147,6 @@ public class PossibleMoveProvider {
                 }
             }
         }
-
 
 
         return res;
