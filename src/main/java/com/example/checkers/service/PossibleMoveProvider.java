@@ -55,11 +55,13 @@ public class PossibleMoveProvider {
 
     Map<Integer, List<PossibleMove>> getPossibleMovesMap(Side side, Checkerboard state) {
         var map = new HashMap<Integer, List<PossibleMove>>();
-
+        // TODO refactor possible moves representation
         for (int i : state.getSide(side)) {
-            map.put(i, getPossibleMoves(i, side, state));
+            List<PossibleMove> possibleMoves = getPossibleMoves(i, side, state);
+            if (!possibleMoves.isEmpty()) {
+                map.put(i, possibleMoves);
+            }
         }
-
         return map;
     }
 
