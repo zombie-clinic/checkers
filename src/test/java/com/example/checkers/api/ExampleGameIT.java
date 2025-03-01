@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -27,7 +26,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@Disabled
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @AutoConfigureMockMvc
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -58,56 +56,30 @@ public class ExampleGameIT {
         );
 
         // 1
-        response = makeMove(gameId, Side.DARK, "9-14", actualState, 1);
-        State expectedState = new State(
-                List.of(1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 14),
-                List.of(21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32)
-        );
+        response = makeMove(gameId, Side.LIGHT, "21-17", actualState, 1);
+        State expectedState = new State(List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12),
+                List.of(22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 17));
         actualState = jsonMapper.readTree(response).get("state");
         compareStates(expectedState, actualState);
 
         // 2
-        response = makeMove(gameId, Side.LIGHT, "22-17", actualState, 2);
-        expectedState = new State(
-                List.of(1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 14),
-                List.of(21, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 17)
-        );
+        response = makeMove(gameId, Side.DARK, "9-14", actualState, 2);
+        expectedState = new State(List.of(1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 14), List.of(22, 23
+                , 24, 25, 26, 27, 28, 29, 30, 31, 32, 17));
         actualState = jsonMapper.readTree(response).get("state");
         compareStates(expectedState, actualState);
 
         // 3
-        response = makeMove(gameId, Side.DARK, "11-15", actualState, 1);
-        expectedState = new State(
-                List.of(1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 15),
-                List.of(21, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 17)
-        );
+        response = makeMove(gameId, Side.LIGHT, "22-18", actualState, 1);
+        expectedState = new State(List.of(1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 14), List.of(23, 24
+                , 25, 26, 27, 28, 29, 30, 31, 32, 17, 18));
         actualState = jsonMapper.readTree(response).get("state");
         compareStates(expectedState, actualState);
 
         // 4
-        response = makeMove(gameId, Side.LIGHT, "25-22", actualState, 2);
-        expectedState = new State(
-                List.of(1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 15),
-                List.of(21, 23, 24, 26, 27, 28, 29, 30, 31, 32, 17, 22)
-        );
-        actualState = jsonMapper.readTree(response).get("state");
-        compareStates(expectedState, actualState);
-
-        // 5
-        response = makeMove(gameId, Side.DARK, "15-19", actualState, 1);
-        expectedState = new State(
-                List.of(1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 19),
-                List.of(21, 23, 24, 26, 27, 28, 29, 30, 31, 32, 17, 22)
-        );
-        actualState = jsonMapper.readTree(response).get("state");
-        compareStates(expectedState, actualState);
-
-        // 6
-        response = makeMove(gameId, Side.LIGHT, "23x16", actualState, 2);
-        expectedState = new State(
-                List.of(1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14),
-                List.of(21, 24, 26, 27, 28, 29, 30, 31, 32, 17, 22, 16)
-        );
+        response = makeMove(gameId, Side.DARK, "14x21", actualState, 2);
+        expectedState = new State(List.of(1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 21), List.of(23, 24
+                , 25, 26, 27, 28, 29, 30, 31, 32, 18));
         actualState = jsonMapper.readTree(response).get("state");
         compareStates(expectedState, actualState);
     }

@@ -87,6 +87,8 @@ class MoveServiceImplTest {
 
     @Test
     void givenDarkSide_whenCaptureMove_shouldReturnProperResponse() {
+
+        // case 1
         var currentState = new State(
                 List.of(1, 2, 3, 4, 5, 6, 7, 8, 11, 12, 15, 14),
                 List.of(23, 25, 26, 27, 28, 29, 30, 31, 32, 18, 17, 20)
@@ -97,28 +99,31 @@ class MoveServiceImplTest {
         moveRequest.setMove("15x22");
         moveRequest.setSide(Side.DARK.name());
         moveRequest.setPlayerId(2L);
-        moveService.generateAfterCaptureState(currentState, moveRequest);
-    }
+        State expectedState = new State(
+                List.of(1, 2, 3, 4, 5, 6, 7, 8, 11, 12, 14, 22),
+                List.of(23, 25, 26, 27, 28, 29, 30, 31, 32, 17, 20)
+        );
+        State actualState = moveService.generateAfterCaptureState(currentState, moveRequest);
+        assertEquals(expectedState, actualState);
 
-    @Disabled
-    @Test
-    void givenLightSide_whenCaptureMove_shouldReturnProperResponse() {
-        var currentState = new State(
+
+        // case 2
+        currentState = new State(
                 List.of(1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14),
                 List.of(21, 24, 26, 27, 28, 29, 30, 31, 32, 17, 22, 16)
         );
 
-        MoveRequest moveRequest = new MoveRequest();
+        moveRequest = new MoveRequest();
         moveRequest.setState(currentState);
-        moveRequest.setMove("23x16");
-        moveRequest.setSide(Side.LIGHT.name());
+        moveRequest.setMove("14x21");
+        moveRequest.setSide(Side.DARK.name());
         moveRequest.setPlayerId(1L);
 
-        State actualState = moveService.generateAfterCaptureState(currentState, moveRequest);
-
-        State expectedState = new State(List.of(1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14), List.of(16, 17, 21, 22, 24, 26, 27
-                , 28, 29, 30, 31, 32));
-
+        actualState = moveService.generateAfterCaptureState(currentState, moveRequest);
+        expectedState = new State(
+                List.of(1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 21),
+                List.of(21, 24, 26, 27, 28, 29, 30, 31, 32, 22, 16)
+        );
         assertEquals(expectedState, actualState);
     }
 

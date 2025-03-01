@@ -146,7 +146,7 @@ public class MoveServiceImpl implements MoveService {
         if (Side.valueOf(moveRequest.getSide()) == DARK) {
             var darkPieces = new ArrayList<>(state.getDark());
             var lightPieces = new ArrayList<>(state.getLight());
-            darkPieces.remove(darkPieces.indexOf(start));
+            darkPieces.removeIf(el -> Objects.equals(el, start));
             darkPieces.add(dest);
             if (moveRequest.getMove().contains("x")) {
                 lightPieces.remove(determineCapturedPieceIdx(Side.valueOf(moveRequest.getSide()),
@@ -159,7 +159,7 @@ public class MoveServiceImpl implements MoveService {
         } else {
             var darkPieces = new ArrayList<>(state.getDark());
             var lightPieces = new ArrayList<>(state.getLight());
-            lightPieces.remove(lightPieces.indexOf(start));
+            lightPieces.removeIf(el -> Objects.equals(el, start));
             lightPieces.add(dest);
             if (moveRequest.getMove().contains("x")) {
                 darkPieces.remove(determineCapturedPieceIdx(Side.valueOf(moveRequest.getSide()),
@@ -175,15 +175,18 @@ public class MoveServiceImpl implements MoveService {
         return calculated;
     }
 
-    private int determineCapturedPieceIdx(Side side, Integer start, Integer end) {
+    private Integer determineCapturedPieceIdx(Side side, Integer start, Integer end) {
         for (LinkedList<Integer> diagonal : Checkerboard.getDiagonals()) {
+            LinkedList<Integer> d;
             if (side == LIGHT) {
-                diagonal = diagonal.reversed();
+                d = new LinkedList<>(diagonal.reversed());
+            } else {
+                d = new LinkedList<>(diagonal);
             }
-            if (diagonal.contains(start) && diagonal.contains(end)) {
-                int startIdx = diagonal.indexOf(start);
-                int endIdx = diagonal.indexOf(end);
-                return (startIdx + endIdx / 2);
+            if (d.contains(start) && d.contains(end)) {
+                int startIdx = d.indexOf(start);
+                int endIdx = d.indexOf(end);
+                return d.get((startIdx + endIdx) / 2);
             }
         }
         throw new IllegalStateException(String.format("Trying to determine impossible capture: " +
