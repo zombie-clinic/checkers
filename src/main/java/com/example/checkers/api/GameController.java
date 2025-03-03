@@ -36,10 +36,6 @@ public class GameController implements GameApi {
         return ok(gameService.getGamesByProgress(progress));
     }
 
-    private void validateProgress(List<String> progress) {
-        progress.forEach(GameProgress::valueOf);
-    }
-
     @Override
     public ResponseEntity<GameResponse> startLobby(StartLobbyRequest request) {
         String side = request.getSide();
@@ -57,4 +53,10 @@ public class GameController implements GameApi {
         gameService.lobbyExistsAndPlayerIsDifferent(gameId, playerId);
         return ok(gameService.startGame(gameId, playerId));
     }
+
+    //region private methods
+    private void validateProgress(List<String> progress) {
+        progress.forEach(GameProgress::valueOf);
+    }
+    //endregion
 }

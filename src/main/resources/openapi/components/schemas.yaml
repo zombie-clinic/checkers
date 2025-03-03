@@ -1,12 +1,12 @@
 MoveRequest:
   type: object
   properties:
+    gameId:
+      type: string
     side:
       type: string
     move:
       type: string
-    state:
-      $ref: '#/State'
     playerId:
       type: integer
       format: int64

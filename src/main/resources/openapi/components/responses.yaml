@@ -28,6 +28,8 @@ MoveResponse:
       $ref: './schemas.yaml#/State'
     side:
       type: string
+    errors:
+      type: array
     possibleMoves:
       schema:
         type: array

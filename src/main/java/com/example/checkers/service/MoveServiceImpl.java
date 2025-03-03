@@ -9,7 +9,6 @@ import com.example.checkers.persistence.MoveRepository;
 import com.example.checkers.persistence.PlayerRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -40,24 +39,6 @@ public class MoveServiceImpl implements MoveService {
                 Arrays.stream(light.split(",")).map(Integer::valueOf).toList());
     }
 
-    @SneakyThrows
-    // TODO moves should not be empty
-    private static boolean isInconsistentGame(MoveRequest moveRequest, List<Move> moves) {
-        State clientState = moveRequest.getState();
-        State serverState = getCurrentState(moves);
-        return !amountOfFiguresMatches(clientState, serverState) || !positionsMatch(clientState,
-                serverState);
-    }
-
-    private static boolean positionsMatch(State clientState, State serverState) {
-        return new HashSet<>(serverState.getDark()).containsAll(clientState.getDark()) && new HashSet<>(serverState.getLight()).containsAll(clientState.getLight());
-    }
-
-    private static boolean amountOfFiguresMatches(State requestedCheck, State current) {
-        return requestedCheck.getDark().size() == current.getDark().size() && requestedCheck.getLight().size() == current.getLight().size();
-    }
-
-    // TODO Use mapper or json parser to validate move request, e.g.
     @Transactional
     @Override
     public MoveResponse saveMove(String gameId, MoveRequest moveRequest) {
@@ -67,36 +48,13 @@ public class MoveServiceImpl implements MoveService {
         List<Move> moves = moveRepository.findAllByGameId(gameId);
 
         if (moves.isEmpty()) {
-
-            String[] split = moveRequest.getMove().split("-");
-            State state = moveRequest.getState();
-            List<Integer> dark = state.getDark();
-            List<Integer> light = state.getLight();
-            int start = Integer.parseInt(split[0]);
-            int dest = Integer.parseInt(split[1]);
-            if (Side.valueOf(moveRequest.getSide()) == DARK) {
-                dark.removeIf(e -> e.equals(start));
-                dark.add(dest);
-                state.setDark(dark);
-            } else {
-                light.removeIf(e -> e.equals(start));
-                light.add(dest);
-                state.setLight(light);
-            }
-
-            moveRequest.setState(state);
-
+            State startingState = Checkerboard.getStartingState();
+            State resultingState = getResultingState(startingState, moveRequest);
             Move move = new Move(game, player, "LIGHT", moveRequest.getMove(),
-                    moveRequest.getState().getDark().stream().map(String::valueOf).collect(Collectors.joining(",")),
-                    moveRequest.getState().getLight().stream().map(String::valueOf).collect(Collectors.joining(",")));
-
+                    resultingState.getDark().stream().map(String::valueOf).collect(Collectors.joining(",")),
+                    resultingState.getLight().stream().map(String::valueOf).collect(Collectors.joining(",")));
             moveRepository.save(move);
             return generateMoveResponse(gameId, DARK);
-        }
-
-        if (isInconsistentGame(moveRequest, moves)) {
-            throw new IllegalStateException("Inconsistent game, provide a valid move, here is you" +
-                    " previous state: []");
         }
 
         if (isCapture(moveRequest)) {
@@ -113,25 +71,48 @@ public class MoveServiceImpl implements MoveService {
         }
 
         // regular move
-        String[] split = moveRequest.getMove().split("-");
-
-        if (moveRequest.getSide().equals(LIGHT.toString())) {
-            moveRequest.getState().getLight().remove(Integer.valueOf(split[0]));
-            moveRequest.getState().getLight().add(Integer.valueOf(split[1]));
-        } else {
-            moveRequest.getState().getDark().remove(Integer.valueOf(split[0]));
-            moveRequest.getState().getDark().add(Integer.valueOf(split[1]));
-        }
+        var lastMove = moveRepository.findAllByGameId(gameId).getLast();
+        var resultingState = getResultingState(
+                new State(
+                        Arrays.stream(lastMove.getDark().split(",")).map(Integer::valueOf).toList(),
+                        Arrays.stream(lastMove.getLight().split(",")).map(Integer::valueOf).toList()
+                ), moveRequest
+        );
 
         moveRepository.save(
                 // TODO Introduce Move builder
                 // TODO Calculate state
 
                 new Move(game, player, moveRequest.getSide(), moveRequest.getMove(),
-                        moveRequest.getState().getDark().stream().map(String::valueOf).collect(Collectors.joining(",")), moveRequest.getState().getLight().stream().map(String::valueOf).collect(Collectors.joining(","))));
+
+                        resultingState.getDark().stream().map(String::valueOf).collect(Collectors.joining(",")),
+                        resultingState.getLight().stream().map(String::valueOf).collect(Collectors.joining(","))));
 
         // TODO MoveResponse should contain board state and should not contain a move
         return generateMoveResponse(gameId, Side.valueOf(moveRequest.getSide()));
+    }
+
+    private State getResultingState(State originalState, MoveRequest moveRequest) {
+
+        List<Integer> dark = new ArrayList<>(originalState.getDark());
+        List<Integer> light = new ArrayList<>(originalState.getLight());
+
+        State resultingState = new State();
+        String[] split = moveRequest.getMove().split("-");
+
+        int start = Integer.parseInt(split[0]);
+        int dest = Integer.parseInt(split[1]);
+        if (Side.valueOf(moveRequest.getSide()) == DARK) {
+            dark.removeIf(e -> e.equals(start));
+            dark.add(dest);
+            resultingState.setDark(dark);
+        } else {
+            light.removeIf(e -> e.equals(start));
+            light.add(dest);
+            resultingState.setLight(light);
+        }
+
+        return resultingState;
     }
 
     State generateAfterCaptureState(State state, MoveRequest moveRequest) {
@@ -150,7 +131,7 @@ public class MoveServiceImpl implements MoveService {
             darkPieces.add(dest);
             if (moveRequest.getMove().contains("x")) {
                 lightPieces.remove(determineCapturedPieceIdx(Side.valueOf(moveRequest.getSide()),
-                    start,
+                        start,
                         dest));
             }
             calculated = new State(
@@ -163,7 +144,7 @@ public class MoveServiceImpl implements MoveService {
             lightPieces.add(dest);
             if (moveRequest.getMove().contains("x")) {
                 darkPieces.remove(determineCapturedPieceIdx(Side.valueOf(moveRequest.getSide()),
-                    start,
+                        start,
                         dest));
             }
             calculated = new State(
@@ -222,6 +203,7 @@ public class MoveServiceImpl implements MoveService {
 
     // TODO Add a distinction between Player and User
     // User becomes Player when a game starts, Player has a user id and a side
+    // On a side note - is it really needed? Players in a match could be represented by users
     @Override
     public MoveResponse generateMoveResponse(String gameId, Side side) {
         var moveList = moveRepository.findAllByGameId(gameId);

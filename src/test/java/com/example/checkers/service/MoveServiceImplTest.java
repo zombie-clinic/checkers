@@ -95,7 +95,6 @@ class MoveServiceImplTest {
         );
 
         MoveRequest moveRequest = new MoveRequest();
-        moveRequest.setState(currentState);
         moveRequest.setMove("15x22");
         moveRequest.setSide(Side.DARK.name());
         moveRequest.setPlayerId(2L);
@@ -114,7 +113,6 @@ class MoveServiceImplTest {
         );
 
         moveRequest = new MoveRequest();
-        moveRequest.setState(currentState);
         moveRequest.setMove("14x21");
         moveRequest.setSide(Side.DARK.name());
         moveRequest.setPlayerId(1L);

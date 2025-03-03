@@ -10,8 +10,26 @@ import java.util.*;
 @Component
 public class PossibleMoveProvider {
 
-    List<PossibleMove> getPossibleMoves(int num, Side side, Checkerboard state,
-                                        boolean isCaptureTerminalityCheck) {
+    Map<Integer, List<PossibleMove>> getPossibleMovesMap(Side side, Checkerboard state) {
+        var map = new HashMap<Integer, List<PossibleMove>>();
+        // TODO refactor possible moves representation
+        for (int i : state.getSide(side)) {
+            List<PossibleMove> possibleMoves = getPossibleMoves(i, side, state);
+            if (!possibleMoves.isEmpty()) {
+                map.put(i, possibleMoves);
+            }
+        }
+        return map;
+    }
+
+
+    public List<PossibleMove> getPossibleMoves(int num, Side side, Checkerboard state) {
+        return getPossibleMoves(num, side, state, false);
+    }
+
+    // region private methods
+    public List<PossibleMove> getPossibleMoves(int num, Side side, Checkerboard state,
+                                               boolean isCaptureTerminalityCheck) {
 
         List<LinkedList<Integer>> board = Checkerboard.getDiagonals();
 
@@ -46,23 +64,6 @@ public class PossibleMoveProvider {
             return captureMoves;
         }
         return captureMovesVerifiedForTerminality(state, side, captureMoves);
-    }
-
-
-    List<PossibleMove> getPossibleMoves(int num, Side side, Checkerboard state) {
-        return getPossibleMoves(num, side, state, false);
-    }
-
-    Map<Integer, List<PossibleMove>> getPossibleMovesMap(Side side, Checkerboard state) {
-        var map = new HashMap<Integer, List<PossibleMove>>();
-        // TODO refactor possible moves representation
-        for (int i : state.getSide(side)) {
-            List<PossibleMove> possibleMoves = getPossibleMoves(i, side, state);
-            if (!possibleMoves.isEmpty()) {
-                map.put(i, possibleMoves);
-            }
-        }
-        return map;
     }
 
     private List<PossibleMove> captureMovesVerifiedForTerminality(Checkerboard state,
@@ -151,4 +152,5 @@ public class PossibleMoveProvider {
         }
         return Optional.empty();
     }
+    //endregion
 }
