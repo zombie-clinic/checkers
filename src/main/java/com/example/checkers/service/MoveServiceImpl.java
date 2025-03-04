@@ -235,8 +235,24 @@ public class MoveServiceImpl implements MoveService {
         Map<Integer, List<PossibleMove>> possibleMoves = possibleMoveProvider.getPossibleMovesMap(
                 side, Checkerboard.state(state.getDark(), state.getLight())
         );
+        Map<Integer, List<PossibleMoveSimplified>> simplifiedPossibleMoves = getSimplifiedPossibleMoves(possibleMoves);
+
+        Map<Integer, List<PossibleMoveSimplified>> res = new HashMap<>();
+
+        for (Map.Entry<Integer, List<PossibleMoveSimplified>> e: simplifiedPossibleMoves.entrySet()) {
+            if (e.getValue().stream().anyMatch(PossibleMoveSimplified::isCapture)) {
+                res.put(e.getKey(), e.getValue());
+            }
+        }
+
+        // return only captures, if there are any
+        if (!res.isEmpty()) {
+            return new MoveResponse(gameId, state, side.name(),
+                    res);
+        }
+
         return new MoveResponse(gameId, state, side.name(),
-                getSimplifiedPossibleMoves(possibleMoves));
+                simplifiedPossibleMoves);
     }
 
     private Map<Integer, List<PossibleMoveSimplified>> getSimplifiedPossibleMoves(Map<Integer,
