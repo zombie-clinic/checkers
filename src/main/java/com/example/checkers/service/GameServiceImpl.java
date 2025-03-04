@@ -140,7 +140,7 @@ public class GameServiceImpl implements GameService {
                 ));
         List<PossibleMove> filtered = possibleMovesMap.entrySet().stream()
                 .flatMap(p -> p.getValue().stream())
-                .filter(p -> p.isCapture() && !p.isTerminal())
+                .filter(PossibleMove::isCapture)
                 .toList();
 
         if (!filtered.isEmpty()) {
