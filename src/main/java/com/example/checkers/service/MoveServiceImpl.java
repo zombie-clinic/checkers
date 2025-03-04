@@ -31,7 +31,7 @@ public class MoveServiceImpl implements MoveService {
 
     private final PossibleMoveProvider possibleMoveProvider;
 
-    private static State getCurrentState(List<Move> moveList) {
+    static State getCurrentState(List<Move> moveList) {
         String dark = moveList.getLast().getDark();
         String light = moveList.getLast().getLight();
 

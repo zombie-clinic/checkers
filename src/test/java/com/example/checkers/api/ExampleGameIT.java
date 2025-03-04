@@ -63,28 +63,37 @@ public class ExampleGameIT {
         compareStates(expectedState, actualState);
 
         // 2
-        response = makeMove(gameId, Side.DARK, "9-14", actualState, 2);
-        expectedState = new State(List.of(1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 14), List.of(22, 23
+        response = makeMove(gameId, Side.DARK, "10-15", actualState, 2);
+        expectedState = new State(List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 15), List.of(22, 23
                 , 24, 25, 26, 27, 28, 29, 30, 31, 32, 17));
         actualState = jsonMapper.readTree(response).get("state");
         compareStates(expectedState, actualState);
 
         // 3
         response = makeMove(gameId, Side.LIGHT, "22-18", actualState, 1);
-        expectedState = new State(List.of(1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 14), List.of(23, 24
+        expectedState = new State(List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 15), List.of(23, 24
                 , 25, 26, 27, 28, 29, 30, 31, 32, 17, 18));
         actualState = jsonMapper.readTree(response).get("state");
         compareStates(expectedState, actualState);
 
         // 4
-        response = makeMove(gameId, Side.DARK, "14x21", actualState, 2);
-        expectedState = new State(List.of(1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 21), List.of(23, 24
-                , 25, 26, 27, 28, 29, 30, 31, 32, 18));
+        response = makeMove(gameId, Side.DARK, "15x22", actualState, 2);
+        System.out.println(response);
+        expectedState = new State(List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 22), List.of(23, 24
+                , 25, 26, 27, 28, 29, 30, 31, 32, 17));
         actualState = jsonMapper.readTree(response).get("state");
         compareStates(expectedState, actualState);
-    }
 
-    private String joinLobby(String gameId) throws Exception {
+        // 5
+        response = makeMove(gameId, Side.DARK, "22x13", actualState, 2);
+        expectedState = new State(List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13), List.of(23, 24
+                , 25, 26, 27, 28, 29, 30, 31, 32));
+        actualState = jsonMapper.readTree(response).get("state");
+        compareStates(expectedState, actualState);
+}
+
+
+private String joinLobby(String gameId) throws Exception {
         var joinLobby = put("/games").contentType(APPLICATION_JSON)
                 .content(joinLobbyRequest.formatted(gameId));
         return getResponseContentString(joinLobby);

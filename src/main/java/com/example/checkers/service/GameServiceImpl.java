@@ -2,6 +2,7 @@ package com.example.checkers.service;
 
 import com.example.checkers.domain.*;
 import com.example.checkers.model.GameResponse;
+import com.example.checkers.model.State;
 import com.example.checkers.persistence.GameRepository;
 import com.example.checkers.persistence.MoveRepository;
 import com.example.checkers.persistence.PlayerRepository;
@@ -10,10 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.example.checkers.domain.GameProgress.LOBBY;
@@ -29,6 +27,10 @@ public class GameServiceImpl implements GameService {
     private final MoveRepository moveRepository;
 
     private final PlayerRepository playerRepository;
+
+    private PossibleMoveProvider provider;
+
+    private MoveService moveService;
 
     @Transactional
     @Override
@@ -49,7 +51,8 @@ public class GameServiceImpl implements GameService {
         Player playerTwo = validateAndGet(playerTwoId);
         Game game = validateAndGetGame(gameId);
         if (game.getPlayerOne() == null) {
-            throw new IllegalStateException("Invalid game, there is no player one in the lobby: %s".formatted(gameId) );
+            throw new IllegalStateException(("Invalid game, there is no player one in the lobby: " +
+                    "%s").formatted(gameId));
         }
 
         game.setPlayerTwo(playerTwo);
@@ -60,7 +63,7 @@ public class GameServiceImpl implements GameService {
 
     private Game validateAndGetGame(String gameId) {
         return gameRepository.findGameById(gameId).orElseThrow(
-                () -> new IllegalArgumentException("No such game: %s".formatted(gameId) )
+                () -> new IllegalArgumentException("No such game: %s".formatted(gameId))
         );
     }
 
@@ -115,7 +118,7 @@ public class GameServiceImpl implements GameService {
     public void lobbyExistsAndPlayerIsDifferent(String gameId, Long playerTwoId) {
         Optional<Game> game = gameRepository.findGameById(gameId);
         if (game.isEmpty()) {
-            throw new IllegalArgumentException("There is no lobby for game : %s".formatted(gameId) );
+            throw new IllegalArgumentException("There is no lobby for game : %s".formatted(gameId));
         }
         if (Objects.equals(game.get().getPlayerOne().getId(), playerTwoId)) {
             throw new IllegalArgumentException("The game %s already has player %d".formatted(gameId, playerTwoId));
@@ -130,6 +133,22 @@ public class GameServiceImpl implements GameService {
             return Side.LIGHT;
         }
         Move lastMove = moves.getLast();
+
+        State currentState = MoveServiceImpl.getCurrentState(moves);
+        Map<Integer, List<PossibleMove>> possibleMovesMap = provider.getPossibleMovesMap(
+                Side.valueOf(lastMove.getSide()),
+                new Checkerboard(currentState.getDark(),
+                        currentState.getLight()
+                ));
+        List<PossibleMove> filtered = possibleMovesMap.entrySet().stream()
+                .flatMap(p -> p.getValue().stream())
+                .filter(p -> p.isCapture() && !p.isTerminal())
+                .toList();
+
+        if (!filtered.isEmpty()) {
+            return Side.valueOf(lastMove.getSide());
+        }
+
         return Side.valueOf(lastMove.getSide()) == Side.LIGHT ? Side.DARK : Side.LIGHT;
     }
 }
