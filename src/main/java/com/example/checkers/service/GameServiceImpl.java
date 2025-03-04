@@ -28,9 +28,7 @@ public class GameServiceImpl implements GameService {
 
     private final PlayerRepository playerRepository;
 
-    private PossibleMoveProvider provider;
-
-    private MoveService moveService;
+    private final PossibleMoveProvider provider;
 
     @Transactional
     @Override
