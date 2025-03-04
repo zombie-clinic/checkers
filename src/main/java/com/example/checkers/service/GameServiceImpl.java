@@ -132,19 +132,22 @@ public class GameServiceImpl implements GameService {
         }
         Move lastMove = moves.getLast();
 
-        State currentState = MoveServiceImpl.getCurrentState(moves);
-        Map<Integer, List<PossibleMove>> possibleMovesMap = provider.getPossibleMovesMap(
-                Side.valueOf(lastMove.getSide()),
-                new Checkerboard(currentState.getDark(),
-                        currentState.getLight()
-                ));
-        List<PossibleMove> filtered = possibleMovesMap.entrySet().stream()
-                .flatMap(p -> p.getValue().stream())
-                .filter(PossibleMove::isCapture)
-                .toList();
+        // TODO add isCapture method
+        if (lastMove.getMove().contains("x")) {
+            State currentState = MoveServiceImpl.getCurrentState(moves);
+            Map<Integer, List<PossibleMove>> possibleMovesMap = provider.getPossibleMovesMap(
+                    Side.valueOf(lastMove.getSide()),
+                    new Checkerboard(currentState.getDark(),
+                            currentState.getLight()
+                    ));
+            List<PossibleMove> filtered = possibleMovesMap.entrySet().stream()
+                    .flatMap(p -> p.getValue().stream())
+                    .filter(PossibleMove::isCapture)
+                    .toList();
 
-        if (!filtered.isEmpty()) {
-            return Side.valueOf(lastMove.getSide());
+            if (!filtered.isEmpty()) {
+                return Side.valueOf(lastMove.getSide());
+            }
         }
 
         return Side.valueOf(lastMove.getSide()) == Side.LIGHT ? Side.DARK : Side.LIGHT;
