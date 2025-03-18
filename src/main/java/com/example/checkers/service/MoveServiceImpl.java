@@ -10,6 +10,7 @@ import com.example.checkers.persistence.PlayerRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -19,6 +20,7 @@ import static com.example.checkers.domain.Checkerboard.getStartingState;
 import static com.example.checkers.domain.Side.DARK;
 import static com.example.checkers.domain.Side.LIGHT;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class MoveServiceImpl implements MoveService {
@@ -108,9 +110,17 @@ public class MoveServiceImpl implements MoveService {
                     afterCaptureState.getLight().stream().map(String::valueOf).collect(Collectors.joining(",")));
 
             moveRepository.save(move);
-            return generateMoveResponse(gameId, Side.valueOf(moveRequest.getSide()),
-                    afterCaptureState);
+
+
+            Map<Integer, List<PossibleMove>> possibleMoves =
+                    possibleMoveProvider.getPossibleMovesMap(Side.valueOf(moveRequest.getSide()), Checkerboard.state(
+                            afterCaptureState.getDark(),
+                            afterCaptureState.getLight()
+                    ));
+            return new MoveResponse(gameId, afterCaptureState, Side.valueOf(moveRequest.getSide()).name(),
+                    getSimplifiedPossibleMoves(possibleMoves));
         }
+
 
         // regular move
         String[] split = moveRequest.getMove().split("-");
@@ -225,13 +235,17 @@ public class MoveServiceImpl implements MoveService {
     @Override
     public MoveResponse generateMoveResponse(String gameId, Side side) {
         var moveList = moveRepository.findAllByGameId(gameId);
+
+        // game begins
         if (moveList.isEmpty()) {
             var state = getStartingState();
             return new MoveResponse(gameId, state, side.name(),
                     getSimplifiedPossibleMoves(possibleMoveProvider.getPossibleMovesMap(side,
                             Checkerboard.state(state.getDark(), state.getLight()))));
         }
+
         var state = getCurrentState(moveList);
+        // regular move, game in progress
         Map<Integer, List<PossibleMove>> possibleMoves = possibleMoveProvider.getPossibleMovesMap(
                 side, Checkerboard.state(state.getDark(), state.getLight())
         );
@@ -247,8 +261,21 @@ public class MoveServiceImpl implements MoveService {
 
         // return only captures, if there are any
         if (!res.isEmpty()) {
-            return new MoveResponse(gameId, state, side.name(),
-                    res);
+            Side currentSide = Side.valueOf(side.name());
+            Side lastMoveSide = Side.valueOf(moveList.getLast().getSide());
+
+            log.info("Current move side: {}", currentSide);
+            log.info("Previous (last) move side: {} last move: {}", lastMoveSide, moveList.getLast().getMove());
+
+            if (currentSide == lastMoveSide) {
+                Integer lastMoveCell = Integer.valueOf(moveList.getLast().getMove().split("x")[1]);
+                Map<Integer, List<PossibleMoveSimplified>> resFilteredForChainCaptures = new HashMap<>();
+                resFilteredForChainCaptures.put(lastMoveCell, res.get(lastMoveCell));
+                return new MoveResponse(gameId, state, currentSide.name(),
+                        resFilteredForChainCaptures
+                );
+            }
+            return new MoveResponse(gameId, state, currentSide.name(), res);
         }
 
         return new MoveResponse(gameId, state, side.name(),
@@ -263,15 +290,5 @@ public class MoveServiceImpl implements MoveService {
                     .map(PossibleMoveSimplified::fromMove).toList());
         }
         return map;
-    }
-
-    public MoveResponse generateMoveResponse(String gameId, Side side, State afterCaptureState) {
-        Map<Integer, List<PossibleMove>> possibleMoves =
-                possibleMoveProvider.getPossibleMovesMap(side, Checkerboard.state(
-                        afterCaptureState.getDark(),
-                        afterCaptureState.getLight()
-                ));
-        return new MoveResponse(gameId, afterCaptureState, side.name(),
-                getSimplifiedPossibleMoves(possibleMoves));
     }
 }
