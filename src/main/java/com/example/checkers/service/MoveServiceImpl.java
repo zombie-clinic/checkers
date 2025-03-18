@@ -268,7 +268,7 @@ public class MoveServiceImpl implements MoveService {
             log.info("Previous (last) move side: {} last move: {}", lastMoveSide, moveList.getLast().getMove());
 
             if (currentSide == lastMoveSide) {
-                Integer lastMoveCell = Integer.valueOf(moveList.getLast().getMove().split("x")[1]);
+                Integer lastMoveCell = Integer.valueOf(moveList.getLast().getMove().split("x")[0]);
                 Map<Integer, List<PossibleMoveSimplified>> resFilteredForChainCaptures = new HashMap<>();
                 resFilteredForChainCaptures.put(lastMoveCell, res.get(lastMoveCell));
                 return new MoveResponse(gameId, state, currentSide.name(),
