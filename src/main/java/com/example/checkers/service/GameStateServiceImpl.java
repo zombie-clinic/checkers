@@ -1,10 +1,13 @@
 package com.example.checkers.service;
 
-import com.example.checkers.domain.*;
+import com.example.checkers.domain.Game;
+import com.example.checkers.domain.GameProgress;
+import com.example.checkers.domain.MoveRecord;
+import com.example.checkers.domain.Player;
 import com.example.checkers.model.GameResponse;
+import com.example.checkers.model.MoveRequest;
 import com.example.checkers.model.State;
 import com.example.checkers.persistence.GameRepository;
-import com.example.checkers.persistence.MoveRepository;
 import com.example.checkers.persistence.PlayerRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,20 +18,38 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.example.checkers.domain.GameProgress.LOBBY;
+import static com.example.checkers.service.MoveServiceImpl.getCurrentState;
 
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class GameServiceImpl implements GameService {
+public class GameStateServiceImpl implements GameStateService {
 
     private final GameRepository gameRepository;
 
-    private final MoveRepository moveRepository;
+    private final MovesReaderService movesReaderService;
 
     private final PlayerRepository playerRepository;
 
-    private final PossibleMoveProvider provider;
+    @Override
+    public boolean existsAndActive(UUID gameId) {
+        Optional<Game> game = gameRepository.findGameById(gameId.toString());
+        return game.isPresent();
+        // fixme
+//        return game.map(value ->
+//                !List.of(GameProgress.FINISHED, GameProgress.ARCHIVED)
+//                        .contains(value.getProgress())).orElse(false);
+    }
+
+    @Override
+    public boolean isGameInProgressConsistent(UUID gameId, MoveRequest moveRequest) {
+        State clientState = moveRequest.getState();
+        List<MoveRecord> moves = movesReaderService.getMovesFor(gameId.toString());
+        State serverState = getCurrentState(moves);
+        return amountOfFiguresMatches(clientState, serverState) && positionsMatch(clientState,
+                serverState);
+    }
 
     @Transactional
     @Override
@@ -57,20 +78,6 @@ public class GameServiceImpl implements GameService {
         game.setProgress(GameProgress.STARTING.toString());
 
         return new GameResponse(gameId, GameProgress.STARTING.toString());
-    }
-
-    private Game validateAndGetGame(String gameId) {
-        return gameRepository.findGameById(gameId).orElseThrow(
-                () -> new IllegalArgumentException("No such game: %s".formatted(gameId))
-        );
-    }
-
-    private Player validateAndGet(Long playerId) {
-        Optional<Player> player = playerRepository.findById(playerId);
-        if (player.isEmpty()) {
-            throw new IllegalArgumentException("No such player, couldn't start game.");
-        }
-        return player.get();
     }
 
     @Override
@@ -123,33 +130,25 @@ public class GameServiceImpl implements GameService {
         }
     }
 
-    @Override
-    public Side getCurrentSide(String gameId) {
-        List<Move> moves = moveRepository.findAllByGameId(gameId);
-        Optional<Long> lastMoveId = moves.stream().map(Move::getId).max(Comparator.naturalOrder());
-        if (lastMoveId.isEmpty()) {
-            return Side.LIGHT;
+    private Game validateAndGetGame(String gameId) {
+        return gameRepository.findGameById(gameId).orElseThrow(
+                () -> new IllegalArgumentException("No such game: %s".formatted(gameId))
+        );
+    }
+
+    private Player validateAndGet(Long playerId) {
+        Optional<Player> player = playerRepository.findById(playerId);
+        if (player.isEmpty()) {
+            throw new IllegalArgumentException("No such player, couldn't start game.");
         }
-        Move lastMove = moves.getLast();
+        return player.get();
+    }
 
-        // TODO add isCapture method
-        if (lastMove.getMove().contains("x")) {
-            State currentState = MoveServiceImpl.getCurrentState(moves);
-            Map<Integer, List<PossibleMove>> possibleMovesMap = provider.getPossibleMovesMap(
-                    Side.valueOf(lastMove.getSide()),
-                    new Checkerboard(currentState.getDark(),
-                            currentState.getLight()
-                    ));
-            List<PossibleMove> filtered = possibleMovesMap.entrySet().stream()
-                    .flatMap(p -> p.getValue().stream())
-                    .filter(PossibleMove::isCapture)
-                    .toList();
+    private static boolean positionsMatch(State clientState, State serverState) {
+        return new HashSet<>(serverState.getDark()).containsAll(clientState.getDark()) && new HashSet<>(serverState.getLight()).containsAll(clientState.getLight());
+    }
 
-            if (!filtered.isEmpty()) {
-                return Side.valueOf(lastMove.getSide());
-            }
-        }
-
-        return Side.valueOf(lastMove.getSide()) == Side.LIGHT ? Side.DARK : Side.LIGHT;
+    private static boolean amountOfFiguresMatches(State requestedCheck, State current) {
+        return requestedCheck.getDark().size() == current.getDark().size() && requestedCheck.getLight().size() == current.getLight().size();
     }
 }

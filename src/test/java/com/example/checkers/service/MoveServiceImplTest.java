@@ -5,9 +5,7 @@ import com.example.checkers.model.MoveRequest;
 import com.example.checkers.model.MoveResponse;
 import com.example.checkers.model.State;
 import com.example.checkers.persistence.MoveRepository;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -15,9 +13,12 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -28,12 +29,19 @@ class MoveServiceImplTest {
     @Mock
     private MoveRepository moveRepository;
 
+    @Mock
+    private MovesReaderService movesReaderService;
+
+    @Mock
+    private TurnService turnService;
+
     @Spy
     private PossibleMoveProvider possibleMoveProvider;
 
     @InjectMocks
     private MoveServiceImpl moveService;
-    private String gameId = UUID.randomUUID().toString();
+
+    private UUID gameId = UUID.randomUUID();
     private Game game;
     private Tuple<Player> players;
 
@@ -41,7 +49,7 @@ class MoveServiceImplTest {
     void setUp() {
         players = setPlayers();
         game = new Game();
-        game.setId(gameId);
+        game.setId(gameId.toString());
         game.setPlayerOne(players.left);
         game.setPlayerTwo(players.right);
         game.setProgress(GameProgress.ONGOING.name());
@@ -53,34 +61,39 @@ class MoveServiceImplTest {
         player1.setId(1L);
         player1.setName("1");
         var player2 = new Player();
-        player1.setId(2L);
+        player2.setId(2L);
         player2.setName("2");
         return new Tuple<>(player1, player2);
     }
 
     @Test
     void givenMoveResultsInCapture_whenMove_returnValidState() {
-        when(moveRepository.findAllByGameId(eq(gameId))).thenReturn(
+        when(moveRepository.findAllByGameId(eq(gameId.toString()))).thenReturn(
                 List.of(
                         new Move(game, players.left, Side.LIGHT.name(), "21-17", "13", "17")
                 )
         );
 
-        MoveResponse moveResponse = moveService.generateMoveResponse(gameId, Side.DARK);
+        MoveResponse moveResponse = moveService.getNextMoves(gameId);
         assertEquals("{13=[PossibleMoveSimplified[position=13, destination=22, isCapture=true, " +
                 "isTerminal=true]]}", moveResponse.getPossibleMoves().toString());
     }
 
     @Test
     void givenMoveIsNotTerminal_whenMove_returnSameSidePossibleMoves() {
-        when(moveRepository.findAllByGameId(eq(gameId))).thenReturn(
+        when(movesReaderService.getMovesFor(eq(gameId.toString()))).thenReturn(
                 List.of(
-                        new Move(game, players.left, Side.LIGHT.name(), "21-17", "13", "17,18"),
-                        new Move(game, players.right, Side.DARK.name(), "13x22", "22", "18")
+                        new MoveRecord(1L, game.getId(), players.left.getId(), Side.LIGHT, "21-17", "13", "17,18"),
+                        new MoveRecord(2L, game.getId(), players.right.getId(), Side.DARK, "13x22", "22", "18")
                 )
         );
 
-        MoveResponse moveResponse = moveService.generateMoveResponse(gameId, Side.DARK);
+        // FIXME let's use real method
+        when(turnService.getWhichSideToMove(game.getId())).thenReturn(Side.DARK);
+
+
+        MoveResponse moveResponse = moveService.getNextMoves(gameId);
+
         assertEquals("{22=[PossibleMoveSimplified[position=22, destination=15, isCapture=true, " +
                 "isTerminal=true]]}", moveResponse.getPossibleMoves().toString());
     }
@@ -125,6 +138,32 @@ class MoveServiceImplTest {
                 List.of(21, 24, 26, 27, 28, 29, 30, 31, 32, 22, 16)
         );
         assertEquals(expectedState, actualState);
+    }
+
+    @Test
+    void givenMoveIsNotTerminal_whenMove_returnSameSidePossibleMovesButOnlySamePiece() {
+        when(movesReaderService.getMovesFor(eq(gameId.toString()))).thenReturn(
+                List.of(
+                        new MoveRecord(1L, game.getId(), players.left.getId(), Side.LIGHT, "22-18"
+                                , "14,15", "18,27"),
+                        new MoveRecord(2L, game.getId(), players.right.getId(), Side.DARK, "15x22",
+                                "14,22", "27")
+                )
+        );
+
+        // FIXME let's use real method
+        when(turnService.getWhichSideToMove(game.getId())).thenReturn(Side.LIGHT);
+
+        Map<Integer, List<PossibleMove>> actual =
+                (Map<Integer, List<PossibleMove>>) moveService.getNextMoves(gameId)
+                        .getPossibleMoves();
+
+        Map<Integer, List<PossibleMoveSimplified>> expected = new HashMap<>();
+        expected.put(27, List.of(
+                new PossibleMoveSimplified(27, 24, false, true),
+                new PossibleMoveSimplified(27, 23, false, true)));
+
+        assertThat(expected.toString()).endsWith(actual.toString());
     }
 
     record Tuple<T>(T left, T right) {

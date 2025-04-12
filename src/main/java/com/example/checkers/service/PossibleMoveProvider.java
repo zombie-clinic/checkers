@@ -65,6 +65,18 @@ public class PossibleMoveProvider {
         return map;
     }
 
+    Map<Integer, List<PossibleMove>> getPossibleMovesFor(int piece, Side side, Checkerboard state) {
+        var map = new HashMap<Integer, List<PossibleMove>>();
+        // TODO refactor possible moves representation
+
+        List<PossibleMove> possibleMoves = getPossibleMoves(piece, side, state);
+        if (!possibleMoves.isEmpty()) {
+            map.put(piece, possibleMoves);
+        }
+
+        return map;
+    }
+
     private List<PossibleMove> captureMovesVerifiedForTerminality(Checkerboard state,
                                                                   Side side,
                                                                   List<PossibleMove> captureMoves) {

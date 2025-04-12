@@ -1,11 +1,12 @@
 package com.example.checkers.service;
 
-import com.example.checkers.domain.Side;
 import com.example.checkers.model.GameResponse;
+import com.example.checkers.model.MoveRequest;
 
 import java.util.List;
+import java.util.UUID;
 
-public interface GameService {
+public interface GameStateService {
 
     GameResponse startLobby(Long playerOneId, String side);
 
@@ -19,5 +20,7 @@ public interface GameService {
 
     void lobbyExistsAndPlayerIsDifferent(String gameId, Long playerId);
 
-    Side getCurrentSide(String gameId);
+    boolean existsAndActive(UUID gameId);
+
+    boolean isGameInProgressConsistent(UUID gameId, MoveRequest moveRequest);
 }

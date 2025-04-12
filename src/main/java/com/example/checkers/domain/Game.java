@@ -15,6 +15,7 @@ public class Game {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
+    // TODO Change to enum, in database as well
     @Default
     private String progress = GameProgress.LOBBY.toString();
 

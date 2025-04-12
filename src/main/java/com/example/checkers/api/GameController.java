@@ -4,7 +4,7 @@ import com.example.checkers.domain.GameProgress;
 import com.example.checkers.model.GameResponse;
 import com.example.checkers.model.JoinLobbyRequest;
 import com.example.checkers.model.StartLobbyRequest;
-import com.example.checkers.service.GameService;
+import com.example.checkers.service.GameStateService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -19,11 +19,11 @@ import static org.springframework.http.ResponseEntity.ok;
 @RestController
 public class GameController implements GameApi {
 
-    private final GameService gameService;
+    private final GameStateService gameStateService;
 
     @Override
     public ResponseEntity<GameResponse> getGameById(String gameId) {
-        GameResponse gameResponse = gameService.getGameById(gameId);
+        GameResponse gameResponse = gameStateService.getGameById(gameId);
         if (gameResponse == null) {
             throw new IllegalArgumentException(String.format("Game %s not found", gameId));
         }
@@ -33,7 +33,7 @@ public class GameController implements GameApi {
     @Override
     public ResponseEntity<List<GameResponse>> getGamesByProgress(List<String> progress) {
         validateProgress(progress);
-        return ok(gameService.getGamesByProgress(progress));
+        return ok(gameStateService.getGamesByProgress(progress));
     }
 
     private void validateProgress(List<String> progress) {
@@ -46,7 +46,7 @@ public class GameController implements GameApi {
         if (side == null) {
             throw new IllegalArgumentException("Starting player must choose a side.");
         }
-        return ok(gameService.startLobby(request.getPlayerId(), side));
+        return ok(gameStateService.startLobby(request.getPlayerId(), side));
     }
 
     @Override
@@ -54,7 +54,7 @@ public class GameController implements GameApi {
         // validation
         String gameId = request.getGameId();
         Long playerId = request.getPlayerId();
-        gameService.lobbyExistsAndPlayerIsDifferent(gameId, playerId);
-        return ok(gameService.startGame(gameId, playerId));
+        gameStateService.lobbyExistsAndPlayerIsDifferent(gameId, playerId);
+        return ok(gameStateService.startGame(gameId, playerId));
     }
 }
