@@ -79,6 +79,10 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation("org.assertj:assertj-core:3.27.2")
+    // logging
+//    implementation("ch.qos.logback:logback-classic:1.5.18")
+    implementation("ch.qos.logback:logback-access:1.5.18")
+    implementation("org.slf4j:slf4j-api:2.0.16")
 }
 
 tasks.named('test') {
@@ -121,6 +125,7 @@ tasks.named('bootRun').configure {
 
 tasks.withType(JavaCompile).configureEach {
     options.compilerArgs += "--enable-preview"
+    options.compilerArgs += "-Xlint:deprecation"
 }
 
 tasks.withType(Test).configureEach {

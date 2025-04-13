@@ -6,8 +6,6 @@ import com.example.checkers.model.MoveResponse;
 import com.example.checkers.service.GameStateService;
 import com.example.checkers.service.MoveService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,7 +19,6 @@ import static org.springframework.http.ResponseEntity.ok;
  * for the next possible moves given the current state of the game (state inferred from already
  * persisted moves).
  */
-@Slf4j
 @CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174"})
 @RequiredArgsConstructor
 @RestController

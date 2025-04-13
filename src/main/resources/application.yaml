@@ -23,11 +23,12 @@ springdoc:
 
 logging:
   level:
+    root: INFO
     org:
       springframework:
         web:
           filter:
-            CommonsRequestLoggingFilter: DEBUG
+            CommonsRequestLoggingFilter: INFO
 
 server:
   error:

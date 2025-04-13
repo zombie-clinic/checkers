@@ -8,7 +8,6 @@ import com.example.checkers.persistence.GameRepository;
 import com.example.checkers.persistence.MoveRepository;
 import com.example.checkers.persistence.PlayerRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,7 +18,6 @@ import java.util.stream.Collectors;
 import static com.example.checkers.domain.Side.DARK;
 import static com.example.checkers.domain.Side.LIGHT;
 
-@Slf4j
 @RequiredArgsConstructor
 @Service
 public class MoveServiceImpl implements MoveService {
@@ -47,7 +45,7 @@ public class MoveServiceImpl implements MoveService {
         }
 
         var nextToMoveSide = turnService.getWhichSideToMove(gameId.toString());
-
+        // log.info("Next move: {}", nextToMoveSide);
         return generateMoveResponse(gameId.toString(), nextToMoveSide);
     }
 
@@ -78,7 +76,9 @@ public class MoveServiceImpl implements MoveService {
         String moveStr = moveRequest.getMove();
 
         State newState = generateNewState(state, movingSide, moveStr, mv -> mv.contains("x"));
-        Move move = getMove(moveRequest, game, player, newState);
+        Move move = new Move(game, player, movingSide.name(), moveRequest.getMove(),
+                newState.getDark().stream().map(String::valueOf).collect(Collectors.joining(",")),
+                newState.getLight().stream().map(String::valueOf).collect(Collectors.joining(",")));
 
         moveRepository.save(move);
     }
@@ -205,12 +205,6 @@ public class MoveServiceImpl implements MoveService {
         return newState;
     }
 
-    private static Move getMove(MoveRequest moveRequest, Game game, Player player, State state) {
-        return new Move(game, player, "LIGHT", moveRequest.getMove(),
-                state.getDark().stream().map(String::valueOf).collect(Collectors.joining(",")),
-                state.getLight().stream().map(String::valueOf).collect(Collectors.joining(",")));
-    }
-
     private static boolean isCaptureMove(MoveRequest moveRequest) {
         return moveRequest.getMove().contains("x");
     }
@@ -227,7 +221,6 @@ public class MoveServiceImpl implements MoveService {
         return generateAfterCaptureState(state, moveRequest);
     }
 
-    @Deprecated
     static State generateAfterCaptureState(State state, MoveRequest moveRequest) {
 
         // TODO Database call could be done earlier

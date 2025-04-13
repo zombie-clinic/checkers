@@ -6,6 +6,7 @@ import com.example.checkers.model.JoinLobbyRequest;
 import com.example.checkers.model.StartLobbyRequest;
 import com.example.checkers.service.GameStateService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RestController;
@@ -14,6 +15,7 @@ import java.util.List;
 
 import static org.springframework.http.ResponseEntity.ok;
 
+@Slf4j
 @CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174"})
 @RequiredArgsConstructor
 @RestController
@@ -51,7 +53,7 @@ public class GameController implements GameApi {
 
     @Override
     public ResponseEntity<GameResponse> joinLobby(JoinLobbyRequest request) {
-        // validation
+        log.info("JoinLobbyRequest: {}", request);
         String gameId = request.getGameId();
         Long playerId = request.getPlayerId();
         gameStateService.lobbyExistsAndPlayerIsDifferent(gameId, playerId);
