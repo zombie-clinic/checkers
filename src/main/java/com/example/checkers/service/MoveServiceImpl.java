@@ -1,7 +1,6 @@
 package com.example.checkers.service;
 
 import com.example.checkers.domain.*;
-import com.example.checkers.domain.exception.GameNotFoundException;
 import com.example.checkers.model.MoveRequest;
 import com.example.checkers.model.MoveResponse;
 import com.example.checkers.model.State;
@@ -41,20 +40,21 @@ public class MoveServiceImpl implements MoveService {
     @Override
     @Transactional
     public MoveResponse getNextMoves(UUID gameId) {
-        // var moveList = movesReaderService.getMovesFor(gameId.toString());
+         var moveList = movesReaderService.getMovesFor(gameId.toString());
 
-//        if (isGameStart(moveList)) {
-//            Optional<Game> game = gameRepository.findGameById(gameId.toString());
-//            if (game.isEmpty()) {
-//                throw new GameNotFoundException(gameId.toString());
-//            }
-//            State state = startingStateLookupService.getStateFromStartingStateString(gameId);
-//            return new MoveResponse(gameId.toString(), state, DARK.name(),
-//                    getSimplifiedPossibleMoves(possibleMoveProvider.getPossibleMovesMap(DARK,
-//                            Checkerboard.state(state.getDark(), state.getLight()))));
-//        }
 
         var nextToMoveSide = turnService.getWhichSideToMove(gameId.toString());
+        if (nextToMoveSide == null) {
+            // meaning last player to capture a piece wins
+            // we return empty possible moves and null next turn
+            // in order front end to recognize end time
+            return new MoveResponse(gameId.toString(),
+                    getCurrentState(moveList.stream().toList()),
+                    null,
+                    Map.of()
+            );
+        }
+        // log.info("Next move: {}", nextToMoveSide);
         return generateMoveResponse(gameId.toString(), nextToMoveSide);
     }
 
