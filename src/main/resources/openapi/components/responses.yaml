@@ -18,6 +18,12 @@ GameResponse:
       type: string
     startingState:
       type: string
+    possibleMoves:
+      schema:
+        type: array
+        items:
+          schema:
+            type: object
   required:
     - gameId
     - progress

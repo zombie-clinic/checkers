@@ -8,9 +8,6 @@ import com.example.checkers.model.State;
 import com.example.checkers.persistence.GameRepository;
 import com.example.checkers.persistence.MoveRepository;
 import com.example.checkers.persistence.PlayerRepository;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,22 +35,24 @@ public class MoveServiceImpl implements MoveService {
 
     private final MovesReaderService movesReaderService;
 
+    private final StartingStateLookupService startingStateLookupService;
+
     // TODO do we need side? Depends on if we are fetching from db
     @Override
     @Transactional
     public MoveResponse getNextMoves(UUID gameId) {
-        var moveList = movesReaderService.getMovesFor(gameId.toString());
+        // var moveList = movesReaderService.getMovesFor(gameId.toString());
 
-        if (isGameStart(moveList)) {
-            Optional<Game> game = gameRepository.findGameById(gameId.toString());
-            if (game.isEmpty()) {
-                throw new GameNotFoundException(gameId.toString());
-            }
-            State state = getStateFromStartingStateString(gameId);
-            return new MoveResponse(gameId.toString(), state, DARK.name(),
-                    getSimplifiedPossibleMoves(possibleMoveProvider.getPossibleMovesMap(DARK,
-                            Checkerboard.state(state.getDark(), state.getLight()))));
-        }
+//        if (isGameStart(moveList)) {
+//            Optional<Game> game = gameRepository.findGameById(gameId.toString());
+//            if (game.isEmpty()) {
+//                throw new GameNotFoundException(gameId.toString());
+//            }
+//            State state = startingStateLookupService.getStateFromStartingStateString(gameId);
+//            return new MoveResponse(gameId.toString(), state, DARK.name(),
+//                    getSimplifiedPossibleMoves(possibleMoveProvider.getPossibleMovesMap(DARK,
+//                            Checkerboard.state(state.getDark(), state.getLight()))));
+//        }
 
         var nextToMoveSide = turnService.getWhichSideToMove(gameId.toString());
         return generateMoveResponse(gameId.toString(), nextToMoveSide);
@@ -73,7 +72,7 @@ public class MoveServiceImpl implements MoveService {
         List<Move> moves = moveRepository.findAllByGameId(gameId.toString());
         State currentState;
         if (moves.isEmpty()) {
-            currentState = getStateFromStartingStateString(gameId);
+            currentState = startingStateLookupService.getStateFromStartingStateString(gameId);
         } else {
             currentState = new State(
                     Arrays.stream(moves.getLast().getDark().split(",")).map(Integer::valueOf).toList(),
@@ -93,26 +92,6 @@ public class MoveServiceImpl implements MoveService {
         moveRepository.save(move);
     }
 
-    private State getStateFromStartingStateString(UUID gameId) {
-        Optional<Game> currentGame = gameRepository.findGameById(gameId.toString());
-        JsonNode startingState = null;
-        try {
-            startingState = new ObjectMapper().readTree(currentGame.get().getStartingState());
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e.getMessage());
-        }
-        return new State(
-                fromIteratorToList(startingState.get("dark").elements()),
-                fromIteratorToList(startingState.get("light").elements())
-        );
-    }
-
-    private List<Integer> fromIteratorToList(Iterator<JsonNode> elements) {
-        List<Integer> list = new ArrayList<>();
-        elements.forEachRemaining(e -> list.add(e.intValue()));
-        return list;
-    }
-
     private void validateMoveRequest(State serverState, State clientState) {
         if (!serverState.equals(clientState)) {
             throw new IllegalArgumentException("provided state not consistent, wait for you turn");
@@ -124,7 +103,13 @@ public class MoveServiceImpl implements MoveService {
     private MoveResponse generateMoveResponse(String gameId, Side nextToMoveSide) {
         var moveList = movesReaderService.getMovesFor(gameId);
 
-        var state = getCurrentState(moveList);
+        State state;
+        if (moveList.isEmpty()) {
+            // fixme seems to be unreachable code
+            state = startingStateLookupService.getStateFromStartingStateString(UUID.fromString(gameId));
+        } else {
+            state = getCurrentState(moveList);
+        }
         // regular move, game in progress
         Map<Integer, List<PossibleMove>> possibleMoves = possibleMoveProvider.getPossibleMovesMap(
                 nextToMoveSide, Checkerboard.state(state.getDark(), state.getLight())
@@ -181,8 +166,10 @@ public class MoveServiceImpl implements MoveService {
     }
 
     static State getCurrentState(List<MoveRecord> moveList) {
+
         if (moveList.isEmpty()) {
-            return Checkerboard.getStartingState();
+            throw new IllegalArgumentException("Move list is empty, state should be constructed " +
+                    "from starting state");
         }
 
         String dark = moveList.getLast().dark();
