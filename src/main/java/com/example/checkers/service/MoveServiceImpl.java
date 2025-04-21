@@ -42,7 +42,7 @@ public class MoveServiceImpl implements MoveService {
     @Override
     @Transactional
     public MoveResponse getNextMoves(UUID gameId) {
-        var moveList = moveRepository.findAllByGameId(gameId.toString());
+        var moveList = movesReaderService.getMovesFor(gameId.toString());
 
         if (isGameStart(moveList)) {
             Optional<Game> game = gameRepository.findGameById(gameId.toString());
@@ -232,7 +232,7 @@ public class MoveServiceImpl implements MoveService {
         return moveRequest.getMove().contains("x");
     }
 
-    private static boolean isGameStart(List<Move> moves) {
+    private static boolean isGameStart(List<MoveRecord> moves) {
         return moves.isEmpty();
     }
 

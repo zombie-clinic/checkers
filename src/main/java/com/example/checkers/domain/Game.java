@@ -33,7 +33,7 @@ public class Game {
     // todo how to pass default value into the db? Currently populated on creation
     @Default
     private String startingState = String.format("{\"dark\":[%s]\"light\":[%s]}",
-            Checkerboard.getStartingState().getDark().stream().map(String::valueOf).collect(Collectors.joining()),
-            Checkerboard.getStartingState().getLight().stream().map(String::valueOf).collect(Collectors.joining())
+            Checkerboard.getStartingState().getDark().stream().map(String::valueOf).collect(Collectors.joining(",")),
+            Checkerboard.getStartingState().getLight().stream().map(String::valueOf).collect(Collectors.joining(","))
     );
 }
