@@ -39,8 +39,11 @@ public class TurnService {
             // Let's check if it's chaining capturing move
             // It is only when the next move with the same piece leads to capture
             // this means we need to check only for that piece moves
-
             State currentState = getCurrentState(moves);
+
+            if (currentState.getDark().isEmpty() || currentState.getLight().isEmpty()) {
+                return null;
+            }
 
             Map<Integer, List<PossibleMove>> possibleMovesMap =
                     provider.getPossibleMovesFor(Integer.parseInt(lastMove.move().split("x")[1]),
