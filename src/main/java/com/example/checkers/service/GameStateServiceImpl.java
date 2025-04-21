@@ -73,7 +73,8 @@ public class GameStateServiceImpl implements GameStateService {
                 .build();
 
         Game savedGame = gameRepository.save(lobbyGame);
-        GameResponse gameResponse = new GameResponse(savedGame.getId(), LOBBY.toString(), savedGame.getStartingState());
+        GameResponse gameResponse = new GameResponse(savedGame.getId(), LOBBY.toString(), savedGame.getStartingState(),
+                moveService.getNextMoves(UUID.fromString(savedGame.getId())));
         gameResponse.setPossibleMoves(
                 moveService.getNextMoves(UUID.fromString(savedGame.getId()))
         );
@@ -95,7 +96,8 @@ public class GameStateServiceImpl implements GameStateService {
                 .build();
 
         Game savedGame = gameRepository.save(lobbyGame);
-        GameResponse gameResponse = new GameResponse(savedGame.getId(), LOBBY.toString(), savedGame.getStartingState());
+        GameResponse gameResponse = new GameResponse(savedGame.getId(), LOBBY.toString(), savedGame.getStartingState(),
+                moveService.getNextMoves(UUID.fromString(savedGame.getId())));
         gameResponse.setPossibleMoves(
                 moveService.getNextMoves(UUID.fromString(savedGame.getId()))
         );
@@ -115,7 +117,9 @@ public class GameStateServiceImpl implements GameStateService {
         game.setPlayerTwo(playerTwo);
         game.setProgress(GameProgress.STARTING.toString());
 
-        return new GameResponse(gameId, GameProgress.STARTING.toString(), game.getStartingState());
+        return new GameResponse(gameId, GameProgress.STARTING.toString(), game.getStartingState(), moveService.getNextMoves(
+                UUID.fromString(gameId)
+        ));
     }
 
     @Override
@@ -147,8 +151,9 @@ public class GameStateServiceImpl implements GameStateService {
 
     @Override
     public GameResponse getGameById(String uuid) {
+        // fixme possible moves
         return gameRepository.findGameById(uuid)
-                .map(game -> new GameResponse(game.getId(), game.getProgress(), game.getStartingState()))
+                .map(game -> new GameResponse(game.getId(), game.getProgress(), game.getStartingState(), List.of()))
                 .orElse(null);
     }
 

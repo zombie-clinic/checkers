@@ -28,6 +28,7 @@ GameResponse:
     - gameId
     - progress
     - startingState
+    - possibleMoves
 MoveResponse:
   type: object
   properties:
