@@ -4,6 +4,7 @@ import com.example.checkers.domain.*;
 import com.example.checkers.model.MoveRequest;
 import com.example.checkers.model.MoveResponse;
 import com.example.checkers.model.State;
+import com.example.checkers.persistence.GameRepository;
 import com.example.checkers.persistence.MoveRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,18 +13,20 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class MoveServiceImplTest {
 
     @Mock
@@ -34,6 +37,9 @@ class MoveServiceImplTest {
 
     @Mock
     private TurnService turnService;
+
+    @Mock
+    private GameRepository gameRepository;
 
     @Spy
     private PossibleMoveProvider possibleMoveProvider;
@@ -53,6 +59,15 @@ class MoveServiceImplTest {
         game.setPlayerOne(players.left);
         game.setPlayerTwo(players.right);
         game.setProgress(GameProgress.ONGOING.name());
+        game.setStartingState(
+                String.format("{\"dark\":[%s],\"light\":[%s]}",
+                        Checkerboard.getStartingState().getDark().stream().map(String::valueOf).collect(Collectors.joining(",")),
+                        Checkerboard.getStartingState().getLight().stream().map(String::valueOf).collect(Collectors.joining(",")))
+        );
+
+        when(gameRepository.findGameById(anyString())).thenReturn(
+                Optional.ofNullable(game)
+        );
 
     }
 
@@ -68,29 +83,33 @@ class MoveServiceImplTest {
 
     @Test
     void givenMoveResultsInCapture_whenMove_returnValidState() {
-        when(moveRepository.findAllByGameId(eq(gameId.toString()))).thenReturn(
+        when(movesReaderService.getMovesFor(anyString())).thenReturn(
                 List.of(
-                        new Move(game, players.left, Side.LIGHT.name(), "21-17", "13", "17")
-                )
-        );
-
-        MoveResponse moveResponse = moveService.getNextMoves(gameId);
-        assertEquals("{13=[PossibleMoveSimplified[position=13, destination=22, isCapture=true, " +
-                "isTerminal=true]]}", moveResponse.getPossibleMoves().toString());
-    }
-
-    @Test
-    void givenMoveIsNotTerminal_whenMove_returnSameSidePossibleMoves() {
-        when(movesReaderService.getMovesFor(eq(gameId.toString()))).thenReturn(
-                List.of(
-                        new MoveRecord(1L, game.getId(), players.left.getId(), Side.LIGHT, "21-17", "13", "17,18"),
-                        new MoveRecord(2L, game.getId(), players.right.getId(), Side.DARK, "13x22", "22", "18")
+                        MoveRecord.fromMove(new Move(game, players.left, Side.LIGHT.name(), "21-17", "13", "17"))
                 )
         );
 
         // FIXME let's use real method
         when(turnService.getWhichSideToMove(game.getId())).thenReturn(Side.DARK);
 
+        MoveResponse moveResponse = moveService.getNextMoves(gameId);
+                assertEquals("{13=[PossibleMoveSimplified[position=13, destination=22, isCapture=true, " +
+                "isTerminal=true]]}", moveResponse.getPossibleMoves().toString());
+    }
+
+    @Test
+    void givenMoveIsNotTerminal_whenMove_returnSameSidePossibleMoves() {
+        when(movesReaderService.getMovesFor(anyString())).thenReturn(
+                List.of(
+                        new MoveRecord(1L, game.getId(), players.left.getId(), Side.LIGHT, "21-17"
+                                , "13", "17,18"),
+                        new MoveRecord(2L, game.getId(), players.right.getId(), Side.DARK, "13x22"
+                                , "22", "18")
+                )
+        );
+
+        // FIXME let's use real method
+        when(turnService.getWhichSideToMove(game.getId())).thenReturn(Side.DARK);
 
         MoveResponse moveResponse = moveService.getNextMoves(gameId);
 

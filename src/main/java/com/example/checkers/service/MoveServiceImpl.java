@@ -1,6 +1,7 @@
 package com.example.checkers.service;
 
 import com.example.checkers.domain.*;
+import com.example.checkers.domain.exception.GameNotFoundException;
 import com.example.checkers.model.MoveRequest;
 import com.example.checkers.model.MoveResponse;
 import com.example.checkers.model.State;
@@ -34,18 +35,26 @@ public class MoveServiceImpl implements MoveService {
 
     private final MovesReaderService movesReaderService;
 
+    private final StartingStateLookupService startingStateLookupService;
+
     // TODO do we need side? Depends on if we are fetching from db
     @Override
     @Transactional
     public MoveResponse getNextMoves(UUID gameId) {
-        var moveList = moveRepository.findAllByGameId(gameId.toString());
+        // var moveList = movesReaderService.getMovesFor(gameId.toString());
 
-        if (isGameStart(moveList)) {
-            return generateFirstMoveResponse(gameId.toString(), DARK, moveList);
-        }
+//        if (isGameStart(moveList)) {
+//            Optional<Game> game = gameRepository.findGameById(gameId.toString());
+//            if (game.isEmpty()) {
+//                throw new GameNotFoundException(gameId.toString());
+//            }
+//            State state = startingStateLookupService.getStateFromStartingStateString(gameId);
+//            return new MoveResponse(gameId.toString(), state, DARK.name(),
+//                    getSimplifiedPossibleMoves(possibleMoveProvider.getPossibleMovesMap(DARK,
+//                            Checkerboard.state(state.getDark(), state.getLight()))));
+//        }
 
         var nextToMoveSide = turnService.getWhichSideToMove(gameId.toString());
-        // log.info("Next move: {}", nextToMoveSide);
         return generateMoveResponse(gameId.toString(), nextToMoveSide);
     }
 
@@ -63,7 +72,7 @@ public class MoveServiceImpl implements MoveService {
         List<Move> moves = moveRepository.findAllByGameId(gameId.toString());
         State currentState;
         if (moves.isEmpty()) {
-            currentState = Checkerboard.getStartingState();
+            currentState = startingStateLookupService.getStateFromStartingStateString(gameId);
         } else {
             currentState = new State(
                     Arrays.stream(moves.getLast().getDark().split(",")).map(Integer::valueOf).toList(),
@@ -89,19 +98,18 @@ public class MoveServiceImpl implements MoveService {
         }
     }
 
-    private MoveResponse generateFirstMoveResponse(String gameId, Side side, List<Move> moveList) {
-        var state = StateFactory.stateFrom(moveList.getLast());
-        return new MoveResponse(gameId, state, DARK.name(),
-                getSimplifiedPossibleMoves(possibleMoveProvider.getPossibleMovesMap(side,
-                        Checkerboard.state(state.getDark(), state.getLight()))));
-    }
-
     // TODO Add a distinction between Player and User
     // TODO User becomes Player when a game starts, Player has a user id and a side
     private MoveResponse generateMoveResponse(String gameId, Side nextToMoveSide) {
         var moveList = movesReaderService.getMovesFor(gameId);
 
-        var state = getCurrentState(moveList);
+        State state;
+        if (moveList.isEmpty()) {
+            // fixme seems to be unreachable code
+            state = startingStateLookupService.getStateFromStartingStateString(UUID.fromString(gameId));
+        } else {
+            state = getCurrentState(moveList);
+        }
         // regular move, game in progress
         Map<Integer, List<PossibleMove>> possibleMoves = possibleMoveProvider.getPossibleMovesMap(
                 nextToMoveSide, Checkerboard.state(state.getDark(), state.getLight())
@@ -158,8 +166,10 @@ public class MoveServiceImpl implements MoveService {
     }
 
     static State getCurrentState(List<MoveRecord> moveList) {
+
         if (moveList.isEmpty()) {
-            return Checkerboard.getStartingState();
+            throw new IllegalArgumentException("Move list is empty, state should be constructed " +
+                    "from starting state");
         }
 
         String dark = moveList.getLast().dark();
@@ -209,8 +219,8 @@ public class MoveServiceImpl implements MoveService {
         return moveRequest.getMove().contains("x");
     }
 
-    private static boolean isGameStart(List<Move> moves) {
-        return moves.size() == 1;
+    private static boolean isGameStart(List<MoveRecord> moves) {
+        return moves.isEmpty();
     }
 
     static State generateAfterCaptureState(State state, Side side, String move) {

@@ -42,11 +42,18 @@ public class GameController implements GameApi {
         progress.forEach(GameProgress::valueOf);
     }
 
+
+
     @Override
-    public ResponseEntity<GameResponse> startLobby(StartLobbyRequest request) {
+    public ResponseEntity<GameResponse> startLobby(StartLobbyRequest request, Boolean isImport) {
         String side = request.getSide();
         if (side == null) {
             throw new IllegalArgumentException("Starting player must choose a side.");
+        }
+        if (isImport != null && isImport) {
+            return ok(gameStateService.startImportedGameLobby(request.getPlayerId(), side,
+                    request.getState()
+            ));
         }
         return ok(gameStateService.startLobby(request.getPlayerId(), side));
     }
