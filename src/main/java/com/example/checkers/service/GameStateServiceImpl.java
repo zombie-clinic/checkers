@@ -1,9 +1,6 @@
 package com.example.checkers.service;
 
-import com.example.checkers.domain.Game;
-import com.example.checkers.domain.GameProgress;
-import com.example.checkers.domain.MoveRecord;
-import com.example.checkers.domain.Player;
+import com.example.checkers.domain.*;
 import com.example.checkers.model.GameResponse;
 import com.example.checkers.model.MoveRequest;
 import com.example.checkers.model.State;
@@ -58,10 +55,34 @@ public class GameStateServiceImpl implements GameStateService {
 
         Game lobbyGame = Game.builder()
                 .playerOne(player)
+                .startingState(
+                        String.format("{\"dark\":[%s],\"light\":[%s]}",
+                                Checkerboard.getStartingState().getDark().stream().map(String::valueOf).collect(Collectors.joining(",")),
+                                Checkerboard.getStartingState().getLight().stream().map(String::valueOf).collect(Collectors.joining(","))
+
+                        ))
                 .build();
 
         Game savedGame = gameRepository.save(lobbyGame);
-        return new GameResponse(savedGame.getId(), LOBBY.toString());
+        return new GameResponse(savedGame.getId(), LOBBY.toString(), savedGame.getStartingState());
+    }
+
+    @Transactional
+    @Override
+    public GameResponse startImportedGameLobby(Long playerId, String side, State state) {
+        Player player = validateAndGet(playerId);
+
+        Game lobbyGame = Game.builder()
+                .playerOne(player)
+                .startingState(
+                        String.format("{\"dark\":[%s],\"light\":[%s]}",
+                                state.getDark().stream().map(String::valueOf).collect(Collectors.joining(",")),
+                                state.getLight().stream().map(String::valueOf).collect(Collectors.joining(","))
+                        ))
+                .build();
+
+        Game savedGame = gameRepository.save(lobbyGame);
+        return new GameResponse(savedGame.getId(), LOBBY.toString(), savedGame.getStartingState());
     }
 
     @Transactional
@@ -77,7 +98,7 @@ public class GameStateServiceImpl implements GameStateService {
         game.setPlayerTwo(playerTwo);
         game.setProgress(GameProgress.STARTING.toString());
 
-        return new GameResponse(gameId, GameProgress.STARTING.toString());
+        return new GameResponse(gameId, GameProgress.STARTING.toString(), game.getStartingState());
     }
 
     @Override
@@ -110,7 +131,7 @@ public class GameStateServiceImpl implements GameStateService {
     @Override
     public GameResponse getGameById(String uuid) {
         return gameRepository.findGameById(uuid)
-                .map(game -> new GameResponse(game.getId(), game.getProgress()))
+                .map(game -> new GameResponse(game.getId(), game.getProgress(), game.getStartingState()))
                 .orElse(null);
     }
 

@@ -30,19 +30,30 @@ post:
   summary: Start a new lobby
   description: Start a new lobby
   operationId: startLobby
+  parameters:
+    - name: isImport
+      in: query
+      required: false
+      schema:
+        type: boolean
   requestBody:
-    description: Optional description in *Markdown*
+    description: Is used to start either a new or imported game
     required: true
     content:
       application/json:
         schema:
           type: object
+          required:
+            - playedId
+            - side
           properties:
             playerId:
               type: integer
               format: int64
             side:
               type: string
+            state:
+              $ref: '../components/schemas.yaml#/State'
   responses:
     '200':
       description: Successful operation

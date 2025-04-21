@@ -2,6 +2,7 @@ package com.example.checkers.service;
 
 import com.example.checkers.model.GameResponse;
 import com.example.checkers.model.MoveRequest;
+import com.example.checkers.model.State;
 
 import java.util.List;
 import java.util.UUID;
@@ -23,4 +24,6 @@ public interface GameStateService {
     boolean existsAndActive(UUID gameId);
 
     boolean isGameInProgressConsistent(UUID gameId, MoveRequest moveRequest);
+
+    GameResponse startImportedGameLobby(Long playedId, String side, State state);
 }

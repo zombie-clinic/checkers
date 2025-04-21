@@ -1,12 +1,16 @@
 package com.example.checkers.service;
 
 import com.example.checkers.domain.*;
+import com.example.checkers.domain.exception.GameNotFoundException;
 import com.example.checkers.model.MoveRequest;
 import com.example.checkers.model.MoveResponse;
 import com.example.checkers.model.State;
 import com.example.checkers.persistence.GameRepository;
 import com.example.checkers.persistence.MoveRepository;
 import com.example.checkers.persistence.PlayerRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,11 +45,17 @@ public class MoveServiceImpl implements MoveService {
         var moveList = moveRepository.findAllByGameId(gameId.toString());
 
         if (isGameStart(moveList)) {
-            return generateFirstMoveResponse(gameId.toString(), DARK, moveList);
+            Optional<Game> game = gameRepository.findGameById(gameId.toString());
+            if (game.isEmpty()) {
+                throw new GameNotFoundException(gameId.toString());
+            }
+            State state = getStateFromStartingStateString(gameId);
+            return new MoveResponse(gameId.toString(), state, DARK.name(),
+                    getSimplifiedPossibleMoves(possibleMoveProvider.getPossibleMovesMap(DARK,
+                            Checkerboard.state(state.getDark(), state.getLight()))));
         }
 
         var nextToMoveSide = turnService.getWhichSideToMove(gameId.toString());
-        // log.info("Next move: {}", nextToMoveSide);
         return generateMoveResponse(gameId.toString(), nextToMoveSide);
     }
 
@@ -63,7 +73,7 @@ public class MoveServiceImpl implements MoveService {
         List<Move> moves = moveRepository.findAllByGameId(gameId.toString());
         State currentState;
         if (moves.isEmpty()) {
-            currentState = Checkerboard.getStartingState();
+            currentState = getStateFromStartingStateString(gameId);
         } else {
             currentState = new State(
                     Arrays.stream(moves.getLast().getDark().split(",")).map(Integer::valueOf).toList(),
@@ -83,17 +93,30 @@ public class MoveServiceImpl implements MoveService {
         moveRepository.save(move);
     }
 
+    private State getStateFromStartingStateString(UUID gameId) {
+        Optional<Game> currentGame = gameRepository.findGameById(gameId.toString());
+        JsonNode startingState = null;
+        try {
+            startingState = new ObjectMapper().readTree(currentGame.get().getStartingState());
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e.getMessage());
+        }
+        return new State(
+                fromIteratorToList(startingState.get("dark").elements()),
+                fromIteratorToList(startingState.get("light").elements())
+        );
+    }
+
+    private List<Integer> fromIteratorToList(Iterator<JsonNode> elements) {
+        List<Integer> list = new ArrayList<>();
+        elements.forEachRemaining(e -> list.add(e.intValue()));
+        return list;
+    }
+
     private void validateMoveRequest(State serverState, State clientState) {
         if (!serverState.equals(clientState)) {
             throw new IllegalArgumentException("provided state not consistent, wait for you turn");
         }
-    }
-
-    private MoveResponse generateFirstMoveResponse(String gameId, Side side, List<Move> moveList) {
-        var state = StateFactory.stateFrom(moveList.getLast());
-        return new MoveResponse(gameId, state, DARK.name(),
-                getSimplifiedPossibleMoves(possibleMoveProvider.getPossibleMovesMap(side,
-                        Checkerboard.state(state.getDark(), state.getLight()))));
     }
 
     // TODO Add a distinction between Player and User
@@ -210,7 +233,7 @@ public class MoveServiceImpl implements MoveService {
     }
 
     private static boolean isGameStart(List<Move> moves) {
-        return moves.size() == 1;
+        return moves.isEmpty();
     }
 
     static State generateAfterCaptureState(State state, Side side, String move) {

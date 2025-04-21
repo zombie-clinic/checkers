@@ -16,9 +16,12 @@ GameResponse:
       type: string
     progress:
       type: string
+    startingState:
+      type: string
   required:
     - gameId
     - progress
+    - startingState
 MoveResponse:
   type: object
   properties:
