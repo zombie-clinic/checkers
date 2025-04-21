@@ -76,7 +76,7 @@ public class GameStateServiceImpl implements GameStateService {
         GameResponse gameResponse = new GameResponse(savedGame.getId(), LOBBY.toString(), savedGame.getStartingState(),
                 moveService.getNextMoves(UUID.fromString(savedGame.getId())));
         gameResponse.setPossibleMoves(
-                moveService.getNextMoves(UUID.fromString(savedGame.getId()))
+                moveService.getNextMoves(UUID.fromString(savedGame.getId())).getPossibleMoves()
         );
         return gameResponse;
     }
@@ -99,7 +99,7 @@ public class GameStateServiceImpl implements GameStateService {
         GameResponse gameResponse = new GameResponse(savedGame.getId(), LOBBY.toString(), savedGame.getStartingState(),
                 moveService.getNextMoves(UUID.fromString(savedGame.getId())));
         gameResponse.setPossibleMoves(
-                moveService.getNextMoves(UUID.fromString(savedGame.getId()))
+                moveService.getNextMoves(UUID.fromString(savedGame.getId())).getPossibleMoves()
         );
         return gameResponse;
     }

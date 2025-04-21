@@ -42,8 +42,6 @@ public class GameController implements GameApi {
         progress.forEach(GameProgress::valueOf);
     }
 
-
-
     @Override
     public ResponseEntity<GameResponse> startLobby(StartLobbyRequest request, Boolean isImport) {
         String side = request.getSide();
