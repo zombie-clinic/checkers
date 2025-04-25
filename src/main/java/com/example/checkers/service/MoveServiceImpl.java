@@ -40,7 +40,7 @@ public class MoveServiceImpl implements MoveService {
     @Override
     @Transactional
     public MoveResponse getNextMoves(UUID gameId) {
-         var moveList = movesReaderService.getMovesFor(gameId.toString());
+        var moveList = movesReaderService.getMovesFor(gameId.toString());
 
 
         var nextToMoveSide = turnService.getWhichSideToMove(gameId.toString());
@@ -175,9 +175,20 @@ public class MoveServiceImpl implements MoveService {
         String dark = moveList.getLast().dark();
         String light = moveList.getLast().light();
 
+        List<Integer> darkList = parseList(dark);
+        List<Integer> lightList = parseList(light);
+
         return new State(
-                Arrays.stream(dark.split(",")).map(Integer::valueOf).toList(),
-                Arrays.stream(light.split(",")).map(Integer::valueOf).toList());
+                darkList,
+                lightList);
+    }
+
+    private static List<Integer> parseList(String str) {
+        if ("".equals(str)) {
+            return List.of();
+        }
+
+        return Arrays.stream(str.split(",")).map(Integer::valueOf).toList();
     }
 
     private static State generateNewState(State currentState,
