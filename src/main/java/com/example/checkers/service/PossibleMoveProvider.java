@@ -1,6 +1,7 @@
 package com.example.checkers.service;
 
 import com.example.checkers.domain.Checkerboard;
+import com.example.checkers.domain.Piece;
 import com.example.checkers.domain.PossibleMove;
 import com.example.checkers.domain.Side;
 import org.springframework.stereotype.Component;
@@ -10,24 +11,18 @@ import java.util.*;
 @Component
 public class PossibleMoveProvider {
 
-    List<PossibleMove> getPossibleMoves(int num, Side side, Checkerboard state,
-                                        boolean isCaptureTerminalityCheck) {
+    List<PossibleMove> getPossibleMovesForPiece(Piece piece, Checkerboard state,
+                                                boolean isCaptureTerminalityCheck) {
 
-        List<LinkedList<Integer>> board = Checkerboard.getDiagonals();
+        List<LinkedList<Integer>> diagonals = Checkerboard.getDiagonals();
 
         List<PossibleMove> res = new ArrayList<>();
-        for (LinkedList<Integer> diagonal : board) {
-            if (side == Side.LIGHT) {
-                // TODO check if creating a defensive copy needed?
-                res.addAll(getMoves(state, Side.LIGHT, num, diagonal.reversed(),
-                        isCaptureTerminalityCheck));
-            } else {
-                res.addAll(getMoves(state, Side.DARK, num, diagonal, isCaptureTerminalityCheck));
-            }
+        for (LinkedList<Integer> diagonal : diagonals) {
+            res.addAll(getMoves(state, piece, diagonal));
         }
 
         if (res.stream().anyMatch(PossibleMove::isCapture)) {
-            return onlyMovesWithCaptures(side, state, isCaptureTerminalityCheck, res);
+            return onlyMovesWithCaptures(piece.side(), state, isCaptureTerminalityCheck, res);
         }
 
         return res.stream()
@@ -49,15 +44,16 @@ public class PossibleMoveProvider {
     }
 
 
-    List<PossibleMove> getPossibleMoves(int num, Side side, Checkerboard state) {
-        return getPossibleMoves(num, side, state, false);
+    List<PossibleMove> getPossibleMovesForPiece(Piece piece, Checkerboard state) {
+        return getPossibleMovesForPiece(piece, state, false);
     }
 
     Map<Integer, List<PossibleMove>> getPossibleMovesMap(Side side, Checkerboard state) {
         var map = new HashMap<Integer, List<PossibleMove>>();
         // TODO refactor possible moves representation
         for (int i : state.getSide(side)) {
-            List<PossibleMove> possibleMoves = getPossibleMoves(i, side, state);
+            Piece p = new Piece(i, side);
+            List<PossibleMove> possibleMoves = getPossibleMovesForPiece(p, state);
             if (!possibleMoves.isEmpty()) {
                 map.put(i, possibleMoves);
             }
@@ -65,13 +61,13 @@ public class PossibleMoveProvider {
         return map;
     }
 
-    Map<Integer, List<PossibleMove>> getPossibleMovesFor(int piece, Side side, Checkerboard state) {
+    Map<Integer, List<PossibleMove>> getPossibleMovesFor(Piece piece, Checkerboard state) {
         var map = new HashMap<Integer, List<PossibleMove>>();
         // TODO refactor possible moves representation
 
-        List<PossibleMove> possibleMoves = getPossibleMoves(piece, side, state);
+        List<PossibleMove> possibleMoves = getPossibleMovesForPiece(piece, state);
         if (!possibleMoves.isEmpty()) {
-            map.put(piece, possibleMoves);
+            map.put(piece.position(), possibleMoves);
         }
 
         return map;
@@ -83,12 +79,12 @@ public class PossibleMoveProvider {
 
         List<PossibleMove> res = new ArrayList<>();
         for (PossibleMove c : captureMoves) {
-            var moves = getPossibleMoves(c.destination(), side, state, true);
+            var moves = getPossibleMovesForPiece(new Piece(c.destination(), c.piece().side()), state, true);
             if (moves.stream().anyMatch(PossibleMove::isCapture)) {
-                res.add(new PossibleMove(c.side(), c.position(), c.destination(), c.isCapture(),
+                res.add(new PossibleMove(c.piece(), c.destination(), c.isCapture(),
                         false));
             } else {
-                res.add(new PossibleMove(c.side(), c.position(), c.destination(), c.isCapture(),
+                res.add(new PossibleMove(c.piece(), c.destination(), c.isCapture(),
                         true));
             }
         }
@@ -96,20 +92,22 @@ public class PossibleMoveProvider {
         return res;
     }
 
-    private List<PossibleMove> getMoves(Checkerboard state, Side side, int pieceNum,
-                                        LinkedList<Integer> diagonal,
-                                        boolean isCaptureTerminalityCheck) {
+    private List<PossibleMove> getMoves(Checkerboard state, Piece piece,
+                                        LinkedList<Integer> diagonalSource) {
+
+
+        LinkedList<Integer> diagonal = piece.isLight() ?
+                new LinkedList<>(diagonalSource.reversed()) : new LinkedList<>(diagonalSource);
 
         var res = new ArrayList<PossibleMove>();
 
-        if (diagonal.contains(pieceNum)) {
-            if (pieceNum != diagonal.peekLast()) {
+        if (diagonal.contains(piece.position())) {
+            if (piece.position() != diagonal.peekLast()) {
 
-                var nextAfterNumIdx = diagonal.indexOf(pieceNum) + 1;
-                var oppositeSide = side == Side.DARK ? Side.LIGHT : Side.DARK;
+                var nextAfterNumIdx = diagonal.indexOf(piece.position()) + 1;
                 // TODO Here is functionality missing for capturing backwards
-                if (state.getSide(oppositeSide).contains(diagonal.get(nextAfterNumIdx))) {
-                    determineCaptureMove(nextAfterNumIdx + 1, diagonal, state, side, pieceNum).ifPresent(
+                if (state.getSide(piece.oppositeSide()).contains(diagonal.get(nextAfterNumIdx))) {
+                    determineCaptureMove(nextAfterNumIdx + 1, diagonal, state, piece).ifPresent(
                             res::add
                     );
 
@@ -117,8 +115,8 @@ public class PossibleMoveProvider {
 
                     // TODO before this a check against state needs to be done
                     res.add(
-                            new PossibleMove(side, pieceNum,
-                                    diagonal.get(diagonal.lastIndexOf(pieceNum) + 1), false,
+                            new PossibleMove(piece,
+                                    diagonal.get(diagonal.lastIndexOf(piece.position()) + 1), false,
                                     true));
 
                 }
@@ -126,6 +124,7 @@ public class PossibleMoveProvider {
         }
 
 
+        int pieceNum = piece.position();
         // TODO Refactor duplication
         if (diagonal.contains(pieceNum)) {
             // for backwards moves only capture check is performed
@@ -133,10 +132,9 @@ public class PossibleMoveProvider {
             if (pieceNum != dr.peekLast()) {
 
                 var nextAfterNumIdx = dr.indexOf(pieceNum) + 1;
-                var oppositeSide = side == Side.DARK ? Side.LIGHT : Side.DARK;
                 // TODO Here is functionality missing for capturing backwards
-                if (state.getSide(oppositeSide).contains(dr.get(nextAfterNumIdx))) {
-                    determineCaptureMove(nextAfterNumIdx + 1, dr, state, side, pieceNum).ifPresent(
+                if (state.getSide(piece.oppositeSide()).contains(dr.get(nextAfterNumIdx))) {
+                    determineCaptureMove(nextAfterNumIdx + 1, dr, state, piece).ifPresent(
                             res::add
                     );
 
@@ -152,14 +150,14 @@ public class PossibleMoveProvider {
     private Optional<PossibleMove> determineCaptureMove(int nextNextIdx,
                                                         LinkedList<Integer> list,
                                                         Checkerboard state,
-                                                        Side side,
-                                                        Integer num) {
+                                                       Piece piece
+                                                        ) {
         if (nextNextIdx > list.size() - 1) {
             return Optional.empty();
         }
         if (state.isEmptyCell(list.get(nextNextIdx))) {
             // TODO Mind isTerminal is true just for now
-            return Optional.of(new PossibleMove(side, num, list.get(nextNextIdx), true, true));
+            return Optional.of(new PossibleMove(piece, list.get(nextNextIdx), true, true));
         }
         return Optional.empty();
     }

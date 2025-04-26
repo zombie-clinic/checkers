@@ -7,7 +7,7 @@ public record PossibleMoveSimplified(int position,
 
     public static PossibleMoveSimplified fromMove(PossibleMove possibleMove) {
         return new PossibleMoveSimplified(
-                possibleMove.position(),
+                possibleMove.piece().position(),
                 possibleMove.destination(),
                 possibleMove.isCapture(),
                 possibleMove.isTerminal()
