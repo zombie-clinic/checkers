@@ -11,38 +11,28 @@ import java.util.*;
 @Component
 public class PossibleMoveProvider {
 
-    List<PossibleMove> getPossibleMovesForPiece(Piece piece, Checkerboard state,
-                                                boolean isCaptureTerminalityCheck) {
+    List<PossibleMove> getPossibleMovesForPiece(Piece piece,
+                                                Checkerboard state,
+                                                boolean isChainCaptureCheck) {
 
-        List<LinkedList<Integer>> diagonals = Checkerboard.getDiagonals();
-
-        List<PossibleMove> res = new ArrayList<>();
-        for (LinkedList<Integer> diagonal : diagonals) {
-            res.addAll(getMoves(state, piece, diagonal));
+        var moves = new ArrayList<PossibleMove>();
+        for (LinkedList<Integer> diagonal : Checkerboard.getDiagonals()) {
+            moves.addAll(getMoves(state, piece, diagonal));
         }
 
-        if (res.stream().anyMatch(PossibleMove::isCapture)) {
-            return onlyMovesWithCaptures(piece.side(), state, isCaptureTerminalityCheck, res);
+        if (moves.stream().anyMatch(PossibleMove::isCapture)) {
+            return captureMovesVerifiedForTerminality(
+                    state,
+                    piece.side(),
+                    moves.stream().filter(PossibleMove::isCapture).toList(),
+                    isChainCaptureCheck
+            );
         }
 
-        return res.stream()
-                .filter(i -> !(state.getSide(Side.DARK).contains(i.destination()) || state.getSide(Side.LIGHT).contains(i.destination())))
+        return moves.stream()
+                .filter(i -> isDestinationAvailable(state, i))
                 .toList();
     }
-
-    private List<PossibleMove> onlyMovesWithCaptures(Side side, Checkerboard state,
-                                                     boolean isCaptureTerminalityCheck,
-                                                     List<PossibleMove> res) {
-        List<PossibleMove> captureMoves = res.stream()
-                .filter(PossibleMove::isCapture)
-                .toList();
-        if (isCaptureTerminalityCheck) {
-            // return after check to avoid recursion
-            return captureMoves;
-        }
-        return captureMovesVerifiedForTerminality(state, side, captureMoves);
-    }
-
 
     List<PossibleMove> getPossibleMovesForPiece(Piece piece, Checkerboard state) {
         return getPossibleMovesForPiece(piece, state, false);
@@ -75,11 +65,17 @@ public class PossibleMoveProvider {
 
     private List<PossibleMove> captureMovesVerifiedForTerminality(Checkerboard state,
                                                                   Side side,
-                                                                  List<PossibleMove> captureMoves) {
+                                                                  List<PossibleMove> captureMoves,
+                                                                  boolean isCaptureTerminalityCheck) {
+
+        if (isCaptureTerminalityCheck) {
+            return captureMoves;
+        }
 
         List<PossibleMove> res = new ArrayList<>();
         for (PossibleMove c : captureMoves) {
-            var moves = getPossibleMovesForPiece(new Piece(c.destination(), c.piece().side()), state, true);
+            var moves = getPossibleMovesForPiece(new Piece(c.destination(), c.piece().side()),
+                    state, true);
             if (moves.stream().anyMatch(PossibleMove::isCapture)) {
                 res.add(new PossibleMove(c.piece(), c.destination(), c.isCapture(),
                         false));
@@ -150,8 +146,8 @@ public class PossibleMoveProvider {
     private Optional<PossibleMove> determineCaptureMove(int nextNextIdx,
                                                         LinkedList<Integer> list,
                                                         Checkerboard state,
-                                                       Piece piece
-                                                        ) {
+                                                        Piece piece
+    ) {
         if (nextNextIdx > list.size() - 1) {
             return Optional.empty();
         }
@@ -160,5 +156,9 @@ public class PossibleMoveProvider {
             return Optional.of(new PossibleMove(piece, list.get(nextNextIdx), true, true));
         }
         return Optional.empty();
+    }
+
+    private boolean isDestinationAvailable(Checkerboard state, PossibleMove i) {
+        return !(state.getSide(Side.DARK).contains(i.destination()) || state.getSide(Side.LIGHT).contains(i.destination()));
     }
 }
