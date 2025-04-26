@@ -3,7 +3,6 @@ package com.example.checkers.service;
 import com.example.checkers.domain.Checkerboard;
 import com.example.checkers.domain.Piece;
 import com.example.checkers.domain.PossibleMove;
-import com.example.checkers.domain.Side;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -80,7 +79,7 @@ public class PossibleMoveProviderTest {
         Checkerboard state = new Checkerboard(
                 piece.isDark() ? List.of(piece.position()) : List.of(),
                 piece.isLight() ? List.of(piece.position()) : List.of());
-        var actual = new PossibleMoveProvider().getPossibleMovesForPiece(piece, state);
+        var actual = new PossibleMoveProvider().getPossibleMovesForPieceInternal(piece, state);
         Assertions.assertThat(actual).containsExactlyInAnyOrderElementsOf(expected.stream()
                 .map(i -> new PossibleMove(piece, i, false, true)).toList());
     }
@@ -92,7 +91,7 @@ public class PossibleMoveProviderTest {
         var state = new Checkerboard(
                 Checkerboard.getStartingState().getDark(),
                 Checkerboard.getStartingState().getLight());
-        var actual = new PossibleMoveProvider().getPossibleMovesForPiece(piece, state);
+        var actual = new PossibleMoveProvider().getPossibleMovesForPieceInternal(piece, state);
         Assertions.assertThat(actual).containsExactlyInAnyOrderElementsOf(expected.stream()
                 .map(i -> new PossibleMove(piece, i, false, true)).toList());
     }
@@ -102,7 +101,7 @@ public class PossibleMoveProviderTest {
     void givenStatesWithCaptures_shouldProvideValidMoves(Checkerboard state, Piece piece,
                                                          List<Integer> expected,
                                                          boolean isCapture, boolean isTerminal) {
-        var actual = new PossibleMoveProvider().getPossibleMovesForPiece(piece, state);
+        var actual = new PossibleMoveProvider().getPossibleMovesForPieceInternal(piece, state);
         Assertions.assertThat(actual).containsExactlyInAnyOrderElementsOf(expected.stream()
                 .map(i -> new PossibleMove(piece, i, isCapture, isTerminal)).toList());
     }
@@ -111,7 +110,7 @@ public class PossibleMoveProviderTest {
     @MethodSource({"getNoneCaptureStates"})
     void givenNonCaptureStates_shouldProvideValidMoves(Checkerboard state, Piece piece,
                                                        List<Integer> expected) {
-        var actual = new PossibleMoveProvider().getPossibleMovesForPiece(piece, state);
+        var actual = new PossibleMoveProvider().getPossibleMovesForPieceInternal(piece, state);
         Assertions.assertThat(actual).containsExactlyInAnyOrderElementsOf(expected.stream()
                 .map(i -> new PossibleMove(piece, i, false, true)).toList());
     }
@@ -122,7 +121,7 @@ public class PossibleMoveProviderTest {
                                                                List<Integer> expected,
                                                                boolean isCapture,
                                                                boolean isTerminal) {
-        var actual = new PossibleMoveProvider().getPossibleMovesForPiece(piece, state);
+        var actual = new PossibleMoveProvider().getPossibleMovesForPieceInternal(piece, state);
         Assertions.assertThat(actual).containsExactlyInAnyOrderElementsOf(expected.stream()
                 .map(i -> new PossibleMove(piece, i, isCapture, isTerminal)).toList());
     }

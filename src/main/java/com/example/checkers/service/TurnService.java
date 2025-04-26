@@ -43,7 +43,7 @@ public class TurnService {
             }
 
             Map<Integer, List<PossibleMove>> possibleMovesMap =
-                    provider.getPossibleMovesFor(new Piece(Integer.parseInt(lastMove.move().split("x")[1]),
+                    provider.getPossibleMovesForPiece(Piece.of(Integer.parseInt(lastMove.move().split("x")[1]),
                     lastMove.side()),
                     new Checkerboard(currentState.getDark(),
                             currentState.getLight()

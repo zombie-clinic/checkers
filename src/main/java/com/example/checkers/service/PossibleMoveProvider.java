@@ -11,9 +11,24 @@ import java.util.*;
 @Component
 public class PossibleMoveProvider {
 
-    List<PossibleMove> getPossibleMovesForPiece(Piece piece,
-                                                Checkerboard state,
-                                                boolean isChainCaptureCheck) {
+    public Map<Integer, List<PossibleMove>> getPossibleMovesForPiece(Piece piece, Checkerboard state) {
+        return Map.of(piece.position(), getPossibleMovesForPieceInternal(piece, state));
+    }
+
+    public Map<Integer, List<PossibleMove>> getPossibleMovesForSide(Side side, Checkerboard state) {
+        var map = new HashMap<Integer, List<PossibleMove>>();
+        for (int i : state.getSide(side)) {
+            var possibleMoves = getPossibleMovesForPieceInternal(Piece.of(i, side), state);
+            if (!possibleMoves.isEmpty()) {
+                map.put(i, possibleMoves);
+            }
+        }
+        return map;
+    }
+
+    List<PossibleMove> getPossibleMovesForPieceInternal(Piece piece,
+                                                        Checkerboard state,
+                                                        boolean isChainCaptureCheck) {
 
         var moves = new ArrayList<PossibleMove>();
         for (LinkedList<Integer> diagonal : Checkerboard.getDiagonals()) {
@@ -34,33 +49,8 @@ public class PossibleMoveProvider {
                 .toList();
     }
 
-    List<PossibleMove> getPossibleMovesForPiece(Piece piece, Checkerboard state) {
-        return getPossibleMovesForPiece(piece, state, false);
-    }
-
-    Map<Integer, List<PossibleMove>> getPossibleMovesMap(Side side, Checkerboard state) {
-        var map = new HashMap<Integer, List<PossibleMove>>();
-        // TODO refactor possible moves representation
-        for (int i : state.getSide(side)) {
-            Piece p = new Piece(i, side);
-            List<PossibleMove> possibleMoves = getPossibleMovesForPiece(p, state);
-            if (!possibleMoves.isEmpty()) {
-                map.put(i, possibleMoves);
-            }
-        }
-        return map;
-    }
-
-    Map<Integer, List<PossibleMove>> getPossibleMovesFor(Piece piece, Checkerboard state) {
-        var map = new HashMap<Integer, List<PossibleMove>>();
-        // TODO refactor possible moves representation
-
-        List<PossibleMove> possibleMoves = getPossibleMovesForPiece(piece, state);
-        if (!possibleMoves.isEmpty()) {
-            map.put(piece.position(), possibleMoves);
-        }
-
-        return map;
+    List<PossibleMove> getPossibleMovesForPieceInternal(Piece piece, Checkerboard state) {
+        return getPossibleMovesForPieceInternal(piece, state, false);
     }
 
     private List<PossibleMove> captureMovesVerifiedForTerminality(Checkerboard state,
@@ -74,7 +64,8 @@ public class PossibleMoveProvider {
 
         List<PossibleMove> res = new ArrayList<>();
         for (PossibleMove c : captureMoves) {
-            var moves = getPossibleMovesForPiece(new Piece(c.destination(), c.piece().side()),
+            var moves = getPossibleMovesForPieceInternal(new Piece(c.destination(),
+                            c.piece().side()),
                     state, true);
             if (moves.stream().anyMatch(PossibleMove::isCapture)) {
                 res.add(new PossibleMove(c.piece(), c.destination(), c.isCapture(),
