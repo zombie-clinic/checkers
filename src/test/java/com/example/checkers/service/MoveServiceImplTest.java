@@ -42,7 +42,7 @@ class MoveServiceImplTest {
     private GameRepository gameRepository;
 
     @Spy
-    private PossibleMoveProvider possibleMoveProvider;
+    private PossibleMoveProviderImpl possibleMoveProvider;
 
     @InjectMocks
     private MoveServiceImpl moveService;

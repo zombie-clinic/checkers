@@ -10,6 +10,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.BDDMockito;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
@@ -28,7 +29,7 @@ class TurnServiceTest {
     private MovesReaderService movemovesReaderService;
 
     @Mock
-    private PossibleMoveProvider possibleMoveProvider;
+    private PossibleMoveProviderImpl possibleMoveProvider;
 
     @InjectMocks
     private TurnService turnService;
