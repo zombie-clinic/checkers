@@ -101,7 +101,9 @@ public class MoveServiceImpl implements MoveService {
     Move move = new Move(game, player, movingSide.name(), moveRequest.getMove(),
         newState.getDark().stream().map(String::valueOf).collect(Collectors.joining(",")),
         newState.getLight().stream().map(String::valueOf).collect(Collectors.joining(",")));
-
+    // todo if last move contains kings
+    // todo if this moves ends on opponent's end (king creation)
+    // todo check kings being captured as well
     moveRepository.save(move);
   }
 
@@ -181,8 +183,7 @@ public class MoveServiceImpl implements MoveService {
   static State getCurrentState(List<MoveRecord> moveList) {
 
     if (moveList.isEmpty()) {
-      throw new IllegalArgumentException("Move list is empty, state should be constructed " +
-          "from starting state");
+      throw new IllegalArgumentException("Move list is empty, state should be constructed from starting state");
     }
 
     String dark = moveList.getLast().dark();
