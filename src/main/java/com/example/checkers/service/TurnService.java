@@ -1,9 +1,6 @@
 package com.example.checkers.service;
 
-import com.example.checkers.domain.Checkerboard;
-import com.example.checkers.domain.MoveRecord;
-import com.example.checkers.domain.PossibleMove;
-import com.example.checkers.domain.Side;
+import com.example.checkers.domain.*;
 import com.example.checkers.model.State;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -46,8 +43,8 @@ public class TurnService {
             }
 
             Map<Integer, List<PossibleMove>> possibleMovesMap =
-                    provider.getPossibleMovesFor(Integer.parseInt(lastMove.move().split("x")[1]),
-                    lastMove.side(),
+                    provider.getPossibleMovesForPiece(Piece.of(Integer.parseInt(lastMove.move().split("x")[1]),
+                    lastMove.side()),
                     new Checkerboard(currentState.getDark(),
                             currentState.getLight()
                     ));

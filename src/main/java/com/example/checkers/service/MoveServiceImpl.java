@@ -111,7 +111,7 @@ public class MoveServiceImpl implements MoveService {
             state = getCurrentState(moveList);
         }
         // regular move, game in progress
-        Map<Integer, List<PossibleMove>> possibleMoves = possibleMoveProvider.getPossibleMovesMap(
+        Map<Integer, List<PossibleMove>> possibleMoves = possibleMoveProvider.getPossibleMovesForSide(
                 nextToMoveSide, Checkerboard.state(state.getDark(), state.getLight())
         );
         Map<Integer, List<PossibleMoveSimplified>> simplifiedPossibleMoves =
