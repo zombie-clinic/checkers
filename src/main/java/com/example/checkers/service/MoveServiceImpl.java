@@ -86,11 +86,17 @@ public class MoveServiceImpl implements MoveService {
     State currentState;
     if (moves.isEmpty()) {
       currentState = startingStateLookupService.getStateFromStartingStateString(gameId);
+      currentState.setKings(List.of());
     } else {
       currentState = new State(
           Arrays.stream(moves.getLast().getDark().split(",")).map(Integer::valueOf).toList(),
           Arrays.stream(moves.getLast().getLight().split(",")).map(Integer::valueOf).toList()
       );
+      List<Integer> kings = moves.getLast().getKings();
+      if (kings == null) {
+        kings = Collections.emptyList();
+      }
+      currentState.setKings(kings);
     }
     validateMoveRequest(currentState, moveRequest.getState());
 
@@ -101,14 +107,39 @@ public class MoveServiceImpl implements MoveService {
     Move move = new Move(game, player, movingSide.name(), moveRequest.getMove(),
         newState.getDark().stream().map(String::valueOf).collect(Collectors.joining(",")),
         newState.getLight().stream().map(String::valueOf).collect(Collectors.joining(",")));
-    // todo if last move contains kings
-    // todo if this moves ends on opponent's end (king creation)
+
+    // TODO There is no need to introduce possible move abstraction, we could go with Move DTO
+
+    List<Integer> kings;
+    if (moves.isEmpty()) {
+      kings = new ArrayList<>();
+    } else {
+      kings = new ArrayList<>(moves.getLast().getKings());
+    }
+    Integer dest = Integer.valueOf(move.getMove().split("[-x]")[1]);
+    if (moveDestKings(Side.valueOf(move.getSide()), dest)) {
+      kings.add(dest);
+      move.setKings(kings);
+    } else {
+      move.setKings(kings);
+    }
+
+    // done if last move contains kings
+    // done if this moves ends on opponent's end (king creation)
     // todo check kings being captured as well
     moveRepository.save(move);
   }
 
+  private boolean moveDestKings(Side side, Integer dest) {
+
+    if (side == DARK) {
+      return List.of(29, 30, 31, 32).contains(dest);
+    }
+    return List.of(1, 2, 3, 4).contains(dest);
+  }
+
   private void validateMoveRequest(State serverState, State clientState) {
-    if (!serverState.equals(clientState)) {
+    if (!serverState.getDark().equals(clientState.getDark()) || !serverState.getLight().equals(clientState.getLight())) {
       throw new IllegalArgumentException("provided state not consistent, wait for you turn");
     }
   }
@@ -183,7 +214,8 @@ public class MoveServiceImpl implements MoveService {
   static State getCurrentState(List<MoveRecord> moveList) {
 
     if (moveList.isEmpty()) {
-      throw new IllegalArgumentException("Move list is empty, state should be constructed from starting state");
+      throw new IllegalArgumentException("Move list is empty, state should be constructed " +
+          "from starting state");
     }
 
     String dark = moveList.getLast().dark();
