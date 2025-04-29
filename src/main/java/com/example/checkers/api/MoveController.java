@@ -5,10 +5,8 @@ import static org.springframework.http.ResponseEntity.ok;
 import com.example.checkers.domain.exception.GameNotFoundException;
 import com.example.checkers.model.MoveRequest;
 import com.example.checkers.model.MoveResponse;
-import com.example.checkers.model.State;
 import com.example.checkers.service.GameStateService;
 import com.example.checkers.service.MoveService;
-import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -34,9 +32,6 @@ public class MoveController implements MoveApi {
     UUID gameId = UUID.fromString(gameUuid);
     if (gameStateService.isGameValid(gameId.toString())) {
       MoveResponse nextMoves = moveService.getNextMoves(gameId);
-      State state = nextMoves.getState();
-      state.setKings(List.of(21, 17, 14));
-      nextMoves.setState(state);
       return ok(nextMoves);
     }
     throw new IllegalArgumentException(String.format("Game %s deleted or not started", gameId));

@@ -19,6 +19,7 @@ import com.example.checkers.persistence.MoveRepository;
 import com.example.checkers.persistence.PlayerRepository;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -153,8 +154,19 @@ public class MoveServiceImpl implements MoveService {
     if (moveList.isEmpty()) {
       // fixme seems to be unreachable code
       state = startingStateLookupService.getStateFromStartingStateString(UUID.fromString(gameId));
+      state.setKings(List.of());
     } else {
       state = getCurrentState(moveList);
+      MoveRecord last = moveList.getLast();
+      if (last == null) {
+        state.setKings(List.of());
+      } else {
+        if(last.kings().isEmpty()) {
+          state.setKings(List.of());
+        } else {
+          state.setKings(new ArrayList<>(last.kings()));
+        }
+      }
     }
     // regular move, game in progress
     Map<Integer, List<PossibleMove>> possibleMoves = possibleMoveProvider.getPossibleMovesForSide(
