@@ -1,12 +1,12 @@
 package com.example.checkers.service;
 
-import com.example.checkers.model.PlayerResponse;
-
 import java.util.List;
+
+import com.example.checkers.model.PlayerResponse;
 
 public interface PlayerService {
 
-    List<PlayerResponse> findAll();
+  List<PlayerResponse> findAll();
 
-    PlayerResponse findUserById(Long userId);
+  PlayerResponse findUserById(Long userId);
 }

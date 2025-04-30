@@ -9,7 +9,8 @@
 
 <table>
     <tr th:each="row: ${myArray}">
-        <td th:each="cell: ${row}" th:style="${cell} == TRUE ? 'background: #D3D3D3' : 'background: #202020'"  th:width="35px" th:height="35px"></td>
+        <td th:each="cell: ${row}" th:height="35px"
+            th:style="${cell} == TRUE ? 'background: #D3D3D3' : 'background: #202020'" th:width="35px"></td>
     </tr>
 </table>
 

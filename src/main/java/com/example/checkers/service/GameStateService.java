@@ -1,29 +1,29 @@
 package com.example.checkers.service;
 
+import java.util.List;
+import java.util.UUID;
+
 import com.example.checkers.model.GameResponse;
 import com.example.checkers.model.MoveRequest;
 import com.example.checkers.model.State;
 
-import java.util.List;
-import java.util.UUID;
-
 public interface GameStateService {
 
-    GameResponse startLobby(Long playerOneId, String side);
+  GameResponse startLobby(Long playerOneId, String side);
 
-    GameResponse startGame(String  gameId, Long playerTwoId);
+  GameResponse startGame(String gameId, Long playerTwoId);
 
-    List<GameResponse> getGamesByProgress(List<String> progressList);
+  List<GameResponse> getGamesByProgress(List<String> progressList);
 
-    GameResponse getGameById(String uuid);
+  GameResponse getGameById(String uuid);
 
-    boolean isGameValid(String uuid);
+  boolean isGameValid(String uuid);
 
-    void lobbyExistsAndPlayerIsDifferent(String gameId, Long playerId);
+  void lobbyExistsAndPlayerIsDifferent(String gameId, Long playerId);
 
-    boolean existsAndActive(UUID gameId);
+  boolean existsAndActive(UUID gameId);
 
-    boolean isGameInProgressConsistent(UUID gameId, MoveRequest moveRequest);
+  boolean isGameInProgressConsistent(UUID gameId, MoveRequest moveRequest);
 
-    GameResponse startImportedGameLobby(Long playedId, String side, State state);
+  GameResponse startImportedGameLobby(Long playedId, String side, State state);
 }

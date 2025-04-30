@@ -1,6 +1,6 @@
- ### Run app locally
+### Run app locally
 
-`./gradlew bootRun` for Linux 
+`./gradlew bootRun` for Linux
 
 `gradle.bat bootRun` for Windows
 
@@ -17,7 +17,7 @@ Test database is accessible under [localhost:8080/h2-console](localhost:8080/h2-
 To build and run Docker image
 
 Create executable jar
-`./gradlew clean bootJar` 
+`./gradlew clean bootJar`
 
 Build image
 `docker build -t checkers-backend .`

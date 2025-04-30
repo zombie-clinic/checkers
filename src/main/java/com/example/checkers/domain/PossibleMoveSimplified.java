@@ -5,12 +5,12 @@ public record PossibleMoveSimplified(int position,
                                      Boolean isCapture,
                                      Boolean isTerminal) {
 
-    public static PossibleMoveSimplified fromMove(PossibleMove possibleMove) {
-        return new PossibleMoveSimplified(
-                possibleMove.piece().position(),
-                possibleMove.destination(),
-                possibleMove.isCapture(),
-                possibleMove.isTerminal()
-        );
-    }
+  public static PossibleMoveSimplified fromMove(PossibleMove possibleMove) {
+    return new PossibleMoveSimplified(
+        possibleMove.piece().position(),
+        possibleMove.destination(),
+        possibleMove.isCapture(),
+        possibleMove.isTerminal()
+    );
+  }
 }

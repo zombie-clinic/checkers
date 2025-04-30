@@ -1,13 +1,13 @@
 package com.example.checkers.service;
 
+import java.util.UUID;
+
 import com.example.checkers.model.MoveRequest;
 import com.example.checkers.model.MoveResponse;
 
-import java.util.UUID;
-
 public interface MoveService {
 
-    void saveMove(UUID gameId, MoveRequest moveRequest);
+  void saveMove(UUID gameId, MoveRequest moveRequest);
 
-    MoveResponse getNextMoves(UUID gameId);
+  MoveResponse getNextMoves(UUID gameId);
 }
