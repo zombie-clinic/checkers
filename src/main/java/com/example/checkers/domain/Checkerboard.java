@@ -1,9 +1,8 @@
 package com.example.checkers.domain;
 
+import com.example.checkers.model.State;
 import java.util.LinkedList;
 import java.util.List;
-
-import com.example.checkers.model.State;
 
 public class Checkerboard {
 

@@ -1,11 +1,10 @@
 package com.example.checkers.service;
 
-import java.util.List;
-import java.util.UUID;
-
 import com.example.checkers.model.GameResponse;
 import com.example.checkers.model.MoveRequest;
 import com.example.checkers.model.State;
+import java.util.List;
+import java.util.UUID;
 
 public interface GameStateService {
 

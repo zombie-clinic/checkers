@@ -3,20 +3,26 @@ package com.example.checkers.service;
 import static com.example.checkers.domain.GameProgress.LOBBY;
 import static com.example.checkers.service.MoveServiceImpl.getCurrentState;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import com.example.checkers.domain.*;
+import com.example.checkers.domain.Checkerboard;
+import com.example.checkers.domain.Game;
+import com.example.checkers.domain.GameProgress;
+import com.example.checkers.domain.MoveRecord;
+import com.example.checkers.domain.Player;
 import com.example.checkers.model.GameResponse;
 import com.example.checkers.model.MoveRequest;
 import com.example.checkers.model.State;
 import com.example.checkers.persistence.GameRepository;
 import com.example.checkers.persistence.PlayerRepository;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 
 @Slf4j

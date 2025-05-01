@@ -1,9 +1,8 @@
 package com.example.checkers.service;
 
-import java.util.Arrays;
-
 import com.example.checkers.domain.Move;
 import com.example.checkers.model.State;
+import java.util.Arrays;
 
 public class StateFactory {
 

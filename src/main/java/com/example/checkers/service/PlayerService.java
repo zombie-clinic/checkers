@@ -1,8 +1,7 @@
 package com.example.checkers.service;
 
-import java.util.List;
-
 import com.example.checkers.model.PlayerResponse;
+import java.util.List;
 
 public interface PlayerService {
 

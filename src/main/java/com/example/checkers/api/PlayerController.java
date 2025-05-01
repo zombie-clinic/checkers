@@ -2,15 +2,13 @@ package com.example.checkers.api;
 
 import static org.springframework.http.ResponseEntity.ok;
 
+import com.example.checkers.model.PlayerResponse;
+import com.example.checkers.service.PlayerService;
 import java.util.List;
-
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.example.checkers.model.PlayerResponse;
-import com.example.checkers.service.PlayerService;
-import lombok.RequiredArgsConstructor;
 
 @CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174"})
 @RequiredArgsConstructor

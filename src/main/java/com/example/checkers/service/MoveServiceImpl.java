@@ -3,21 +3,33 @@ package com.example.checkers.service;
 import static com.example.checkers.domain.Side.DARK;
 import static com.example.checkers.domain.Side.LIGHT;
 
-import java.util.*;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import com.example.checkers.domain.*;
+import com.example.checkers.domain.Checkerboard;
+import com.example.checkers.domain.Game;
+import com.example.checkers.domain.Move;
+import com.example.checkers.domain.MoveRecord;
+import com.example.checkers.domain.Player;
+import com.example.checkers.domain.PossibleMove;
+import com.example.checkers.domain.PossibleMoveSimplified;
+import com.example.checkers.domain.Side;
 import com.example.checkers.model.MoveRequest;
 import com.example.checkers.model.MoveResponse;
 import com.example.checkers.model.State;
 import com.example.checkers.persistence.GameRepository;
 import com.example.checkers.persistence.MoveRepository;
 import com.example.checkers.persistence.PlayerRepository;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service

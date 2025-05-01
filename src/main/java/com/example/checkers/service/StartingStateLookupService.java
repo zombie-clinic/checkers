@@ -1,16 +1,18 @@
 package com.example.checkers.service;
 
-import java.util.*;
-
-import org.springframework.stereotype.Component;
-
 import com.example.checkers.domain.Game;
 import com.example.checkers.model.State;
 import com.example.checkers.persistence.GameRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
 @RequiredArgsConstructor
 @Component

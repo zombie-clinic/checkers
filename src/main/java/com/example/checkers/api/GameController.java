@@ -2,19 +2,17 @@ package com.example.checkers.api;
 
 import static org.springframework.http.ResponseEntity.ok;
 
-import java.util.List;
-
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.example.checkers.domain.GameProgress;
 import com.example.checkers.model.GameResponse;
 import com.example.checkers.model.JoinLobbyRequest;
 import com.example.checkers.model.StartLobbyRequest;
 import com.example.checkers.service.GameStateService;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174"})

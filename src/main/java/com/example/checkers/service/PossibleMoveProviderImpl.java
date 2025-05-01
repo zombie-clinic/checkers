@@ -1,13 +1,16 @@
 package com.example.checkers.service;
 
-import java.util.*;
-
-import org.springframework.stereotype.Component;
-
 import com.example.checkers.domain.Checkerboard;
 import com.example.checkers.domain.Piece;
 import com.example.checkers.domain.PossibleMove;
 import com.example.checkers.domain.Side;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import org.springframework.stereotype.Component;
 
 @Component
 public class PossibleMoveProviderImpl implements PossibleMoveProvider {

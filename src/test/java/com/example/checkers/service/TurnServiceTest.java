@@ -2,10 +2,12 @@ package com.example.checkers.service;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
+import com.example.checkers.domain.Checkerboard;
+import com.example.checkers.domain.MoveRecord;
+import com.example.checkers.domain.Side;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
-
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -16,10 +18,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-
-import com.example.checkers.domain.Checkerboard;
-import com.example.checkers.domain.MoveRecord;
-import com.example.checkers.domain.Side;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)

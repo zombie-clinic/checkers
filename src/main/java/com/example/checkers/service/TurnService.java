@@ -2,16 +2,18 @@ package com.example.checkers.service;
 
 import static com.example.checkers.service.MoveServiceImpl.getCurrentState;
 
+import com.example.checkers.domain.Checkerboard;
+import com.example.checkers.domain.MoveRecord;
+import com.example.checkers.domain.Piece;
+import com.example.checkers.domain.PossibleMove;
+import com.example.checkers.domain.Side;
+import com.example.checkers.model.State;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
-import org.springframework.stereotype.Service;
-
-import com.example.checkers.domain.*;
-import com.example.checkers.model.State;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
 @Service

@@ -6,9 +6,26 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
-import java.util.*;
+import com.example.checkers.domain.Checkerboard;
+import com.example.checkers.domain.Game;
+import com.example.checkers.domain.GameProgress;
+import com.example.checkers.domain.Move;
+import com.example.checkers.domain.MoveRecord;
+import com.example.checkers.domain.Player;
+import com.example.checkers.domain.PossibleMove;
+import com.example.checkers.domain.PossibleMoveSimplified;
+import com.example.checkers.domain.Side;
+import com.example.checkers.model.MoveRequest;
+import com.example.checkers.model.MoveResponse;
+import com.example.checkers.model.State;
+import com.example.checkers.persistence.GameRepository;
+import com.example.checkers.persistence.MoveRepository;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,13 +35,6 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-
-import com.example.checkers.domain.*;
-import com.example.checkers.model.MoveRequest;
-import com.example.checkers.model.MoveResponse;
-import com.example.checkers.model.State;
-import com.example.checkers.persistence.GameRepository;
-import com.example.checkers.persistence.MoveRepository;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)

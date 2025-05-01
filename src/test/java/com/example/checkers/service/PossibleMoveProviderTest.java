@@ -4,17 +4,15 @@ import static com.example.checkers.domain.Checkerboard.state;
 import static com.example.checkers.domain.Side.DARK;
 import static com.example.checkers.domain.Side.LIGHT;
 
+import com.example.checkers.domain.Checkerboard;
+import com.example.checkers.domain.Piece;
+import com.example.checkers.domain.PossibleMove;
 import java.util.List;
 import java.util.stream.Stream;
-
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import com.example.checkers.domain.Checkerboard;
-import com.example.checkers.domain.Piece;
-import com.example.checkers.domain.PossibleMove;
 
 public class PossibleMoveProviderTest {
 

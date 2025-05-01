@@ -1,12 +1,10 @@
 package com.example.checkers.service;
 
-import java.util.List;
-
-import org.springframework.stereotype.Service;
-
 import com.example.checkers.domain.MoveRecord;
 import com.example.checkers.persistence.MoveRepository;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
 @Service
