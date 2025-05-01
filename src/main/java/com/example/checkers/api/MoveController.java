@@ -7,6 +7,7 @@ import com.example.checkers.model.MoveRequest;
 import com.example.checkers.model.MoveResponse;
 import com.example.checkers.service.GameStateService;
 import com.example.checkers.service.MoveService;
+import com.example.checkers.service.PossibleMoveService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -27,11 +28,13 @@ public class MoveController implements MoveApi {
 
   private final MoveService moveService;
 
+  private final PossibleMoveService possibleMoveService;
+
   @Override
   public ResponseEntity<MoveResponse> getCurrentState(String gameUuid) {
     UUID gameId = UUID.fromString(gameUuid);
     if (gameStateService.isGameValid(gameId.toString())) {
-      MoveResponse nextMoves = moveService.getNextMoves(gameId);
+      MoveResponse nextMoves = possibleMoveService.getNextMoves(gameId);
       return ok(nextMoves);
     }
     throw new IllegalArgumentException(String.format("Game %s deleted or not started", gameId));
@@ -42,7 +45,7 @@ public class MoveController implements MoveApi {
     UUID gameId = UUID.fromString(gameUuid);
     validateMoveRequest(gameId, moveRequest);
     moveService.saveMove(gameId, moveRequest);
-    MoveResponse nextMoves = moveService.getNextMoves(gameId);
+    MoveResponse nextMoves = possibleMoveService.getNextMoves(gameId);
     return ok(nextMoves);
   }
 

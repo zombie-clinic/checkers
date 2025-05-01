@@ -1,6 +1,6 @@
 package com.example.checkers.service;
 
-import static com.example.checkers.service.MoveServiceImpl.getCurrentState;
+import static com.example.checkers.service.StateUtils.getCurrentState;
 
 import com.example.checkers.domain.Checkerboard;
 import com.example.checkers.domain.MoveRecord;

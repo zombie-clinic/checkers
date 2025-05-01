@@ -19,7 +19,6 @@ import com.example.checkers.model.MoveRequest;
 import com.example.checkers.model.MoveResponse;
 import com.example.checkers.model.State;
 import com.example.checkers.persistence.GameRepository;
-import com.example.checkers.persistence.MoveRepository;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,10 +37,7 @@ import org.mockito.quality.Strictness;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class MoveServiceImplTest {
-
-  @Mock
-  private MoveRepository moveRepository;
+class PossibleMoveServiceImplTest {
 
   @Mock
   private MovesReaderService movesReaderService;
@@ -56,9 +52,9 @@ class MoveServiceImplTest {
   private PossibleMoveProviderImpl possibleMoveProvider;
 
   @InjectMocks
-  private MoveServiceImpl moveService;
+  private PossibleMoveServiceImpl moveService;
 
-  private UUID gameId = UUID.randomUUID();
+  private final UUID gameId = UUID.randomUUID();
   private Game game;
   private Tuple<Player> players;
 
@@ -150,7 +146,7 @@ class MoveServiceImplTest {
         List.of(1, 2, 3, 4, 5, 6, 7, 8, 11, 12, 14, 22),
         List.of(23, 25, 26, 27, 28, 29, 30, 31, 32, 17, 20)
     );
-    State actualState = moveService.generateAfterCaptureState(currentState, moveRequest);
+    State actualState = StateUtils.generateAfterCaptureState(currentState, moveRequest);
     assertEquals(expectedState, actualState);
 
 
@@ -166,7 +162,7 @@ class MoveServiceImplTest {
     moveRequest.setSide(Side.DARK.name());
     moveRequest.setPlayerId(1L);
 
-    actualState = moveService.generateAfterCaptureState(currentState, moveRequest);
+    actualState = StateUtils.generateAfterCaptureState(currentState, moveRequest);
     expectedState = new State(
         List.of(1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 21),
         List.of(21, 24, 26, 27, 28, 29, 30, 31, 32, 22, 16)
@@ -175,6 +171,7 @@ class MoveServiceImplTest {
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   void givenMoveIsNotTerminal_whenMove_returnSameSidePossibleMovesButOnlySamePiece() {
     when(movesReaderService.getMovesFor(eq(gameId.toString()))).thenReturn(
         List.of(

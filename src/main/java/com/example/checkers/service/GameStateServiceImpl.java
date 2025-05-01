@@ -1,7 +1,7 @@
 package com.example.checkers.service;
 
 import static com.example.checkers.domain.GameProgress.LOBBY;
-import static com.example.checkers.service.MoveServiceImpl.getCurrentState;
+import static com.example.checkers.service.StateUtils.getCurrentState;
 
 import com.example.checkers.domain.Checkerboard;
 import com.example.checkers.domain.Game;
@@ -34,7 +34,7 @@ public class GameStateServiceImpl implements GameStateService {
 
   private final MovesReaderService movesReaderService;
 
-  private final MoveService moveService;
+  private final PossibleMoveService possibleMoveService;
 
   private final PlayerRepository playerRepository;
 
@@ -81,9 +81,9 @@ public class GameStateServiceImpl implements GameStateService {
 
     Game savedGame = gameRepository.save(lobbyGame);
     GameResponse gameResponse = new GameResponse(savedGame.getId(), LOBBY.toString(), savedGame.getStartingState(),
-        moveService.getNextMoves(UUID.fromString(savedGame.getId())));
+        possibleMoveService.getNextMoves(UUID.fromString(savedGame.getId())));
     gameResponse.setPossibleMoves(
-        moveService.getNextMoves(UUID.fromString(savedGame.getId())).getPossibleMoves()
+        possibleMoveService.getNextMoves(UUID.fromString(savedGame.getId())).getPossibleMoves()
     );
     return gameResponse;
   }
@@ -104,9 +104,9 @@ public class GameStateServiceImpl implements GameStateService {
 
     Game savedGame = gameRepository.save(lobbyGame);
     GameResponse gameResponse = new GameResponse(savedGame.getId(), LOBBY.toString(), savedGame.getStartingState(),
-        moveService.getNextMoves(UUID.fromString(savedGame.getId())));
+        possibleMoveService.getNextMoves(UUID.fromString(savedGame.getId())));
     gameResponse.setPossibleMoves(
-        moveService.getNextMoves(UUID.fromString(savedGame.getId())).getPossibleMoves()
+        possibleMoveService.getNextMoves(UUID.fromString(savedGame.getId())).getPossibleMoves()
     );
     return gameResponse;
   }
@@ -124,7 +124,7 @@ public class GameStateServiceImpl implements GameStateService {
     game.setPlayerTwo(playerTwo);
     game.setProgress(GameProgress.STARTING.toString());
 
-    return new GameResponse(gameId, GameProgress.STARTING.toString(), game.getStartingState(), moveService.getNextMoves(
+    return new GameResponse(gameId, GameProgress.STARTING.toString(), game.getStartingState(), possibleMoveService.getNextMoves(
         UUID.fromString(gameId)
     ));
   }
