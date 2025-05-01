@@ -1,7 +1,7 @@
 package com.example.checkers.service;
 
 import static com.example.checkers.domain.GameProgress.LOBBY;
-import static com.example.checkers.service.StateUtils.getCurrentState;
+import static com.example.checkers.service.StateUtils.getStateFromMoveList;
 
 import com.example.checkers.domain.Checkerboard;
 import com.example.checkers.domain.Game;
@@ -58,7 +58,7 @@ public class GameStateServiceImpl implements GameStateService {
     if (moves.isEmpty()) {
       serverState = startingStateLookupService.getStateFromStartingStateString(gameId);
     } else {
-      serverState = getCurrentState(moves);
+      serverState = getStateFromMoveList(moves);
     }
     return amountOfFiguresMatches(clientState, serverState) && positionsMatch(clientState,
         serverState);

@@ -1,6 +1,6 @@
 package com.example.checkers.service;
 
-import static com.example.checkers.service.StateUtils.getCurrentState;
+import static com.example.checkers.service.StateUtils.getStateFromMoveList;
 
 import com.example.checkers.domain.Checkerboard;
 import com.example.checkers.domain.MoveRecord;
@@ -39,7 +39,7 @@ public class TurnService {
       // Let's check if it's chaining capturing move
       // It is only when the next move with the same piece leads to capture
       // this means we need to check only for that piece moves
-      State currentState = getCurrentState(moves);
+      State currentState = getStateFromMoveList(moves);
 
       if (currentState.getDark().isEmpty() || currentState.getLight().isEmpty()) {
         return null;

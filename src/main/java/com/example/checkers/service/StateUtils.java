@@ -4,23 +4,31 @@ import static com.example.checkers.domain.Side.DARK;
 import static com.example.checkers.domain.Side.LIGHT;
 
 import com.example.checkers.domain.Checkerboard;
+import com.example.checkers.domain.MoveRecord;
 import com.example.checkers.domain.Side;
 import com.example.checkers.model.MoveRequest;
+import com.example.checkers.model.State;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-
-import com.example.checkers.domain.MoveRecord;
-import com.example.checkers.model.State;
 import java.util.Objects;
 
 /**
- * Utility board stat method that does that does not require any wiring.
+ * Utility board state methods that do not require any wiring.
  */
 public class StateUtils {
 
-  static State getCurrentState(List<MoveRecord> moveList) {
+  // FIXME Change to accept last move
+  // FIXME Ensure immutability
+
+  /**
+   * Given a move (in this case a last move) return representation of the board.
+   *
+   * @param moveList Move to infer state from
+   * @return immutable State object
+   */
+  public static State getStateFromMoveList(List<MoveRecord> moveList) {
 
     if (moveList.isEmpty()) {
       throw new IllegalArgumentException("""
@@ -39,21 +47,47 @@ public class StateUtils {
         lightList);
   }
 
-  private static List<Integer> parseList(String str) {
-    if ("".equals(str)) {
-      return List.of();
-    }
+  // FIXME Ensure immutability
+  // TODO Should be a method for every move, not only capture
+  // FIXME Don't need to pass all MoveRequest
 
-    return Arrays.stream(str.split(",")).map(Integer::valueOf).toList();
-  }
-
+  /**
+   * Given a move, create an immutable State object, which reflects a piece being captured.
+   *
+   * @param state       immutable source State object
+   * @param moveRequest moveRequest provided by a client
+   * @return immutable target State object
+   */
   static State generateAfterCaptureState(State state, MoveRequest moveRequest) {
 
-    State calculated;
 
     Integer start = Integer.valueOf(moveRequest.getMove().split("[x\\-]")[0]);
     Integer dest = Integer.valueOf(moveRequest.getMove().split("[x\\-]")[1]);
 
+    Side side = Side.valueOf(moveRequest.getSide());
+    State calculated = new State();
+
+    if (!moveRequest.getMove().contains("x")) {
+
+      var light = new ArrayList<>(state.getLight());
+      var dark = new ArrayList<>(state.getDark());
+
+      if (side == LIGHT) {
+        light.removeIf(e -> e.equals(start));
+        light.add(dest);
+      } else {
+        dark.removeIf(e -> e.equals(start));
+        dark.add(dest);
+      }
+
+      calculated.setDark(dark);
+      calculated.setLight(light);
+
+      return calculated;
+    }
+
+
+    // CAPTURE logic
 
     if (Side.valueOf(moveRequest.getSide()) == DARK) {
       var darkPieces = new ArrayList<>(state.getDark());
@@ -85,6 +119,14 @@ public class StateUtils {
     }
 
     return calculated;
+  }
+
+  private static List<Integer> parseList(String str) {
+    if ("".equals(str)) {
+      return List.of();
+    }
+
+    return Arrays.stream(str.split(",")).map(Integer::valueOf).toList();
   }
 
   private static Integer determineCapturedPieceIdx(Side side, Integer start, Integer end) {

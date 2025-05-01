@@ -1,6 +1,6 @@
 package com.example.checkers.service;
 
-import static com.example.checkers.service.StateUtils.getCurrentState;
+import static com.example.checkers.service.StateUtils.getStateFromMoveList;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -47,7 +47,7 @@ public class PossibleMoveServiceImpl implements PossibleMoveService {
       // we return empty possible moves and null next turn
       // in order front end to recognize end time
       return new MoveResponse(gameId.toString(),
-          getCurrentState(moveList.stream().toList()),
+          getStateFromMoveList(moveList.stream().toList()),
           null,
           Map.of()
       );
@@ -68,7 +68,7 @@ public class PossibleMoveServiceImpl implements PossibleMoveService {
       state = startingStateLookupService.getStateFromStartingStateString(UUID.fromString(gameId));
       state.setKings(List.of());
     } else {
-      state = getCurrentState(moveList);
+      state = getStateFromMoveList(moveList);
       MoveRecord last = moveList.getLast();
       if (last == null) {
         state.setKings(List.of());
