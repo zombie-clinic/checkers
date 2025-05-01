@@ -52,6 +52,17 @@ public class StateUtils {
   // FIXME Don't need to pass all MoveRequest
 
   /**
+   * Is certain cell empty, i.e. free for a move to be performed.
+   *
+   * @param num   cell number
+   * @param state current state against which check is performed
+   * @return true or false
+   */
+  public static boolean isEmptyCell(int num, State state) {
+    return !state.getDark().contains(num) && !state.getLight().contains(num);
+  }
+
+  /**
    * Given a move, create an immutable State object, which reflects a piece being captured.
    *
    * @param state       immutable source State object
@@ -151,5 +162,19 @@ public class StateUtils {
 
   private static boolean isCaptureMove(MoveRequest moveRequest) {
     return moveRequest.getMove().contains("x");
+  }
+
+  // TODO Maybe return a Pair.of pieces and corresponding kings?
+  /**
+   * Get a list of cell of a certain side.
+   *
+   * @param side on DARK, LIGHT
+   * @return immutable list of corresponding board positions
+   */
+  public static List<Integer> getSide(Side side, State state) {
+    return switch (side) {
+      case DARK -> state.getDark();
+      case LIGHT -> state.getLight();
+    };
   }
 }

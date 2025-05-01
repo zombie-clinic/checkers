@@ -2,24 +2,21 @@ package com.example.checkers.service;
 
 import static com.example.checkers.service.StateUtils.getStateFromMoveList;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import com.example.checkers.domain.Checkerboard;
 import com.example.checkers.domain.MoveRecord;
 import com.example.checkers.domain.PossibleMove;
 import com.example.checkers.domain.PossibleMoveSimplified;
 import com.example.checkers.domain.Side;
 import com.example.checkers.model.MoveResponse;
 import com.example.checkers.model.State;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 
 @Service
@@ -82,8 +79,7 @@ public class PossibleMoveServiceImpl implements PossibleMoveService {
     }
     // regular move, game in progress
     Map<Integer, List<PossibleMove>> possibleMoves = possibleMoveProvider.getPossibleMovesForSide(
-        nextToMoveSide, Checkerboard.state(state.getDark(), state.getLight())
-    );
+        nextToMoveSide, state);
     Map<Integer, List<PossibleMoveSimplified>> simplifiedPossibleMoves =
         getSimplifiedPossibleMoves(possibleMoves);
 

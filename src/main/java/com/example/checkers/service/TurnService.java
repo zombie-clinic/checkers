@@ -45,12 +45,8 @@ public class TurnService {
         return null;
       }
 
-      Map<Integer, List<PossibleMove>> possibleMovesMap =
-          provider.getPossibleMovesForPiece(Piece.of(Integer.parseInt(lastMove.move().split("x")[1]),
-                  lastMove.side()),
-              new Checkerboard(currentState.getDark(),
-                  currentState.getLight()
-              ));
+      var piece = Piece.of(Integer.parseInt(lastMove.move().split("x")[1]), lastMove.side());
+      var possibleMovesMap = provider.getPossibleMovesForPiece(piece, currentState);
       List<PossibleMove> filtered = possibleMovesMap.entrySet().stream()
           .flatMap(p -> p.getValue().stream())
           .filter(PossibleMove::isCapture)

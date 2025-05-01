@@ -4,6 +4,7 @@ import com.example.checkers.domain.Checkerboard;
 import com.example.checkers.domain.Piece;
 import com.example.checkers.domain.PossibleMove;
 import com.example.checkers.domain.Side;
+import com.example.checkers.model.State;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -16,14 +17,14 @@ import org.springframework.stereotype.Component;
 public class PossibleMoveProviderImpl implements PossibleMoveProvider {
 
   @Override
-  public Map<Integer, List<PossibleMove>> getPossibleMovesForPiece(Piece piece, Checkerboard state) {
+  public Map<Integer, List<PossibleMove>> getPossibleMovesForPiece(Piece piece, State state) {
     return Map.of(piece.position(), getPossibleMovesForPieceInternal(piece, state));
   }
 
   @Override
-  public Map<Integer, List<PossibleMove>> getPossibleMovesForSide(Side side, Checkerboard state) {
+  public Map<Integer, List<PossibleMove>> getPossibleMovesForSide(Side side, State state) {
     var map = new HashMap<Integer, List<PossibleMove>>();
-    for (int i : state.getSide(side)) {
+    for (int i : StateUtils.getSide(side, state)) {
       var possibleMoves = getPossibleMovesForPieceInternal(Piece.of(i, side), state);
       if (!possibleMoves.isEmpty()) {
         map.put(i, possibleMoves);
@@ -33,7 +34,7 @@ public class PossibleMoveProviderImpl implements PossibleMoveProvider {
   }
 
   List<PossibleMove> getPossibleMovesForPieceInternal(Piece piece,
-                                                      Checkerboard state,
+                                                      State state,
                                                       boolean isChainCaptureCheck) {
 
     var moves = new ArrayList<PossibleMove>();
@@ -44,23 +45,21 @@ public class PossibleMoveProviderImpl implements PossibleMoveProvider {
     if (moves.stream().anyMatch(PossibleMove::isCapture)) {
       return captureMovesVerifiedForTerminality(
           state,
-          piece.side(),
           moves.stream().filter(PossibleMove::isCapture).toList(),
           isChainCaptureCheck
       );
     }
 
     return moves.stream()
-        .filter(i -> isDestinationAvailable(state, i))
+        .filter(move -> StateUtils.isEmptyCell(move.destination(), state))
         .toList();
   }
 
-  List<PossibleMove> getPossibleMovesForPieceInternal(Piece piece, Checkerboard state) {
+  List<PossibleMove> getPossibleMovesForPieceInternal(Piece piece, State state) {
     return getPossibleMovesForPieceInternal(piece, state, false);
   }
 
-  private List<PossibleMove> captureMovesVerifiedForTerminality(Checkerboard state,
-                                                                Side side,
+  private List<PossibleMove> captureMovesVerifiedForTerminality(State state,
                                                                 List<PossibleMove> captureMoves,
                                                                 boolean isCaptureTerminalityCheck) {
 
@@ -85,7 +84,7 @@ public class PossibleMoveProviderImpl implements PossibleMoveProvider {
     return res;
   }
 
-  private List<PossibleMove> getMoves(Checkerboard state, Piece piece,
+  private List<PossibleMove> getMoves(State state, Piece piece,
                                       LinkedList<Integer> diagonalSource) {
 
 
@@ -99,7 +98,7 @@ public class PossibleMoveProviderImpl implements PossibleMoveProvider {
 
         var nextAfterNumIdx = diagonal.indexOf(piece.position()) + 1;
         // TODO Here is functionality missing for capturing backwards
-        if (state.getSide(piece.oppositeSide()).contains(diagonal.get(nextAfterNumIdx))) {
+        if (StateUtils.getSide(piece.oppositeSide(), state).contains(diagonal.get(nextAfterNumIdx))) {
           determineCaptureMove(nextAfterNumIdx + 1, diagonal, state, piece).ifPresent(
               res::add
           );
@@ -111,7 +110,6 @@ public class PossibleMoveProviderImpl implements PossibleMoveProvider {
               new PossibleMove(piece,
                   diagonal.get(diagonal.lastIndexOf(piece.position()) + 1), false,
                   true));
-
         }
       }
     }
@@ -126,7 +124,7 @@ public class PossibleMoveProviderImpl implements PossibleMoveProvider {
 
         var nextAfterNumIdx = dr.indexOf(pieceNum) + 1;
         // TODO Here is functionality missing for capturing backwards
-        if (state.getSide(piece.oppositeSide()).contains(dr.get(nextAfterNumIdx))) {
+        if (StateUtils.getSide(piece.oppositeSide(), state).contains(dr.get(nextAfterNumIdx))) {
           determineCaptureMove(nextAfterNumIdx + 1, dr, state, piece).ifPresent(
               res::add
           );
@@ -142,20 +140,16 @@ public class PossibleMoveProviderImpl implements PossibleMoveProvider {
 
   private Optional<PossibleMove> determineCaptureMove(int nextNextIdx,
                                                       LinkedList<Integer> list,
-                                                      Checkerboard state,
+                                                      State state,
                                                       Piece piece
   ) {
     if (nextNextIdx > list.size() - 1) {
       return Optional.empty();
     }
-    if (state.isEmptyCell(list.get(nextNextIdx))) {
+    if (StateUtils.isEmptyCell(list.get(nextNextIdx), state)) {
       // TODO Mind isTerminal is true just for now
       return Optional.of(new PossibleMove(piece, list.get(nextNextIdx), true, true));
     }
     return Optional.empty();
-  }
-
-  private boolean isDestinationAvailable(Checkerboard state, PossibleMove i) {
-    return !(state.getSide(Side.DARK).contains(i.destination()) || state.getSide(Side.LIGHT).contains(i.destination()));
   }
 }
