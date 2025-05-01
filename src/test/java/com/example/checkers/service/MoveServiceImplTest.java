@@ -94,9 +94,12 @@ class MoveServiceImplTest {
 
   @Test
   void givenMoveResultsInCapture_whenMove_returnValidState() {
+    // FIXME Either modify move constructor or use builder with default kings
+    Move move = new Move(game, players.left, Side.LIGHT.name(), "21-17", "13", "17");
+    move.setKings(List.of());
     when(movesReaderService.getMovesFor(anyString())).thenReturn(
         List.of(
-            MoveRecord.fromMove(new Move(game, players.left, Side.LIGHT.name(), "21-17", "13", "17"))
+            MoveRecord.fromMove(move)
         )
     );
 
@@ -104,8 +107,9 @@ class MoveServiceImplTest {
     when(turnService.getWhichSideToMove(game.getId())).thenReturn(Side.DARK);
 
     MoveResponse moveResponse = moveService.getNextMoves(gameId);
-    assertEquals("{13=[PossibleMoveSimplified[position=13, destination=22, isCapture=true, " +
-        "isTerminal=true]]}", moveResponse.getPossibleMoves().toString());
+    assertEquals(
+        "{13=[PossibleMoveSimplified[position=13, destination=22, isCapture=true, isTerminal=true]]}",
+        moveResponse.getPossibleMoves().toString());
   }
 
   @Test
@@ -113,9 +117,9 @@ class MoveServiceImplTest {
     when(movesReaderService.getMovesFor(anyString())).thenReturn(
         List.of(
             new MoveRecord(1L, game.getId(), players.left.getId(), Side.LIGHT, "21-17"
-                , "13", "17,18"),
+                , "13", "17,18", List.of()),
             new MoveRecord(2L, game.getId(), players.right.getId(), Side.DARK, "13x22"
-                , "22", "18")
+                , "22", "18", List.of())
         )
     );
 
@@ -123,9 +127,9 @@ class MoveServiceImplTest {
     when(turnService.getWhichSideToMove(game.getId())).thenReturn(Side.DARK);
 
     MoveResponse moveResponse = moveService.getNextMoves(gameId);
-
-    assertEquals("{22=[PossibleMoveSimplified[position=22, destination=15, isCapture=true, " +
-        "isTerminal=true]]}", moveResponse.getPossibleMoves().toString());
+    assertEquals(
+        "{22=[PossibleMoveSimplified[position=22, destination=15, isCapture=true, isTerminal=true]]}",
+        moveResponse.getPossibleMoves().toString());
   }
 
   @Test
@@ -175,9 +179,9 @@ class MoveServiceImplTest {
     when(movesReaderService.getMovesFor(eq(gameId.toString()))).thenReturn(
         List.of(
             new MoveRecord(1L, game.getId(), players.left.getId(), Side.LIGHT, "22-18"
-                , "14,15", "18,27"),
+                , "14,15", "18,27", List.of()),
             new MoveRecord(2L, game.getId(), players.right.getId(), Side.DARK, "15x22",
-                "14,22", "27")
+                "14,22", "27", List.of())
         )
     );
 

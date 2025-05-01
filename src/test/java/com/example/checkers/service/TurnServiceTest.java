@@ -46,15 +46,17 @@ class TurnServiceTest {
     String gameId = UUID.randomUUID().toString();
     return Stream.of(
         Arguments.of(gameId, List.of(), Side.LIGHT),
-        Arguments.of(gameId, List.of(
-            new MoveRecord(1L, gameId, 1L, Side.LIGHT, "21-17",
-                Checkerboard.getStartingState().getDark(),
-                Checkerboard.getStartingState().getLight())
-        ), Side.DARK),
-        Arguments.of(gameId, List.of(
-            new MoveRecord(1L, gameId, 1L, Side.LIGHT, "22-18", "14,15", "18,27"),
-            new MoveRecord(2L, gameId, 2L, Side.DARK, "15x22", "14,22", "27")
-        ), Side.LIGHT)
+        Arguments.of(gameId,
+            List.of(
+                new MoveRecord(1L, gameId, 1L, Side.LIGHT, "21-17",
+                    Checkerboard.getStartingState().getDark(), Checkerboard.getStartingState().getLight(),
+                    List.of())
+            ), Side.DARK),
+        Arguments.of(gameId,
+            List.of(
+                new MoveRecord(1L, gameId, 1L, Side.LIGHT, "22-18", "14,15", "18,27", List.of()),
+                new MoveRecord(2L, gameId, 2L, Side.DARK, "15x22", "14,22", "27", List.of())
+            ), Side.LIGHT)
     );
   }
 }

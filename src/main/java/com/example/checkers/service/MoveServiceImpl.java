@@ -36,6 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class MoveServiceImpl implements MoveService {
 
+
   private final MoveRepository moveRepository;
 
   private final GameRepository gameRepository;
@@ -75,30 +76,13 @@ public class MoveServiceImpl implements MoveService {
   @Override
   @Transactional
   public void saveMove(UUID gameId, MoveRequest moveRequest) {
-    Game game = gameRepository.findById(gameId.toString()).orElseThrow(
-        () -> new IllegalArgumentException("No game found")
-    );
-    Player player = playerRepository.findById(moveRequest.getPlayerId()).orElseThrow(
-        () -> new IllegalArgumentException("No player found")
-    );
+    Game game = findGame(gameId);
+    Player player = findPlayer(moveRequest);
     Side movingSide = Side.valueOf(moveRequest.getSide());
 
-    List<Move> moves = moveRepository.findAllByGameId(gameId.toString());
-    State currentState;
-    if (moves.isEmpty()) {
-      currentState = startingStateLookupService.getStateFromStartingStateString(gameId);
-      currentState.setKings(List.of());
-    } else {
-      currentState = new State(
-          Arrays.stream(moves.getLast().getDark().split(",")).map(Integer::valueOf).toList(),
-          Arrays.stream(moves.getLast().getLight().split(",")).map(Integer::valueOf).toList()
-      );
-      List<Integer> kings = moves.getLast().getKings();
-      if (kings == null) {
-        kings = Collections.emptyList();
-      }
-      currentState.setKings(kings);
-    }
+    // FIXME duplication with getCurrentState
+    State currentState = getCurrentStateFromMove(gameId);
+
     validateMoveRequest(currentState, moveRequest.getState());
 
     State state = moveRequest.getState();
@@ -110,6 +94,9 @@ public class MoveServiceImpl implements MoveService {
         newState.getLight().stream().map(String::valueOf).collect(Collectors.joining(",")));
 
     // TODO There is no need to introduce possible move abstraction, we could go with Move DTO
+
+    // FIXME redundant call to database
+    List<Move> moves = moveRepository.findAllByGameId(gameId.toString());
 
     List<Integer> kings;
     if (moves.isEmpty()) {
@@ -129,6 +116,38 @@ public class MoveServiceImpl implements MoveService {
     // done if this moves ends on opponent's end (king creation)
     // todo check kings being captured as well
     moveRepository.save(move);
+  }
+
+  private State getCurrentStateFromMove(UUID gameId) {
+    List<Move> moves = moveRepository.findAllByGameId(gameId.toString());
+    State currentState;
+    if (moves.isEmpty()) {
+      currentState = startingStateLookupService.getStateFromStartingStateString(gameId);
+      currentState.setKings(List.of());
+    } else {
+      currentState = new State(
+          Arrays.stream(moves.getLast().getDark().split(",")).map(Integer::valueOf).toList(),
+          Arrays.stream(moves.getLast().getLight().split(",")).map(Integer::valueOf).toList()
+      );
+      List<Integer> kings = moves.getLast().getKings();
+      if (kings == null) {
+        kings = Collections.emptyList();
+      }
+      currentState.setKings(kings);
+    }
+    return currentState;
+  }
+
+  private Player findPlayer(MoveRequest moveRequest) {
+    return playerRepository.findById(moveRequest.getPlayerId()).orElseThrow(
+        () -> new IllegalArgumentException("No player found")
+    );
+  }
+
+  private Game findGame(UUID gameId) {
+    return gameRepository.findById(gameId.toString()).orElseThrow(
+        () -> new IllegalArgumentException("No game found")
+    );
   }
 
   private boolean moveDestKings(Side side, Integer dest) {
@@ -161,7 +180,7 @@ public class MoveServiceImpl implements MoveService {
       if (last == null) {
         state.setKings(List.of());
       } else {
-        if(last.kings().isEmpty()) {
+        if (last.kings().isEmpty()) {
           state.setKings(List.of());
         } else {
           state.setKings(new ArrayList<>(last.kings()));
@@ -226,8 +245,9 @@ public class MoveServiceImpl implements MoveService {
   static State getCurrentState(List<MoveRecord> moveList) {
 
     if (moveList.isEmpty()) {
-      throw new IllegalArgumentException("Move list is empty, state should be constructed " +
-          "from starting state");
+      throw new IllegalArgumentException("""
+          Move list is empty, state should be constructed from starting state
+          """);
     }
 
     String dark = moveList.getLast().dark();
@@ -355,8 +375,9 @@ public class MoveServiceImpl implements MoveService {
         return d.get((startIdx + endIdx) / 2);
       }
     }
-    throw new IllegalStateException(String.format("Trying to determine impossible capture: " +
-            "%s%s",
+    throw new IllegalStateException(String.format("""
+            Trying to determine impossible capture: %s%s
+            """,
         start, end));
   }
 }
