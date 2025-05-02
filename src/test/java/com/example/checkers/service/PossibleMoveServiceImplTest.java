@@ -39,12 +39,14 @@ import org.mockito.quality.Strictness;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class PossibleMoveServiceImplTest {
 
+  private final UUID gameId = UUID.randomUUID();
+
   @Mock
   private MovesReaderService movesReaderService;
 
   @Mock
   private TurnService turnService;
-
+  
   @Mock
   private GameRepository gameRepository;
 
@@ -54,8 +56,8 @@ class PossibleMoveServiceImplTest {
   @InjectMocks
   private PossibleMoveServiceImpl moveService;
 
-  private final UUID gameId = UUID.randomUUID();
   private Game game;
+
   private Tuple<Player> players;
 
   @BeforeEach
@@ -195,6 +197,27 @@ class PossibleMoveServiceImplTest {
         new PossibleMoveSimplified(27, 23, false, true)));
 
     assertThat(expected.toString()).endsWith(actual.toString());
+  }
+
+  @Test
+  void givenKingsTurn_whenMove_ReturnsPossibleBackwardsMoves() {
+    when(movesReaderService.getMovesFor(anyString())).thenReturn(
+        List.of(
+            new MoveRecord(1L, game.getId(), players.left.getId(), Side.LIGHT, "7-3"
+                , "26", "3", List.of(3)),
+            new MoveRecord(2L, game.getId(), players.right.getId(), Side.DARK, "26-31"
+                , "31", "3", List.of(3, 31))
+        )
+    );
+
+    // FIXME let's use real method
+    when(turnService.getWhichSideToMove(game.getId())).thenReturn(Side.LIGHT);
+
+    MoveResponse moveResponse = moveService.getNextMoves(gameId);
+    assertEquals(
+        "{3=[PossibleMoveSimplified[position=3, destination=7, isCapture=false, isTerminal=true], PossibleMoveSimplified[position=3, destination=8, " +
+            "isCapture=false, isTerminal=true]]}",
+        moveResponse.getPossibleMoves().toString());
   }
 
   record Tuple<T>(T left, T right) {

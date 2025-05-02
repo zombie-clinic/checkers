@@ -88,15 +88,32 @@ public class PossibleMoveProviderImpl implements PossibleMoveProvider {
                                       LinkedList<Integer> diagonalSource) {
 
 
-    LinkedList<Integer> diagonal = piece.isLight() ?
-        new LinkedList<>(diagonalSource.reversed()) : new LinkedList<>(diagonalSource);
+    LinkedList<Integer> ordered = new LinkedList<>(diagonalSource);
+    LinkedList<Integer> reversed = new LinkedList<>(diagonalSource.reversed());
+    var diagonal = piece.isLight() ? reversed : ordered;
+
+    Side side = piece.side();
+    // FIXME Domain object should separate from api request object
+    List<Integer> kings = state.getKings() == null ? List.of() : state.getKings();
+    boolean isKing = side == Side.DARK ?
+        (state.getDark().contains(piece.position()) && kings.contains(piece.position()))
+        : (state.getLight().contains(piece.position()) && kings.contains(piece.position()));
 
     var res = new ArrayList<PossibleMove>();
 
+    extracted(state, piece, diagonal, res, isKing);
+
+    return res;
+  }
+
+  private void extracted(State state, Piece piece, LinkedList<Integer> diagonal, ArrayList<PossibleMove> res,
+                         boolean isKing) {
     if (diagonal.contains(piece.position())) {
+      // FIXME This stops the logic from propagating to kings
       if (piece.position() != diagonal.peekLast()) {
 
         var nextAfterNumIdx = diagonal.indexOf(piece.position()) + 1;
+
         // TODO Here is functionality missing for capturing backwards
         if (StateUtils.getSide(piece.oppositeSide(), state).contains(diagonal.get(nextAfterNumIdx))) {
           determineCaptureMove(nextAfterNumIdx + 1, diagonal, state, piece).ifPresent(
@@ -104,13 +121,12 @@ public class PossibleMoveProviderImpl implements PossibleMoveProvider {
           );
 
         } else {
-
           // TODO before this a check against state needs to be done
-          res.add(
-              new PossibleMove(piece,
-                  diagonal.get(diagonal.lastIndexOf(piece.position()) + 1), false,
-                  true));
+          res.add(new PossibleMove(piece, diagonal.get(nextAfterNumIdx), false, true));
         }
+      } else if (isKing) {
+        var nextAfterNumIdx = diagonal.indexOf(piece.position()) - 1;
+        res.add(new PossibleMove(piece, diagonal.get(nextAfterNumIdx), false, true));
       }
     }
 
@@ -128,14 +144,9 @@ public class PossibleMoveProviderImpl implements PossibleMoveProvider {
           determineCaptureMove(nextAfterNumIdx + 1, dr, state, piece).ifPresent(
               res::add
           );
-
         }
       }
     }
-
-
-    return res;
-
   }
 
   private Optional<PossibleMove> determineCaptureMove(int nextNextIdx,

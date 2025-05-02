@@ -14,7 +14,9 @@ import com.example.checkers.persistence.PlayerRepository;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -62,12 +64,19 @@ public class MoveServiceImpl implements MoveService {
     } else {
       kings = new ArrayList<>(moves.getLast().getKings());
     }
+    Set<Integer> kingsSet = new HashSet<>(kings);
+
+    Integer start = Integer.valueOf(move.getMove().split("[-x]")[0]);
     Integer dest = Integer.valueOf(move.getMove().split("[-x]")[1]);
     if (isMoveResultsInKings(Side.valueOf(move.getSide()), dest)) {
-      kings.add(dest);
-      move.setKings(kings);
+      kingsSet.add(dest);
+      move.setKings(kingsSet.stream().toList());
     } else {
-      move.setKings(kings);
+      if (kingsSet.contains(start)) {
+        kingsSet.remove(start);
+        kingsSet.add(dest);
+      }
+      move.setKings(kingsSet.stream().toList());
     }
     // todo check kings being captured as well
     moveRepository.save(move);
