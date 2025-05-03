@@ -1,9 +1,14 @@
 package com.example.checkers.service;
 
+import static com.example.checkers.domain.Side.DARK;
+import static com.example.checkers.domain.Side.LIGHT;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.example.checkers.domain.Game;
 import com.example.checkers.domain.GameProgress;
 import com.example.checkers.domain.MoveRecord;
 import com.example.checkers.domain.Player;
+import com.example.checkers.domain.Side;
 import com.example.checkers.model.MoveRequest;
 import com.example.checkers.model.State;
 import com.example.checkers.persistence.GameRepository;
@@ -50,45 +55,64 @@ class MoveServiceImplTest {
     game.setProgress(GameProgress.ONGOING.toString());
     game.setPlayerOne(playerOne);
     game.setPlayerTwo(playerTwo);
-    game.setStartingState("{\"dark\":[28],\"light\":[5]}");
+    game.setStartingState("{\"dark\":[28, 8],\"light\":[5, 23]}");
 
     Game savedGame = gameRepository.save(game);
     String gameId = savedGame.getId();
 
-    MoveRequest moveRequest1 = new MoveRequest();
-    moveRequest1.setMove("5-1");
-    moveRequest1.setSide("LIGHT");
-    moveRequest1.setPlayerId(1L);
-    State state1 = new State(List.of(28), List.of(5));
-    state1.setKings(List.of());
-    moveRequest1.setState(state1);
-    moveService.saveMove(UUID.fromString(gameId), moveRequest1);
+    // 1
+    State state = buildState(List.of(28, 8), List.of(5, 23), List.of());
+    MoveRequest moveRequest = buildMoveRequest("5-1", LIGHT, state);
+    moveService.saveMove(UUID.fromString(gameId), moveRequest);
 
     List<MoveRecord> moveRecords = movesReaderService.getMovesFor(gameId);
-    assert moveRecords.getLast().kings().contains(1);
+    assertThat(moveRecords.getLast().kings()).contains(1);
 
-    MoveRequest moveRequest2 = new MoveRequest();
-    moveRequest2.setMove("28-32");
-    moveRequest2.setSide("DARK");
-    moveRequest2.setPlayerId(2L);
-    State state2 = new State(List.of(28), List.of(1));
-    state2.setKings(List.of(1));
-    moveRequest2.setState(state2);
-    moveService.saveMove(UUID.fromString(gameId), moveRequest2);
+    // 2
+    state = buildState(List.of(28, 8), List.of(1, 23), List.of(1));
+    moveRequest = buildMoveRequest("28-32", DARK, state);
+    moveService.saveMove(UUID.fromString(gameId), moveRequest);
 
     moveRecords = movesReaderService.getMovesFor(gameId);
-    assert moveRecords.getLast().kings().containsAll(List.of(1, 32));
+    assertThat(moveRecords.getLast().kings()).containsAll(List.of(1, 32));
 
-    MoveRequest moveRequest3 = new MoveRequest();
-    moveRequest3.setMove("1-6");
-    moveRequest3.setSide("LIGHT");
-    moveRequest3.setPlayerId(1L);
-    State state3 = new State(List.of(32), List.of(1));
-    state3.setKings(List.of(1, 32));
-    moveRequest3.setState(state3);
-    moveService.saveMove(UUID.fromString(gameId), moveRequest3);
+    // 3
+    state = buildState(List.of(32, 8), List.of(1, 23), List.of(1, 32));
+    moveRequest = buildMoveRequest("1-6", LIGHT, state);
+    moveService.saveMove(UUID.fromString(gameId), moveRequest);
 
     moveRecords = movesReaderService.getMovesFor(gameId);
-    assert moveRecords.getLast().kings().containsAll(List.of(6, 32));
+    assertThat(moveRecords.getLast().kings()).containsAll(List.of(6, 32));
+
+    // 4
+    state = buildState(List.of(32, 8), List.of(6, 23), List.of(6, 32));
+    moveRequest = buildMoveRequest("32-27", DARK, state);
+    moveService.saveMove(UUID.fromString(gameId), moveRequest);
+
+    moveRecords = movesReaderService.getMovesFor(gameId);
+    assertThat(moveRecords.getLast().kings()).containsAll(List.of(6, 27));
+
+    // 5
+    state = buildState(List.of(27, 8), List.of(6, 23), List.of(6, 27));
+    moveRequest = buildMoveRequest("23x32", LIGHT, state);
+    moveService.saveMove(UUID.fromString(gameId), moveRequest);
+
+    moveRecords = movesReaderService.getMovesFor(gameId);
+    assertThat(moveRecords.getLast().kings()).containsAll(List.of(6));
+  }
+
+  private State buildState(List<Integer> light, List<Integer> dark, List<Integer> kings) {
+    var state = new State(light, dark);
+    state.setKings(kings);
+    return state;
+  }
+
+  private static MoveRequest buildMoveRequest(String move, Side side, State state) {
+    MoveRequest req = new MoveRequest();
+    req.setMove(move);
+    req.setSide(side.toString());
+    req.setPlayerId(side == LIGHT ? 1L : 2L);
+    req.setState(state);
+    return req;
   }
 }

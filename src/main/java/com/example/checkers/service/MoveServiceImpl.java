@@ -47,7 +47,7 @@ public class MoveServiceImpl implements MoveService {
 
     validateMoveRequest(currentState, moveRequest.getState());
 
-    State newState = StateUtils.generateAfterCaptureState(currentState, moveRequest);
+    State newState = StateUtils.generateAfterMoveOrCaptureState(currentState, moveRequest);
 
     // state, movingSide, moveStr, mv -> mv.contains("x"));
     Move move = new Move(game, player, movingSide.name(), moveRequest.getMove(),
@@ -70,15 +70,18 @@ public class MoveServiceImpl implements MoveService {
     Integer dest = Integer.valueOf(move.getMove().split("[-x]")[1]);
     if (isMoveResultsInKings(Side.valueOf(move.getSide()), dest)) {
       kingsSet.add(dest);
-      move.setKings(kingsSet.stream().toList());
     } else {
       if (kingsSet.contains(start)) {
         kingsSet.remove(start);
         kingsSet.add(dest);
       }
-      move.setKings(kingsSet.stream().toList());
     }
-    // todo check kings being captured as well
+
+    move.setKings(kingsSet.stream()
+        // check if kings were captured
+        .filter(k -> newState.getLight().contains(k) || newState.getDark().contains(k))
+        .toList());
+
     moveRepository.save(move);
   }
 
@@ -122,8 +125,15 @@ public class MoveServiceImpl implements MoveService {
   }
 
   private void validateMoveRequest(State serverState, State clientState) {
-    if (!serverState.getDark().equals(clientState.getDark())
-        || !serverState.getLight().equals(clientState.getLight())) {
+    List<Integer> serverDark = new ArrayList<>(serverState.getDark());
+    List<Integer> serverLight = new ArrayList<>(serverState.getLight());
+    List<Integer> clientDark = new ArrayList<>(clientState.getDark());
+    List<Integer> clientLight = new ArrayList<>(clientState.getLight());
+    Collections.sort(serverDark);
+    Collections.sort(serverLight);
+    Collections.sort(clientDark);
+    Collections.sort(clientLight);
+    if (!serverDark.equals(clientDark) || !serverLight.equals(clientLight)) {
       throw new IllegalArgumentException("provided state not consistent, wait for you turn");
     }
   }

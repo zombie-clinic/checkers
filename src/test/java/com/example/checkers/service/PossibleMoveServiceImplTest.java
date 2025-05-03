@@ -148,7 +148,7 @@ class PossibleMoveServiceImplTest {
         List.of(1, 2, 3, 4, 5, 6, 7, 8, 11, 12, 14, 22),
         List.of(23, 25, 26, 27, 28, 29, 30, 31, 32, 17, 20)
     );
-    State actualState = StateUtils.generateAfterCaptureState(currentState, moveRequest);
+    State actualState = StateUtils.generateAfterMoveOrCaptureState(currentState, moveRequest);
     assertEquals(expectedState, actualState);
 
 
@@ -164,7 +164,7 @@ class PossibleMoveServiceImplTest {
     moveRequest.setSide(Side.DARK.name());
     moveRequest.setPlayerId(1L);
 
-    actualState = StateUtils.generateAfterCaptureState(currentState, moveRequest);
+    actualState = StateUtils.generateAfterMoveOrCaptureState(currentState, moveRequest);
     expectedState = new State(
         List.of(1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 21),
         List.of(21, 24, 26, 27, 28, 29, 30, 31, 32, 22, 16)

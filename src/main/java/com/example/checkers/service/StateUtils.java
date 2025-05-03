@@ -69,7 +69,7 @@ public class StateUtils {
    * @param moveRequest moveRequest provided by a client
    * @return immutable target State object
    */
-  static State generateAfterCaptureState(State state, MoveRequest moveRequest) {
+  static State generateAfterMoveOrCaptureState(State state, MoveRequest moveRequest) {
 
 
     Integer start = Integer.valueOf(moveRequest.getMove().split("[x\\-]")[0]);
