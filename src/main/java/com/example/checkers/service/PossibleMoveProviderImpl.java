@@ -101,30 +101,33 @@ public class PossibleMoveProviderImpl implements PossibleMoveProvider {
 
     var res = new ArrayList<PossibleMove>();
 
-    extracted(state, piece, diagonal, res, isKing);
+    collectMoves(state, piece, diagonal, res, isKing);
 
     return res;
   }
 
-  private void extracted(State state, Piece piece, LinkedList<Integer> diagonal, ArrayList<PossibleMove> res,
-                         boolean isKing) {
+  private void collectMoves(State state, Piece piece, LinkedList<Integer> diagonal, ArrayList<PossibleMove> res,
+                            boolean isKing) {
     if (diagonal.contains(piece.position())) {
-      // FIXME This stops the logic from propagating to kings
-      if (piece.position() != diagonal.peekLast()) {
 
-        var nextAfterNumIdx = diagonal.indexOf(piece.position()) + 1;
+      if (!isKing) {
+        if (piece.position() != diagonal.peekLast()) {
 
-        // TODO Here is functionality missing for capturing backwards
-        if (StateUtils.getSide(piece.oppositeSide(), state).contains(diagonal.get(nextAfterNumIdx))) {
-          determineCaptureMove(nextAfterNumIdx + 1, diagonal, state, piece).ifPresent(
-              res::add
-          );
+          var nextAfterNumIdx = diagonal.indexOf(piece.position()) + 1;
 
-        } else {
-          // TODO before this a check against state needs to be done
-          res.add(new PossibleMove(piece, diagonal.get(nextAfterNumIdx), false, true));
+          // TODO Here is functionality missing for capturing backwards
+          if (StateUtils.getSide(piece.oppositeSide(), state).contains(diagonal.get(nextAfterNumIdx))) {
+            determineCaptureMove(nextAfterNumIdx + 1, diagonal, state, piece).ifPresent(
+                res::add
+            );
+
+          } else {
+            // TODO before this a check against state needs to be done
+            res.add(new PossibleMove(piece, diagonal.get(nextAfterNumIdx), false, true));
+          }
         }
-      } else if (isKing) {
+      } else {
+        // isKing == true
         var nextAfterNumIdx = diagonal.indexOf(piece.position()) - 1;
         res.add(new PossibleMove(piece, diagonal.get(nextAfterNumIdx), false, true));
       }
@@ -150,17 +153,22 @@ public class PossibleMoveProviderImpl implements PossibleMoveProvider {
   }
 
   private Optional<PossibleMove> determineCaptureMove(int nextNextIdx,
-                                                      LinkedList<Integer> list,
+                                                      LinkedList<Integer> diagonal,
                                                       State state,
                                                       Piece piece
   ) {
-    if (nextNextIdx > list.size() - 1) {
+    if (nextNextIdx > diagonal.size() - 1) {
+      // can't capture the opponent, if they take the last diagonal position
       return Optional.empty();
     }
-    if (StateUtils.isEmptyCell(list.get(nextNextIdx), state)) {
+
+
+    boolean isLandingCellEmpty = StateUtils.isEmptyCell(diagonal.get(nextNextIdx), state);
+    if (isLandingCellEmpty) {
       // TODO Mind isTerminal is true just for now
-      return Optional.of(new PossibleMove(piece, list.get(nextNextIdx), true, true));
+      return Optional.of(new PossibleMove(piece, diagonal.get(nextNextIdx), true, true));
     }
+
     return Optional.empty();
   }
 }

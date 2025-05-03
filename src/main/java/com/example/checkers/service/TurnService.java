@@ -61,6 +61,7 @@ public class TurnService {
 
       var piece = Piece.of(Integer.parseInt(lastMove.move().split("x")[1]), lastMove.side());
       var possibleMovesMap = provider.getPossibleMovesForPiece(piece, currentState);
+
       List<PossibleMove> filtered = possibleMovesMap.entrySet().stream()
           .flatMap(p -> p.getValue().stream())
           .filter(PossibleMove::isCapture)
