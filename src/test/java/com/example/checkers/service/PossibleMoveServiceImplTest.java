@@ -200,7 +200,7 @@ class PossibleMoveServiceImplTest {
   }
 
   @Test
-  void givenKingsTurn_whenMove_ReturnsPossibleBackwardsMoves() {
+  void givenKingsTurn_whenMove_ReturnsAllPossibleMoves_case1() {
     when(movesReaderService.getMovesFor(anyString())).thenReturn(
         List.of(
             new MoveRecord(1L, game.getId(), players.left.getId(), Side.LIGHT, "7-3"
@@ -221,6 +221,35 @@ class PossibleMoveServiceImplTest {
             PossibleMoveSimplified[position=3, destination=17, isCapture=false, isTerminal=true], PossibleMoveSimplified[position=3, destination=21, \
             isCapture=false, isTerminal=true], PossibleMoveSimplified[position=3, destination=8, isCapture=false, isTerminal=true], \
             PossibleMoveSimplified[position=3, destination=12, isCapture=false, isTerminal=true]]}""",
+        moveResponse.getPossibleMoves().toString());
+  }
+
+  // TODO Test when white king won't go to other diagonal only 1-5 (from import game)
+
+  @Test
+  void givenKingsTurn_whenMove_ReturnsAllPossibleMoves_case2() {
+    when(movesReaderService.getMovesFor(anyString())).thenReturn(
+        List.of(
+            new MoveRecord(1L, game.getId(), players.left.getId(), Side.LIGHT, "5-1"
+                , "26", "5", List.of()),
+            new MoveRecord(2L, game.getId(), players.right.getId(), Side.DARK, "26-31"
+                , "26", "1", List.of(1))
+        )
+    );
+
+    // FIXME let's use real method
+    when(turnService.getWhichSideToMove(game.getId())).thenReturn(Side.LIGHT);
+
+    MoveResponse moveResponse = moveService.getNextMoves(gameId);
+    assertEquals(
+        """
+            {1=[PossibleMoveSimplified[position=1, destination=5, isCapture=false, isTerminal=true], \
+            PossibleMoveSimplified[position=1, destination=6, isCapture=false, isTerminal=true], \
+            PossibleMoveSimplified[position=1, destination=10, isCapture=false, isTerminal=true], \
+            PossibleMoveSimplified[position=1, destination=15, isCapture=false, isTerminal=true], \
+            PossibleMoveSimplified[position=1, destination=19, isCapture=false, isTerminal=true], \
+            PossibleMoveSimplified[position=1, destination=24, isCapture=false, isTerminal=true], \
+            PossibleMoveSimplified[position=1, destination=28, isCapture=false, isTerminal=true]]}""",
         moveResponse.getPossibleMoves().toString());
   }
 

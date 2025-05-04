@@ -152,7 +152,7 @@ public class PossibleMoveProviderImpl implements PossibleMoveProvider {
     // king move and capture logic
     Integer occupied = null;
     // regular direction
-    while (isNextSquareOccupied(state, piece, nextSquare) || nextSquare > diagonal.size() - 1) {
+    while (!isNextSquareOccupied(state, piece, nextSquare) || nextSquare > diagonal.size() - 1) {
       res.add(new PossibleMove(piece, nextSquare, false, true));
       nextSquareIndex = nextSquareIndex + 1;
       if (nextSquareIndex >= diagonal.size()) {
