@@ -4,6 +4,7 @@ import com.example.checkers.domain.Checkerboard;
 import com.example.checkers.domain.Piece;
 import com.example.checkers.domain.PossibleMove;
 import com.example.checkers.domain.Side;
+import com.example.checkers.model.State;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -16,14 +17,14 @@ import org.springframework.stereotype.Component;
 public class PossibleMoveProviderImpl implements PossibleMoveProvider {
 
   @Override
-  public Map<Integer, List<PossibleMove>> getPossibleMovesForPiece(Piece piece, Checkerboard state) {
+  public Map<Integer, List<PossibleMove>> getPossibleMovesForPiece(Piece piece, State state) {
     return Map.of(piece.position(), getPossibleMovesForPieceInternal(piece, state));
   }
 
   @Override
-  public Map<Integer, List<PossibleMove>> getPossibleMovesForSide(Side side, Checkerboard state) {
+  public Map<Integer, List<PossibleMove>> getPossibleMovesForSide(Side side, State state) {
     var map = new HashMap<Integer, List<PossibleMove>>();
-    for (int i : state.getSide(side)) {
+    for (int i : StateUtils.getSide(side, state)) {
       var possibleMoves = getPossibleMovesForPieceInternal(Piece.of(i, side), state);
       if (!possibleMoves.isEmpty()) {
         map.put(i, possibleMoves);
@@ -33,7 +34,7 @@ public class PossibleMoveProviderImpl implements PossibleMoveProvider {
   }
 
   List<PossibleMove> getPossibleMovesForPieceInternal(Piece piece,
-                                                      Checkerboard state,
+                                                      State state,
                                                       boolean isChainCaptureCheck) {
 
     var moves = new ArrayList<PossibleMove>();
@@ -44,23 +45,21 @@ public class PossibleMoveProviderImpl implements PossibleMoveProvider {
     if (moves.stream().anyMatch(PossibleMove::isCapture)) {
       return captureMovesVerifiedForTerminality(
           state,
-          piece.side(),
           moves.stream().filter(PossibleMove::isCapture).toList(),
           isChainCaptureCheck
       );
     }
 
     return moves.stream()
-        .filter(i -> isDestinationAvailable(state, i))
+        .filter(move -> StateUtils.isEmptyCell(move.destination(), state))
         .toList();
   }
 
-  List<PossibleMove> getPossibleMovesForPieceInternal(Piece piece, Checkerboard state) {
+  List<PossibleMove> getPossibleMovesForPieceInternal(Piece piece, State state) {
     return getPossibleMovesForPieceInternal(piece, state, false);
   }
 
-  private List<PossibleMove> captureMovesVerifiedForTerminality(Checkerboard state,
-                                                                Side side,
+  private List<PossibleMove> captureMovesVerifiedForTerminality(State state,
                                                                 List<PossibleMove> captureMoves,
                                                                 boolean isCaptureTerminalityCheck) {
 
@@ -85,77 +84,136 @@ public class PossibleMoveProviderImpl implements PossibleMoveProvider {
     return res;
   }
 
-  private List<PossibleMove> getMoves(Checkerboard state, Piece piece,
+  private List<PossibleMove> getMoves(State state, Piece piece,
                                       LinkedList<Integer> diagonalSource) {
 
 
-    LinkedList<Integer> diagonal = piece.isLight() ?
-        new LinkedList<>(diagonalSource.reversed()) : new LinkedList<>(diagonalSource);
+    LinkedList<Integer> ordered = new LinkedList<>(diagonalSource);
+    LinkedList<Integer> reversed = new LinkedList<>(diagonalSource.reversed());
+    var diagonal = piece.isLight() ? reversed : ordered;
+
+    Side side = piece.side();
+    // FIXME Domain object should separate from api request object
+    List<Integer> kings = state.getKings() == null ? List.of() : state.getKings();
+    boolean isKing = side == Side.DARK ?
+        (state.getDark().contains(piece.position()) && kings.contains(piece.position()))
+        : (state.getLight().contains(piece.position()) && kings.contains(piece.position()));
 
     var res = new ArrayList<PossibleMove>();
 
     if (diagonal.contains(piece.position())) {
-      if (piece.position() != diagonal.peekLast()) {
-
-        var nextAfterNumIdx = diagonal.indexOf(piece.position()) + 1;
-        // TODO Here is functionality missing for capturing backwards
-        if (state.getSide(piece.oppositeSide()).contains(diagonal.get(nextAfterNumIdx))) {
-          determineCaptureMove(nextAfterNumIdx + 1, diagonal, state, piece).ifPresent(
-              res::add
-          );
-
-        } else {
-
-          // TODO before this a check against state needs to be done
-          res.add(
-              new PossibleMove(piece,
-                  diagonal.get(diagonal.lastIndexOf(piece.position()) + 1), false,
-                  true));
-
-        }
+      collectForwardMoves(state, piece, diagonal, res, false);
+      collectBackwardCaptures(state, piece, diagonal, res);
+      if (isKing) {
+        collectKingMoves(state, piece, diagonal, res);
+        collectBackwardKingMoves(state, piece, diagonal, res);
       }
     }
-
-
-    int pieceNum = piece.position();
-    // TODO Refactor duplication
-    if (diagonal.contains(pieceNum)) {
-      // for backwards moves only capture check is performed
-      var dr = diagonal.reversed();
-      if (pieceNum != dr.peekLast()) {
-
-        var nextAfterNumIdx = dr.indexOf(pieceNum) + 1;
-        // TODO Here is functionality missing for capturing backwards
-        if (state.getSide(piece.oppositeSide()).contains(dr.get(nextAfterNumIdx))) {
-          determineCaptureMove(nextAfterNumIdx + 1, dr, state, piece).ifPresent(
-              res::add
-          );
-
-        }
-      }
-    }
-
 
     return res;
-
   }
 
-  private Optional<PossibleMove> determineCaptureMove(int nextNextIdx,
-                                                      LinkedList<Integer> list,
-                                                      Checkerboard state,
-                                                      Piece piece
+  private void collectForwardMoves(State state,
+                                   Piece piece,
+                                   LinkedList<Integer> diagonal, ArrayList<PossibleMove> res,
+                                   boolean isBackwardsCaptureCheck) {
+    int square = piece.position();
+    var nextSquareIndex = diagonal.indexOf(square) + 1;
+    Integer nextSquare = nextSquareIndex >= diagonal.size() ? null : diagonal.get(nextSquareIndex);
+    if (nextSquare == null) {
+      return;
+    }
+    if (nextSquareIndex > diagonal.size() - 1) {
+      return;
+    }
+    if (isNextSquareFree(state, piece, nextSquare) && !isBackwardsCaptureCheck) {
+      res.add(new PossibleMove(piece, nextSquare, false, true));
+    }
+    if (isNextSquareOccupiedByOpponent(state, piece, nextSquare)) {
+      checkIfCaptureIsPossible(nextSquareIndex + 1, diagonal, state, piece).ifPresent(res::add);
+    }
+  }
+
+  private void collectBackwardCaptures(State state, Piece piece, LinkedList<Integer> diagonal, ArrayList<PossibleMove> res) {
+    collectForwardMoves(state, piece, diagonal.reversed(), res, true);
+  }
+
+  private void collectKingMoves(State state,
+                                Piece piece,
+                                LinkedList<Integer> diagonal,
+                                ArrayList<PossibleMove> res) {
+    int square = piece.position();
+    var nextSquareIndex = diagonal.indexOf(square) + 1;
+    Integer nextSquare = nextSquareIndex >= diagonal.size() ? null : diagonal.get(nextSquareIndex);
+    if (nextSquare == null) {
+      return;
+    }
+
+    // king move and capture logic
+    Integer occupied = null;
+    // regular direction
+    while (!isNextSquareOccupied(state, piece, nextSquare) || nextSquare > diagonal.size() - 1) {
+      res.add(new PossibleMove(piece, nextSquare, false, true));
+      nextSquareIndex = nextSquareIndex + 1;
+      if (nextSquareIndex >= diagonal.size()) {
+        break;
+      }
+      nextSquare = diagonal.get(nextSquareIndex);
+      if (isNextSquareOccupied(state, piece, nextSquare)) {
+        occupied = nextSquare;
+        break;
+      }
+    }
+    if (occupied != null) {
+      if (isNextSquareOccupiedByOpponent(state, piece, nextSquare)) {
+        int nextNextIdx = nextSquareIndex + 1;
+        checkIfCaptureIsPossible(nextNextIdx, diagonal, state, piece).ifPresent(res::add);
+        int nextNextNextIdx = nextNextIdx + 1;
+        for (int i = nextNextNextIdx; i < diagonal.size() - 1; i++) {
+          if (StateUtils.isEmptyCell(nextNextNextIdx, state)) {
+            res.add(new PossibleMove(piece, nextSquare, false, true));
+          } else {
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  private void collectBackwardKingMoves(State state, Piece piece, LinkedList<Integer> diagonal, ArrayList<PossibleMove> res) {
+    collectKingMoves(state, piece, diagonal.reversed(), res);
+  }
+
+  private Optional<PossibleMove> checkIfCaptureIsPossible(int nextNextIdx,
+                                                          LinkedList<Integer> diagonal,
+                                                          State state,
+                                                          Piece piece
   ) {
-    if (nextNextIdx > list.size() - 1) {
+    if (nextNextIdx > diagonal.size() - 1) {
+      // can't capture the opponent, if they take the last diagonal position
       return Optional.empty();
     }
-    if (state.isEmptyCell(list.get(nextNextIdx))) {
+
+
+    boolean isLandingCellEmpty = StateUtils.isEmptyCell(diagonal.get(nextNextIdx), state);
+    if (isLandingCellEmpty) {
       // TODO Mind isTerminal is true just for now
-      return Optional.of(new PossibleMove(piece, list.get(nextNextIdx), true, true));
+      return Optional.of(new PossibleMove(piece, diagonal.get(nextNextIdx), true, true));
     }
+
     return Optional.empty();
   }
 
-  private boolean isDestinationAvailable(Checkerboard state, PossibleMove i) {
-    return !(state.getSide(Side.DARK).contains(i.destination()) || state.getSide(Side.LIGHT).contains(i.destination()));
+  private static boolean isNextSquareOccupied(State state, Piece piece, int nextSquare) {
+    return StateUtils.getSide(piece.oppositeSide(), state).contains(nextSquare)
+        || StateUtils.getSide(piece.side(), state).contains(nextSquare);
+  }
+
+  private static boolean isNextSquareFree(State state, Piece piece, int nextSquare) {
+    return !StateUtils.getSide(piece.oppositeSide(), state).contains(nextSquare);
+  }
+
+  private static boolean isNextSquareOccupiedByOpponent(State state, Piece piece, int nextSquare) {
+    return StateUtils.getSide(piece.oppositeSide(), state).contains(nextSquare);
   }
 }

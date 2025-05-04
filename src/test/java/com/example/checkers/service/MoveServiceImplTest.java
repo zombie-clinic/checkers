@@ -1,202 +1,118 @@
 package com.example.checkers.service;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
+import static com.example.checkers.domain.Side.DARK;
+import static com.example.checkers.domain.Side.LIGHT;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import com.example.checkers.domain.Checkerboard;
 import com.example.checkers.domain.Game;
 import com.example.checkers.domain.GameProgress;
-import com.example.checkers.domain.Move;
 import com.example.checkers.domain.MoveRecord;
 import com.example.checkers.domain.Player;
-import com.example.checkers.domain.PossibleMove;
-import com.example.checkers.domain.PossibleMoveSimplified;
 import com.example.checkers.domain.Side;
 import com.example.checkers.model.MoveRequest;
-import com.example.checkers.model.MoveResponse;
 import com.example.checkers.model.State;
 import com.example.checkers.persistence.GameRepository;
 import com.example.checkers.persistence.MoveRepository;
-import java.util.HashMap;
+import com.example.checkers.persistence.PlayerRepository;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 
-@ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
+@AutoConfigureMockMvc
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class MoveServiceImplTest {
 
-  @Mock
-  private MoveRepository moveRepository;
-
-  @Mock
-  private MovesReaderService movesReaderService;
-
-  @Mock
-  private TurnService turnService;
-
-  @Mock
+  @Autowired
   private GameRepository gameRepository;
 
-  @Spy
-  private PossibleMoveProviderImpl possibleMoveProvider;
+  @Autowired
+  private MovesReaderService movesReaderService;
 
-  @InjectMocks
-  private MoveServiceImpl moveService;
+  @Autowired
+  private PlayerRepository playerRepository;
 
-  private UUID gameId = UUID.randomUUID();
-  private Game game;
-  private Tuple<Player> players;
+  @Autowired
+  private MoveRepository moveRepository;
 
-  @BeforeEach
-  void setUp() {
-    players = setPlayers();
-    game = new Game();
-    game.setId(gameId.toString());
-    game.setPlayerOne(players.left);
-    game.setPlayerTwo(players.right);
-    game.setProgress(GameProgress.ONGOING.name());
-    game.setStartingState(
-        String.format("{\"dark\":[%s],\"light\":[%s]}",
-            Checkerboard.getStartingState().getDark().stream().map(String::valueOf).collect(Collectors.joining(",")),
-            Checkerboard.getStartingState().getLight().stream().map(String::valueOf).collect(Collectors.joining(",")))
-    );
-
-    when(gameRepository.findGameById(anyString())).thenReturn(
-        Optional.ofNullable(game)
-    );
-
-  }
-
-  private Tuple<Player> setPlayers() {
-    var player1 = new Player();
-    player1.setId(1L);
-    player1.setName("1");
-    var player2 = new Player();
-    player2.setId(2L);
-    player2.setName("2");
-    return new Tuple<>(player1, player2);
-  }
+  @Autowired
+  private MoveService moveService;
 
   @Test
-  void givenMoveResultsInCapture_whenMove_returnValidState() {
-    when(movesReaderService.getMovesFor(anyString())).thenReturn(
-        List.of(
-            MoveRecord.fromMove(new Move(game, players.left, Side.LIGHT.name(), "21-17", "13", "17"))
-        )
-    );
+  void saveMove() {
 
-    // FIXME let's use real method
-    when(turnService.getWhichSideToMove(game.getId())).thenReturn(Side.DARK);
+    Player playerOne = new Player();
+    playerOne.setId(1L);
 
-    MoveResponse moveResponse = moveService.getNextMoves(gameId);
-    assertEquals("{13=[PossibleMoveSimplified[position=13, destination=22, isCapture=true, " +
-        "isTerminal=true]]}", moveResponse.getPossibleMoves().toString());
+    Player playerTwo = new Player();
+    playerTwo.setId(2L);
+
+    var game = new Game();
+    game.setProgress(GameProgress.ONGOING.toString());
+    game.setPlayerOne(playerOne);
+    game.setPlayerTwo(playerTwo);
+    game.setStartingState("{\"dark\":[28, 8],\"light\":[5, 23]}");
+
+    Game savedGame = gameRepository.save(game);
+    String gameId = savedGame.getId();
+
+    // 1
+    State state = buildState(List.of(28, 8), List.of(5, 23), List.of());
+    MoveRequest moveRequest = buildMoveRequest("5-1", LIGHT, state);
+    moveService.saveMove(UUID.fromString(gameId), moveRequest);
+
+    List<MoveRecord> moveRecords = movesReaderService.getMovesFor(gameId);
+    assertThat(moveRecords.getLast().kings()).contains(1);
+
+    // 2
+    state = buildState(List.of(28, 8), List.of(1, 23), List.of(1));
+    moveRequest = buildMoveRequest("28-32", DARK, state);
+    moveService.saveMove(UUID.fromString(gameId), moveRequest);
+
+    moveRecords = movesReaderService.getMovesFor(gameId);
+    assertThat(moveRecords.getLast().kings()).containsAll(List.of(1, 32));
+
+    // 3
+    state = buildState(List.of(32, 8), List.of(1, 23), List.of(1, 32));
+    moveRequest = buildMoveRequest("1-6", LIGHT, state);
+    moveService.saveMove(UUID.fromString(gameId), moveRequest);
+
+    moveRecords = movesReaderService.getMovesFor(gameId);
+    assertThat(moveRecords.getLast().kings()).containsAll(List.of(6, 32));
+
+    // 4
+    state = buildState(List.of(32, 8), List.of(6, 23), List.of(6, 32));
+    moveRequest = buildMoveRequest("32-27", DARK, state);
+    moveService.saveMove(UUID.fromString(gameId), moveRequest);
+
+    moveRecords = movesReaderService.getMovesFor(gameId);
+    assertThat(moveRecords.getLast().kings()).containsAll(List.of(6, 27));
+
+    // 5
+    state = buildState(List.of(27, 8), List.of(6, 23), List.of(6, 27));
+    moveRequest = buildMoveRequest("23x32", LIGHT, state);
+    moveService.saveMove(UUID.fromString(gameId), moveRequest);
+
+    moveRecords = movesReaderService.getMovesFor(gameId);
+    assertThat(moveRecords.getLast().kings()).containsAll(List.of(6));
   }
 
-  @Test
-  void givenMoveIsNotTerminal_whenMove_returnSameSidePossibleMoves() {
-    when(movesReaderService.getMovesFor(anyString())).thenReturn(
-        List.of(
-            new MoveRecord(1L, game.getId(), players.left.getId(), Side.LIGHT, "21-17"
-                , "13", "17,18"),
-            new MoveRecord(2L, game.getId(), players.right.getId(), Side.DARK, "13x22"
-                , "22", "18")
-        )
-    );
-
-    // FIXME let's use real method
-    when(turnService.getWhichSideToMove(game.getId())).thenReturn(Side.DARK);
-
-    MoveResponse moveResponse = moveService.getNextMoves(gameId);
-
-    assertEquals("{22=[PossibleMoveSimplified[position=22, destination=15, isCapture=true, " +
-        "isTerminal=true]]}", moveResponse.getPossibleMoves().toString());
+  private State buildState(List<Integer> light, List<Integer> dark, List<Integer> kings) {
+    var state = new State(light, dark);
+    state.setKings(kings);
+    return state;
   }
 
-  @Test
-  void givenDarkSide_whenCaptureMove_shouldReturnProperResponse() {
-
-    // case 1
-    var currentState = new State(
-        List.of(1, 2, 3, 4, 5, 6, 7, 8, 11, 12, 15, 14),
-        List.of(23, 25, 26, 27, 28, 29, 30, 31, 32, 18, 17, 20)
-    );
-
-    MoveRequest moveRequest = new MoveRequest();
-    moveRequest.setState(currentState);
-    moveRequest.setMove("15x22");
-    moveRequest.setSide(Side.DARK.name());
-    moveRequest.setPlayerId(2L);
-    State expectedState = new State(
-        List.of(1, 2, 3, 4, 5, 6, 7, 8, 11, 12, 14, 22),
-        List.of(23, 25, 26, 27, 28, 29, 30, 31, 32, 17, 20)
-    );
-    State actualState = moveService.generateAfterCaptureState(currentState, moveRequest);
-    assertEquals(expectedState, actualState);
-
-
-    // case 2
-    currentState = new State(
-        List.of(1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14),
-        List.of(21, 24, 26, 27, 28, 29, 30, 31, 32, 17, 22, 16)
-    );
-
-    moveRequest = new MoveRequest();
-    moveRequest.setState(currentState);
-    moveRequest.setMove("14x21");
-    moveRequest.setSide(Side.DARK.name());
-    moveRequest.setPlayerId(1L);
-
-    actualState = moveService.generateAfterCaptureState(currentState, moveRequest);
-    expectedState = new State(
-        List.of(1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 21),
-        List.of(21, 24, 26, 27, 28, 29, 30, 31, 32, 22, 16)
-    );
-    assertEquals(expectedState, actualState);
-  }
-
-  @Test
-  void givenMoveIsNotTerminal_whenMove_returnSameSidePossibleMovesButOnlySamePiece() {
-    when(movesReaderService.getMovesFor(eq(gameId.toString()))).thenReturn(
-        List.of(
-            new MoveRecord(1L, game.getId(), players.left.getId(), Side.LIGHT, "22-18"
-                , "14,15", "18,27"),
-            new MoveRecord(2L, game.getId(), players.right.getId(), Side.DARK, "15x22",
-                "14,22", "27")
-        )
-    );
-
-    // FIXME let's use real method
-    when(turnService.getWhichSideToMove(game.getId())).thenReturn(Side.LIGHT);
-
-    Map<Integer, List<PossibleMove>> actual =
-        (Map<Integer, List<PossibleMove>>) moveService.getNextMoves(gameId)
-            .getPossibleMoves();
-
-    Map<Integer, List<PossibleMoveSimplified>> expected = new HashMap<>();
-    expected.put(27, List.of(
-        new PossibleMoveSimplified(27, 24, false, true),
-        new PossibleMoveSimplified(27, 23, false, true)));
-
-    assertThat(expected.toString()).endsWith(actual.toString());
-  }
-
-  record Tuple<T>(T left, T right) {
-
+  private static MoveRequest buildMoveRequest(String move, Side side, State state) {
+    MoveRequest req = new MoveRequest();
+    req.setMove(move);
+    req.setSide(side.toString());
+    req.setPlayerId(side == LIGHT ? 1L : 2L);
+    req.setState(state);
+    return req;
   }
 }

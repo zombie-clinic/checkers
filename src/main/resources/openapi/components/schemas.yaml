@@ -26,3 +26,8 @@ State:
       items:
         type: integer
         format: int32
+    kings:
+      type: array
+      items:
+        type: integer
+        format: int32

@@ -12,7 +12,8 @@ public record MoveRecord(
     Side side,
     String move,
     String dark,
-    String light) {
+    String light,
+    List<Integer> kings) {
 
   public MoveRecord(Long moveId,
                     String gameId,
@@ -20,10 +21,12 @@ public record MoveRecord(
                     Side side,
                     String move,
                     List<Integer> dark,
-                    List<Integer> light) {
+                    List<Integer> light,
+                    List<Integer> kings) {
     this(moveId, gameId, playerId, side, move,
         dark.stream().map(String::valueOf).collect(Collectors.joining(",")),
-        light.stream().map(String::valueOf).collect(Collectors.joining(",")));
+        light.stream().map(String::valueOf).collect(Collectors.joining(",")),
+        kings);
   }
 
   public static MoveRecord fromMove(Move move) {
@@ -34,6 +37,8 @@ public record MoveRecord(
         Side.valueOf(move.getSide()),
         move.getMove(),
         move.getDark(),
-        move.getLight());
+        move.getLight(),
+        move.getKings()
+    );
   }
 }
