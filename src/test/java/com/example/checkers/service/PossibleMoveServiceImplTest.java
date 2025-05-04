@@ -46,7 +46,7 @@ class PossibleMoveServiceImplTest {
 
   @Mock
   private TurnService turnService;
-  
+
   @Mock
   private GameRepository gameRepository;
 
@@ -215,8 +215,12 @@ class PossibleMoveServiceImplTest {
 
     MoveResponse moveResponse = moveService.getNextMoves(gameId);
     assertEquals(
-        "{3=[PossibleMoveSimplified[position=3, destination=7, isCapture=false, isTerminal=true], PossibleMoveSimplified[position=3, destination=8, " +
-            "isCapture=false, isTerminal=true]]}",
+        """
+            {3=[PossibleMoveSimplified[position=3, destination=7, isCapture=false, isTerminal=true], PossibleMoveSimplified[position=3, destination=10, \
+            isCapture=false, isTerminal=true], PossibleMoveSimplified[position=3, destination=14, isCapture=false, isTerminal=true], \
+            PossibleMoveSimplified[position=3, destination=17, isCapture=false, isTerminal=true], PossibleMoveSimplified[position=3, destination=21, \
+            isCapture=false, isTerminal=true], PossibleMoveSimplified[position=3, destination=8, isCapture=false, isTerminal=true], \
+            PossibleMoveSimplified[position=3, destination=12, isCapture=false, isTerminal=true]]}""",
         moveResponse.getPossibleMoves().toString());
   }
 

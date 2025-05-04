@@ -101,61 +101,93 @@ public class PossibleMoveProviderImpl implements PossibleMoveProvider {
 
     var res = new ArrayList<PossibleMove>();
 
-    collectMoves(state, piece, diagonal, res, isKing);
+    if (diagonal.contains(piece.position())) {
+      collectForwardMoves(state, piece, diagonal, res, false);
+      collectBackwardCaptures(state, piece, diagonal, res);
+      if (isKing) {
+        collectKingMoves(state, piece, diagonal, res);
+        collectBackwardKingMoves(state, piece, diagonal, res);
+      }
+    }
 
     return res;
   }
 
-  private void collectMoves(State state, Piece piece, LinkedList<Integer> diagonal, ArrayList<PossibleMove> res,
-                            boolean isKing) {
-    if (diagonal.contains(piece.position())) {
+  private void collectForwardMoves(State state,
+                                   Piece piece,
+                                   LinkedList<Integer> diagonal, ArrayList<PossibleMove> res,
+                                   boolean isBackwardsCaptureCheck) {
+    int square = piece.position();
+    var nextSquareIndex = diagonal.indexOf(square) + 1;
+    Integer nextSquare = nextSquareIndex >= diagonal.size() ? null : diagonal.get(nextSquareIndex);
+    if (nextSquare == null) {
+      return;
+    }
+    if (nextSquareIndex > diagonal.size() - 1) {
+      return;
+    }
+    if (isNextSquareFree(state, piece, nextSquare) && !isBackwardsCaptureCheck) {
+      res.add(new PossibleMove(piece, nextSquare, false, true));
+    }
+    if (isNextSquareOccupiedByOpponent(state, piece, nextSquare)) {
+      checkIfCaptureIsPossible(nextSquareIndex + 1, diagonal, state, piece).ifPresent(res::add);
+    }
+  }
 
-      if (!isKing) {
-        if (piece.position() != diagonal.peekLast()) {
+  private void collectBackwardCaptures(State state, Piece piece, LinkedList<Integer> diagonal, ArrayList<PossibleMove> res) {
+    collectForwardMoves(state, piece, diagonal.reversed(), res, true);
+  }
 
-          var nextAfterNumIdx = diagonal.indexOf(piece.position()) + 1;
-
-          // TODO Here is functionality missing for capturing backwards
-          if (StateUtils.getSide(piece.oppositeSide(), state).contains(diagonal.get(nextAfterNumIdx))) {
-            determineCaptureMove(nextAfterNumIdx + 1, diagonal, state, piece).ifPresent(
-                res::add
-            );
-
-          } else {
-            // TODO before this a check against state needs to be done
-            res.add(new PossibleMove(piece, diagonal.get(nextAfterNumIdx), false, true));
-          }
-        }
-      } else {
-        // isKing == true
-        var nextAfterNumIdx = diagonal.indexOf(piece.position()) - 1;
-        res.add(new PossibleMove(piece, diagonal.get(nextAfterNumIdx), false, true));
-      }
+  private void collectKingMoves(State state,
+                                Piece piece,
+                                LinkedList<Integer> diagonal,
+                                ArrayList<PossibleMove> res) {
+    int square = piece.position();
+    var nextSquareIndex = diagonal.indexOf(square) + 1;
+    Integer nextSquare = nextSquareIndex >= diagonal.size() ? null : diagonal.get(nextSquareIndex);
+    if (nextSquare == null) {
+      return;
     }
 
-
-    int pieceNum = piece.position();
-    // TODO Refactor duplication
-    if (diagonal.contains(pieceNum)) {
-      // for backwards moves only capture check is performed
-      var dr = diagonal.reversed();
-      if (pieceNum != dr.peekLast()) {
-
-        var nextAfterNumIdx = dr.indexOf(pieceNum) + 1;
-        // TODO Here is functionality missing for capturing backwards
-        if (StateUtils.getSide(piece.oppositeSide(), state).contains(dr.get(nextAfterNumIdx))) {
-          determineCaptureMove(nextAfterNumIdx + 1, dr, state, piece).ifPresent(
-              res::add
-          );
+    // king move and capture logic
+    Integer occupied = null;
+    // regular direction
+    while (isNextSquareOccupied(state, piece, nextSquare) || nextSquare > diagonal.size() - 1) {
+      res.add(new PossibleMove(piece, nextSquare, false, true));
+      nextSquareIndex = nextSquareIndex + 1;
+      if (nextSquareIndex >= diagonal.size()) {
+        break;
+      }
+      nextSquare = diagonal.get(nextSquareIndex);
+      if (isNextSquareOccupied(state, piece, nextSquare)) {
+        occupied = nextSquare;
+        break;
+      }
+    }
+    if (occupied != null) {
+      if (isNextSquareOccupiedByOpponent(state, piece, nextSquare)) {
+        int nextNextIdx = nextSquareIndex + 1;
+        checkIfCaptureIsPossible(nextNextIdx, diagonal, state, piece).ifPresent(res::add);
+        int nextNextNextIdx = nextNextIdx + 1;
+        for (int i = nextNextNextIdx; i < diagonal.size() - 1; i++) {
+          if (StateUtils.isEmptyCell(nextNextNextIdx, state)) {
+            res.add(new PossibleMove(piece, nextSquare, false, true));
+          } else {
+            break;
+          }
         }
       }
     }
   }
 
-  private Optional<PossibleMove> determineCaptureMove(int nextNextIdx,
-                                                      LinkedList<Integer> diagonal,
-                                                      State state,
-                                                      Piece piece
+  private void collectBackwardKingMoves(State state, Piece piece, LinkedList<Integer> diagonal, ArrayList<PossibleMove> res) {
+    collectKingMoves(state, piece, diagonal.reversed(), res);
+  }
+
+  private Optional<PossibleMove> checkIfCaptureIsPossible(int nextNextIdx,
+                                                          LinkedList<Integer> diagonal,
+                                                          State state,
+                                                          Piece piece
   ) {
     if (nextNextIdx > diagonal.size() - 1) {
       // can't capture the opponent, if they take the last diagonal position
@@ -170,5 +202,18 @@ public class PossibleMoveProviderImpl implements PossibleMoveProvider {
     }
 
     return Optional.empty();
+  }
+
+  private static boolean isNextSquareOccupied(State state, Piece piece, int nextSquare) {
+    return StateUtils.getSide(piece.oppositeSide(), state).contains(nextSquare)
+        || StateUtils.getSide(piece.side(), state).contains(nextSquare);
+  }
+
+  private static boolean isNextSquareFree(State state, Piece piece, int nextSquare) {
+    return !StateUtils.getSide(piece.oppositeSide(), state).contains(nextSquare);
+  }
+
+  private static boolean isNextSquareOccupiedByOpponent(State state, Piece piece, int nextSquare) {
+    return StateUtils.getSide(piece.oppositeSide(), state).contains(nextSquare);
   }
 }
