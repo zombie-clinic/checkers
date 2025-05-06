@@ -73,11 +73,9 @@ public class PossibleMoveProviderImpl implements PossibleMoveProvider {
               c.piece().side()),
           state, true);
       if (moves.stream().anyMatch(PossibleMove::isCapture)) {
-        res.add(new PossibleMove(c.piece(), c.destination(), c.isCapture(),
-            false));
+        res.add(new PossibleMove(c.piece(), c.destination(), c.isCapture()));
       } else {
-        res.add(new PossibleMove(c.piece(), c.destination(), c.isCapture(),
-            true));
+        res.add(new PossibleMove(c.piece(), c.destination(), c.isCapture()));
       }
     }
 
@@ -127,7 +125,7 @@ public class PossibleMoveProviderImpl implements PossibleMoveProvider {
       return;
     }
     if (isNextSquareFree(state, piece, nextSquare) && !isBackwardsCaptureCheck) {
-      res.add(new PossibleMove(piece, nextSquare, false, true));
+      res.add(new PossibleMove(piece, nextSquare, false));
     }
     if (isNextSquareOccupiedByOpponent(state, piece, nextSquare)) {
       checkIfCaptureIsPossible(nextSquareIndex + 1, diagonal, state, piece).ifPresent(res::add);
@@ -153,7 +151,7 @@ public class PossibleMoveProviderImpl implements PossibleMoveProvider {
     Integer occupied = null;
     // regular direction
     while (!isNextSquareOccupied(state, piece, nextSquare) || nextSquare > diagonal.size() - 1) {
-      res.add(new PossibleMove(piece, nextSquare, false, true));
+      res.add(new PossibleMove(piece, nextSquare, false));
       nextSquareIndex = nextSquareIndex + 1;
       if (nextSquareIndex >= diagonal.size()) {
         break;
@@ -171,7 +169,7 @@ public class PossibleMoveProviderImpl implements PossibleMoveProvider {
         int nextNextNextIdx = nextNextIdx + 1;
         for (int i = nextNextNextIdx; i < diagonal.size() - 1; i++) {
           if (StateUtils.isEmptyCell(nextNextNextIdx, state)) {
-            res.add(new PossibleMove(piece, nextSquare, false, true));
+            res.add(new PossibleMove(piece, nextSquare, false));
           } else {
             break;
           }
@@ -198,7 +196,7 @@ public class PossibleMoveProviderImpl implements PossibleMoveProvider {
     boolean isLandingCellEmpty = StateUtils.isEmptyCell(diagonal.get(nextNextIdx), state);
     if (isLandingCellEmpty) {
       // TODO Mind isTerminal is true just for now
-      return Optional.of(new PossibleMove(piece, diagonal.get(nextNextIdx), true, true));
+      return Optional.of(new PossibleMove(piece, diagonal.get(nextNextIdx), true));
     }
 
     return Optional.empty();

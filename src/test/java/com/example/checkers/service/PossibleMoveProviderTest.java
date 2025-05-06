@@ -36,7 +36,7 @@ public class PossibleMoveProviderTest {
         piece.isLight() ? List.of(piece.position()) : List.of());
     var actual = new PossibleMoveProviderImpl().getPossibleMovesForPieceInternal(piece, state);
     Assertions.assertThat(actual).containsExactlyInAnyOrderElementsOf(expected.stream()
-        .map(i -> new PossibleMove(piece, i, false, true)).toList());
+        .map(i -> new PossibleMove(piece, i, false)).toList());
   }
 
   @ParameterizedTest
@@ -48,7 +48,7 @@ public class PossibleMoveProviderTest {
         Checkerboard.getStartingState().getLight());
     var actual = new PossibleMoveProviderImpl().getPossibleMovesForPieceInternal(piece, state);
     Assertions.assertThat(actual).containsExactlyInAnyOrderElementsOf(expected.stream()
-        .map(i -> new PossibleMove(piece, i, false, true)).toList());
+        .map(i -> new PossibleMove(piece, i, false)).toList());
   }
 
   @ParameterizedTest
@@ -58,7 +58,7 @@ public class PossibleMoveProviderTest {
                                                        boolean isCapture, boolean isTerminal) {
     var actual = new PossibleMoveProviderImpl().getPossibleMovesForPieceInternal(piece, state);
     Assertions.assertThat(actual).containsExactlyInAnyOrderElementsOf(expected.stream()
-        .map(i -> new PossibleMove(piece, i, isCapture, isTerminal)).toList());
+        .map(i -> new PossibleMove(piece, i, isCapture)).toList());
   }
 
   @ParameterizedTest
@@ -67,7 +67,7 @@ public class PossibleMoveProviderTest {
                                                      List<Integer> expected) {
     var actual = new PossibleMoveProviderImpl().getPossibleMovesForPieceInternal(piece, state);
     Assertions.assertThat(actual).containsExactlyInAnyOrderElementsOf(expected.stream()
-        .map(i -> new PossibleMove(piece, i, false, true)).toList());
+        .map(i -> new PossibleMove(piece, i, false)).toList());
   }
 
   @ParameterizedTest
@@ -78,7 +78,7 @@ public class PossibleMoveProviderTest {
                                                              boolean isTerminal) {
     var actual = new PossibleMoveProviderImpl().getPossibleMovesForPieceInternal(piece, state);
     Assertions.assertThat(actual).containsExactlyInAnyOrderElementsOf(expected.stream()
-        .map(i -> new PossibleMove(piece, i, isCapture, isTerminal)).toList());
+        .map(i -> new PossibleMove(piece, i, isCapture)).toList());
   }
 
   private static Stream<Arguments> getInputsForEmptyBoard() {
