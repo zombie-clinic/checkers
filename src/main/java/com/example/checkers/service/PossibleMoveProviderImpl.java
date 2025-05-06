@@ -34,8 +34,7 @@ public class PossibleMoveProviderImpl implements PossibleMoveProvider {
   }
 
   List<PossibleMove> getPossibleMovesForPieceInternal(Piece piece,
-                                                      State state,
-                                                      boolean isChainCaptureCheck) {
+                                                      State state) {
 
     var moves = new ArrayList<PossibleMove>();
     for (LinkedList<Integer> diagonal : Checkerboard.getDiagonals()) {
@@ -43,43 +42,13 @@ public class PossibleMoveProviderImpl implements PossibleMoveProvider {
     }
 
     if (moves.stream().anyMatch(PossibleMove::isCapture)) {
-      return captureMovesVerifiedForTerminality(
-          state,
-          moves.stream().filter(PossibleMove::isCapture).toList(),
-          isChainCaptureCheck
-      );
+      return
+          moves.stream().filter(PossibleMove::isCapture).toList();
     }
 
     return moves.stream()
         .filter(move -> StateUtils.isEmptyCell(move.destination(), state))
         .toList();
-  }
-
-  List<PossibleMove> getPossibleMovesForPieceInternal(Piece piece, State state) {
-    return getPossibleMovesForPieceInternal(piece, state, false);
-  }
-
-  private List<PossibleMove> captureMovesVerifiedForTerminality(State state,
-                                                                List<PossibleMove> captureMoves,
-                                                                boolean isCaptureTerminalityCheck) {
-
-    if (isCaptureTerminalityCheck) {
-      return captureMoves;
-    }
-
-    List<PossibleMove> res = new ArrayList<>();
-    for (PossibleMove c : captureMoves) {
-      var moves = getPossibleMovesForPieceInternal(new Piece(c.destination(),
-              c.piece().side()),
-          state, true);
-      if (moves.stream().anyMatch(PossibleMove::isCapture)) {
-        res.add(new PossibleMove(c.piece(), c.destination(), c.isCapture()));
-      } else {
-        res.add(new PossibleMove(c.piece(), c.destination(), c.isCapture()));
-      }
-    }
-
-    return res;
   }
 
   private List<PossibleMove> getMoves(State state, Piece piece,
@@ -195,7 +164,6 @@ public class PossibleMoveProviderImpl implements PossibleMoveProvider {
 
     boolean isLandingCellEmpty = StateUtils.isEmptyCell(diagonal.get(nextNextIdx), state);
     if (isLandingCellEmpty) {
-      // TODO Mind isTerminal is true just for now
       return Optional.of(new PossibleMove(piece, diagonal.get(nextNextIdx), true));
     }
 

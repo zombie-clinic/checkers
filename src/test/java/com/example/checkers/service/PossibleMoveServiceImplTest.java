@@ -111,7 +111,7 @@ class PossibleMoveServiceImplTest {
   }
 
   @Test
-  void givenMoveIsNotTerminal_whenMove_returnSameSidePossibleMoves() {
+  void givenCapture_whenMove_returnSameSidePossibleMoves() {
     when(movesReaderService.getMovesFor(anyString())).thenReturn(
         List.of(
             new MoveRecord(1L, game.getId(), players.left.getId(), Side.LIGHT, "21-17"
@@ -174,7 +174,7 @@ class PossibleMoveServiceImplTest {
 
   @Test
   @SuppressWarnings("unchecked")
-  void givenMoveIsNotTerminal_whenMove_returnSameSidePossibleMovesButOnlySamePiece() {
+  void givenCapture_whenMove_returnSameSidePossibleMovesButOnlySamePiece() {
     when(movesReaderService.getMovesFor(eq(gameId.toString()))).thenReturn(
         List.of(
             new MoveRecord(1L, game.getId(), players.left.getId(), Side.LIGHT, "22-18"
