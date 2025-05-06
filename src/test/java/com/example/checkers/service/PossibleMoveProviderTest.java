@@ -17,14 +17,13 @@ import org.junit.jupiter.params.provider.MethodSource;
 public class PossibleMoveProviderTest {
 
   public static Stream<Arguments> getStatesWithCaptures() {
-    // TODO Consider introducing a type - TerminalMove, CaptureMove, CaptureTerminalMove etc
     return Stream.of(
-        Arguments.of(new State(List.of(1), List.of(6, 15)), Piece.of(1, DARK), List.of(10), true, false),
-        Arguments.of(new State(List.of(10), List.of(15)), Piece.of(10, DARK), List.of(19), true, true),
-        Arguments.of(new State(List.of(14, 7), List.of(17)), Piece.of(17, LIGHT), List.of(10), true, false),
-        Arguments.of(new State(List.of(7), List.of(10)), Piece.of(10, LIGHT), List.of(3), true, true),
-        Arguments.of(new State(List.of(2), List.of(7)), Piece.of(2, DARK), List.of(11), true, true),
-        Arguments.of(new State(List.of(26), List.of(31)), Piece.of(31, LIGHT), List.of(22), true, true)
+        Arguments.of(new State(List.of(1), List.of(6, 15)), Piece.of(1, DARK), List.of(10), true),
+        Arguments.of(new State(List.of(10), List.of(15)), Piece.of(10, DARK), List.of(19), true),
+        Arguments.of(new State(List.of(14, 7), List.of(17)), Piece.of(17, LIGHT), List.of(10), true),
+        Arguments.of(new State(List.of(7), List.of(10)), Piece.of(10, LIGHT), List.of(3), true),
+        Arguments.of(new State(List.of(2), List.of(7)), Piece.of(2, DARK), List.of(11), true),
+        Arguments.of(new State(List.of(26), List.of(31)), Piece.of(31, LIGHT), List.of(22), true)
     );
   }
 
@@ -36,7 +35,7 @@ public class PossibleMoveProviderTest {
         piece.isLight() ? List.of(piece.position()) : List.of());
     var actual = new PossibleMoveProviderImpl().getPossibleMovesForPieceInternal(piece, state);
     Assertions.assertThat(actual).containsExactlyInAnyOrderElementsOf(expected.stream()
-        .map(i -> new PossibleMove(piece, i, false, true)).toList());
+        .map(i -> new PossibleMove(piece, i, false)).toList());
   }
 
   @ParameterizedTest
@@ -48,17 +47,17 @@ public class PossibleMoveProviderTest {
         Checkerboard.getStartingState().getLight());
     var actual = new PossibleMoveProviderImpl().getPossibleMovesForPieceInternal(piece, state);
     Assertions.assertThat(actual).containsExactlyInAnyOrderElementsOf(expected.stream()
-        .map(i -> new PossibleMove(piece, i, false, true)).toList());
+        .map(i -> new PossibleMove(piece, i, false)).toList());
   }
 
   @ParameterizedTest
   @MethodSource({"getStatesWithCaptures"})
   void givenStatesWithCaptures_shouldProvideValidMoves(State state, Piece piece,
                                                        List<Integer> expected,
-                                                       boolean isCapture, boolean isTerminal) {
+                                                       boolean isCapture) {
     var actual = new PossibleMoveProviderImpl().getPossibleMovesForPieceInternal(piece, state);
     Assertions.assertThat(actual).containsExactlyInAnyOrderElementsOf(expected.stream()
-        .map(i -> new PossibleMove(piece, i, isCapture, isTerminal)).toList());
+        .map(i -> new PossibleMove(piece, i, isCapture)).toList());
   }
 
   @ParameterizedTest
@@ -67,18 +66,17 @@ public class PossibleMoveProviderTest {
                                                      List<Integer> expected) {
     var actual = new PossibleMoveProviderImpl().getPossibleMovesForPieceInternal(piece, state);
     Assertions.assertThat(actual).containsExactlyInAnyOrderElementsOf(expected.stream()
-        .map(i -> new PossibleMove(piece, i, false, true)).toList());
+        .map(i -> new PossibleMove(piece, i, false)).toList());
   }
 
   @ParameterizedTest
   @MethodSource({"getStatesWithCurvedCaptures"})
   void givenStatesWithCurvedCaptures_shouldProvideValidMoves(State state, Piece piece,
                                                              List<Integer> expected,
-                                                             boolean isCapture,
-                                                             boolean isTerminal) {
+                                                             boolean isCapture) {
     var actual = new PossibleMoveProviderImpl().getPossibleMovesForPieceInternal(piece, state);
     Assertions.assertThat(actual).containsExactlyInAnyOrderElementsOf(expected.stream()
-        .map(i -> new PossibleMove(piece, i, isCapture, isTerminal)).toList());
+        .map(i -> new PossibleMove(piece, i, isCapture)).toList());
   }
 
   private static Stream<Arguments> getInputsForEmptyBoard() {
@@ -115,13 +113,12 @@ public class PossibleMoveProviderTest {
   }
 
   private static Stream<Arguments> getStatesWithCurvedCaptures() {
-    // TODO Consider introducing a type - TerminalMove, CaptureMove, CaptureTerminalMove etc
     return Stream.of(
-        Arguments.of(new State(List.of(1), List.of(6, 14)), Piece.of(1, DARK), List.of(10), true, false),
-        Arguments.of(new State(List.of(22), List.of(18)), Piece.of(22, DARK), List.of(15), true, true),
-        Arguments.of(new State(List.of(10), List.of(14)), Piece.of(10, DARK), List.of(17), true, true),
-        Arguments.of(new State(List.of(14, 15), List.of(17)), Piece.of(17, LIGHT), List.of(10), true, false),
-        Arguments.of(new State(List.of(15), List.of(10)), Piece.of(10, LIGHT), List.of(19), true, true)
+        Arguments.of(new State(List.of(1), List.of(6, 14)), Piece.of(1, DARK), List.of(10), true),
+        Arguments.of(new State(List.of(22), List.of(18)), Piece.of(22, DARK), List.of(15), true),
+        Arguments.of(new State(List.of(10), List.of(14)), Piece.of(10, DARK), List.of(17), true),
+        Arguments.of(new State(List.of(14, 15), List.of(17)), Piece.of(17, LIGHT), List.of(10), true),
+        Arguments.of(new State(List.of(15), List.of(10)), Piece.of(10, LIGHT), List.of(19), true)
     );
   }
 }

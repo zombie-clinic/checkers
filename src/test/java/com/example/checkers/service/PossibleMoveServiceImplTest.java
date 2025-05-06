@@ -106,12 +106,12 @@ class PossibleMoveServiceImplTest {
 
     MoveResponse moveResponse = moveService.getNextMoves(gameId);
     assertEquals(
-        "{13=[PossibleMoveSimplified[position=13, destination=22, isCapture=true, isTerminal=true]]}",
+        "{13=[PossibleMoveSimplified[position=13, destination=22, isCapture=true]]}",
         moveResponse.getPossibleMoves().toString());
   }
 
   @Test
-  void givenMoveIsNotTerminal_whenMove_returnSameSidePossibleMoves() {
+  void givenCapture_whenMove_returnSameSidePossibleMoves() {
     when(movesReaderService.getMovesFor(anyString())).thenReturn(
         List.of(
             new MoveRecord(1L, game.getId(), players.left.getId(), Side.LIGHT, "21-17"
@@ -126,7 +126,7 @@ class PossibleMoveServiceImplTest {
 
     MoveResponse moveResponse = moveService.getNextMoves(gameId);
     assertEquals(
-        "{22=[PossibleMoveSimplified[position=22, destination=15, isCapture=true, isTerminal=true]]}",
+        "{22=[PossibleMoveSimplified[position=22, destination=15, isCapture=true]]}",
         moveResponse.getPossibleMoves().toString());
   }
 
@@ -174,7 +174,7 @@ class PossibleMoveServiceImplTest {
 
   @Test
   @SuppressWarnings("unchecked")
-  void givenMoveIsNotTerminal_whenMove_returnSameSidePossibleMovesButOnlySamePiece() {
+  void givenCapture_whenMove_returnSameSidePossibleMovesButOnlySamePiece() {
     when(movesReaderService.getMovesFor(eq(gameId.toString()))).thenReturn(
         List.of(
             new MoveRecord(1L, game.getId(), players.left.getId(), Side.LIGHT, "22-18"
@@ -193,8 +193,8 @@ class PossibleMoveServiceImplTest {
 
     Map<Integer, List<PossibleMoveSimplified>> expected = new HashMap<>();
     expected.put(27, List.of(
-        new PossibleMoveSimplified(27, 24, false, true),
-        new PossibleMoveSimplified(27, 23, false, true)));
+        new PossibleMoveSimplified(27, 24, false),
+        new PossibleMoveSimplified(27, 23, false)));
 
     assertThat(expected.toString()).endsWith(actual.toString());
   }
@@ -216,11 +216,11 @@ class PossibleMoveServiceImplTest {
     MoveResponse moveResponse = moveService.getNextMoves(gameId);
     assertEquals(
         """
-            {3=[PossibleMoveSimplified[position=3, destination=7, isCapture=false, isTerminal=true], PossibleMoveSimplified[position=3, destination=10, \
-            isCapture=false, isTerminal=true], PossibleMoveSimplified[position=3, destination=14, isCapture=false, isTerminal=true], \
-            PossibleMoveSimplified[position=3, destination=17, isCapture=false, isTerminal=true], PossibleMoveSimplified[position=3, destination=21, \
-            isCapture=false, isTerminal=true], PossibleMoveSimplified[position=3, destination=8, isCapture=false, isTerminal=true], \
-            PossibleMoveSimplified[position=3, destination=12, isCapture=false, isTerminal=true]]}""",
+            {3=[PossibleMoveSimplified[position=3, destination=7, isCapture=false], PossibleMoveSimplified[position=3, destination=10, \
+            isCapture=false], PossibleMoveSimplified[position=3, destination=14, isCapture=false], \
+            PossibleMoveSimplified[position=3, destination=17, isCapture=false], PossibleMoveSimplified[position=3, destination=21, \
+            isCapture=false], PossibleMoveSimplified[position=3, destination=8, isCapture=false], \
+            PossibleMoveSimplified[position=3, destination=12, isCapture=false]]}""",
         moveResponse.getPossibleMoves().toString());
   }
 
@@ -243,13 +243,13 @@ class PossibleMoveServiceImplTest {
     MoveResponse moveResponse = moveService.getNextMoves(gameId);
     assertEquals(
         """
-            {1=[PossibleMoveSimplified[position=1, destination=5, isCapture=false, isTerminal=true], \
-            PossibleMoveSimplified[position=1, destination=6, isCapture=false, isTerminal=true], \
-            PossibleMoveSimplified[position=1, destination=10, isCapture=false, isTerminal=true], \
-            PossibleMoveSimplified[position=1, destination=15, isCapture=false, isTerminal=true], \
-            PossibleMoveSimplified[position=1, destination=19, isCapture=false, isTerminal=true], \
-            PossibleMoveSimplified[position=1, destination=24, isCapture=false, isTerminal=true], \
-            PossibleMoveSimplified[position=1, destination=28, isCapture=false, isTerminal=true]]}""",
+            {1=[PossibleMoveSimplified[position=1, destination=5, isCapture=false], \
+            PossibleMoveSimplified[position=1, destination=6, isCapture=false], \
+            PossibleMoveSimplified[position=1, destination=10, isCapture=false], \
+            PossibleMoveSimplified[position=1, destination=15, isCapture=false], \
+            PossibleMoveSimplified[position=1, destination=19, isCapture=false], \
+            PossibleMoveSimplified[position=1, destination=24, isCapture=false], \
+            PossibleMoveSimplified[position=1, destination=28, isCapture=false]]}""",
         moveResponse.getPossibleMoves().toString());
   }
 
