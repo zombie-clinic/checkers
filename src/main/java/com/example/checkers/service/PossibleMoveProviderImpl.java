@@ -69,11 +69,12 @@ public class PossibleMoveProviderImpl implements PossibleMoveProvider {
     var res = new ArrayList<PossibleMove>();
 
     if (diagonal.contains(piece.position())) {
-      collectForwardMoves(state, piece, diagonal, res, false);
-      collectBackwardCaptures(state, piece, diagonal, res);
       if (isKing) {
         collectKingMoves(state, piece, diagonal, res);
         collectBackwardKingMoves(state, piece, diagonal, res);
+      } else {
+        collectForwardMoves(state, piece, diagonal, res, false);
+        collectBackwardCaptures(state, piece, diagonal, res);
       }
     }
 
@@ -133,6 +134,9 @@ public class PossibleMoveProviderImpl implements PossibleMoveProvider {
         if (captureInProgress) {
           res.add(new PossibleMove(piece, destSquare, true));
           captureDone = true;
+          captureInProgress = false;
+        } else if (captureDone) {
+          res.add(new PossibleMove(piece, destSquare, true));
         } else {
           res.add(new PossibleMove(piece, destSquare, false));
         }
