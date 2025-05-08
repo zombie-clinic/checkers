@@ -102,9 +102,7 @@ class MoveServiceImplTest {
   }
 
   private State buildState(List<Integer> light, List<Integer> dark, List<Integer> kings) {
-    var state = new State(light, dark);
-    state.setKings(kings);
-    return state;
+    return new State(light, dark, kings);
   }
 
   private static MoveRequest buildMoveRequest(String move, Side side, State state) {

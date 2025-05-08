@@ -15,6 +15,7 @@ State:
   required:
     - dark
     - light
+    - kings
   properties:
     dark:
       type: array

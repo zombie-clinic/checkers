@@ -7,6 +7,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Builder.Default;
@@ -40,8 +41,9 @@ public class Game {
   // fixme find simpler way to store starting state
   // todo how to pass default value into the db? Currently populated on creation
   @Default
-  private String startingState = String.format("{\"dark\":[%s]\"light\":[%s]}",
+  private String startingState = String.format("{\"dark\":[%s]\"light\":[%s],\"kings\":[%s]}",
       Checkerboard.getStartingState().getDark().stream().map(String::valueOf).collect(Collectors.joining(",")),
-      Checkerboard.getStartingState().getLight().stream().map(String::valueOf).collect(Collectors.joining(","))
+      Checkerboard.getStartingState().getLight().stream().map(String::valueOf).collect(Collectors.joining(",")),
+      Stream.of().map(String::valueOf).collect(Collectors.joining(","))
   );
 }

@@ -44,7 +44,9 @@ public class StateUtils {
 
     return new State(
         darkList,
-        lightList);
+        lightList,
+        moveList.getLast().kings()
+    );
   }
 
   // FIXME Ensure immutability
@@ -60,6 +62,19 @@ public class StateUtils {
    */
   public static boolean isEmptyCell(int num, State state) {
     return !state.getDark().contains(num) && !state.getLight().contains(num);
+  }
+
+  /**
+   * Get a list of cell of a certain side.
+   *
+   * @param side on DARK, LIGHT
+   * @return immutable list of corresponding board positions
+   */
+  public static List<Integer> getSide(Side side, State state) {
+    return switch (side) {
+      case DARK -> state.getDark();
+      case LIGHT -> state.getLight();
+    };
   }
 
   /**
@@ -103,6 +118,7 @@ public class StateUtils {
     if (Side.valueOf(moveRequest.getSide()) == DARK) {
       var darkPieces = new ArrayList<>(state.getDark());
       var lightPieces = new ArrayList<>(state.getLight());
+      var kings = new ArrayList<>(state.getKings());
       darkPieces.removeIf(el -> Objects.equals(el, start));
       darkPieces.add(dest);
       if (isCaptureMove(moveRequest)) {
@@ -111,11 +127,12 @@ public class StateUtils {
             dest));
       }
       calculated = new State(
-          darkPieces, lightPieces
+          darkPieces, lightPieces, kings
       );
     } else {
       var darkPieces = new ArrayList<>(state.getDark());
       var lightPieces = new ArrayList<>(state.getLight());
+      var kings = new ArrayList<>(state.getKings());
       lightPieces.removeIf(el -> Objects.equals(el, start));
       lightPieces.add(dest);
       if (isCaptureMove(moveRequest)) {
@@ -124,7 +141,7 @@ public class StateUtils {
             dest));
       }
       calculated = new State(
-          darkPieces, lightPieces
+          darkPieces, lightPieces, kings
       );
 
     }
@@ -160,21 +177,9 @@ public class StateUtils {
         start, end));
   }
 
+  // TODO Maybe return a Pair.of pieces and corresponding kings?
+
   private static boolean isCaptureMove(MoveRequest moveRequest) {
     return moveRequest.getMove().contains("x");
-  }
-
-  // TODO Maybe return a Pair.of pieces and corresponding kings?
-  /**
-   * Get a list of cell of a certain side.
-   *
-   * @param side on DARK, LIGHT
-   * @return immutable list of corresponding board positions
-   */
-  public static List<Integer> getSide(Side side, State state) {
-    return switch (side) {
-      case DARK -> state.getDark();
-      case LIGHT -> state.getLight();
-    };
   }
 }

@@ -57,21 +57,21 @@ public class ExampleGameIT {
     // 1
     response = makeMove(gameId, Side.LIGHT, "21-17", actualState, 1);
     State expectedState = new State(List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12),
-        List.of(22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 17));
+        List.of(22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 17), List.of());
     actualState = jsonMapper.readTree(response).get("state");
     compareStates(expectedState, actualState);
 
     // 2
     response = makeMove(gameId, Side.DARK, "10-15", actualState, 2);
     expectedState = new State(List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 15), List.of(22, 23
-        , 24, 25, 26, 27, 28, 29, 30, 31, 32, 17));
+        , 24, 25, 26, 27, 28, 29, 30, 31, 32, 17), List.of());
     actualState = jsonMapper.readTree(response).get("state");
     compareStates(expectedState, actualState);
 
     // 3
     response = makeMove(gameId, Side.LIGHT, "22-18", actualState, 1);
     expectedState = new State(List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 15), List.of(23, 24
-        , 25, 26, 27, 28, 29, 30, 31, 32, 17, 18));
+        , 25, 26, 27, 28, 29, 30, 31, 32, 17, 18), List.of());
     actualState = jsonMapper.readTree(response).get("state");
     compareStates(expectedState, actualState);
 
@@ -79,14 +79,14 @@ public class ExampleGameIT {
     response = makeMove(gameId, Side.DARK, "15x22", actualState, 2);
     System.out.println(response);
     expectedState = new State(List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 22), List.of(23, 24
-        , 25, 26, 27, 28, 29, 30, 31, 32, 17));
+        , 25, 26, 27, 28, 29, 30, 31, 32, 17), List.of());
     actualState = jsonMapper.readTree(response).get("state");
     compareStates(expectedState, actualState);
 
     // 5
     response = makeMove(gameId, Side.DARK, "22x13", actualState, 2);
     expectedState = new State(List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13), List.of(23, 24
-        , 25, 26, 27, 28, 29, 30, 31, 32));
+        , 25, 26, 27, 28, 29, 30, 31, 32), List.of());
     actualState = jsonMapper.readTree(response).get("state");
     compareStates(expectedState, actualState);
   }
@@ -116,15 +116,19 @@ public class ExampleGameIT {
     // TODO Should be sorted elsewhere
     var sortedListDark = new ArrayList<>(expectedState.getDark());
     var sortedListLight = new ArrayList<>(expectedState.getLight());
+    var sortedListKings = new ArrayList<>(expectedState.getKings());
 
     Collections.sort(sortedListDark);
     Collections.sort(sortedListLight);
+    Collections.sort(sortedListKings);
 
     expectedState.setDark(sortedListDark);
     expectedState.setLight(sortedListLight);
+    expectedState.setKings(sortedListKings);
 
     ArrayNode dark = (ArrayNode) actualState.get("dark");
     ArrayNode light = (ArrayNode) actualState.get("light");
+    ArrayNode kings = (ArrayNode) actualState.get("kings");
 
     ObjectMapper mapper = new ObjectMapper();
     ObjectReader reader = mapper.readerFor(new TypeReference<List<Integer>>() {
@@ -132,13 +136,15 @@ public class ExampleGameIT {
 
     List<Integer> darkList = reader.readValue(dark);
     List<Integer> lightList = reader.readValue(light);
+    List<Integer> kingsList = reader.readValue(kings);
 
     Collections.sort(darkList);
     Collections.sort(lightList);
+    Collections.sort(kingsList);
 
     // TODO Black/White positions should be a type
     State actual = new State(
-        darkList, lightList
+        darkList, lightList, kingsList
     );
 
     assertEquals(expectedState, actual);

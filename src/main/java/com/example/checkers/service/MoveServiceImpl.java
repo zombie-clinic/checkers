@@ -94,7 +94,8 @@ public class MoveServiceImpl implements MoveService {
     } else {
       currentState = new State(
           Arrays.stream(moves.getLast().getDark().split(",")).map(Integer::valueOf).toList(),
-          Arrays.stream(moves.getLast().getLight().split(",")).map(Integer::valueOf).toList()
+          Arrays.stream(moves.getLast().getLight().split(",")).map(Integer::valueOf).toList(),
+          moves.getLast().getKings()
       );
       List<Integer> kings = moves.getLast().getKings();
       if (kings == null) {
