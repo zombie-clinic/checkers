@@ -58,8 +58,6 @@ class KingsPossibleMovesTest {
   }
 
   static State getTestState(List<Integer> black, List<Integer> light, List<Integer> kings) {
-    var state = new State(black, light);
-    state.setKings(kings);
-    return state;
+    return new State(black, light, kings);
   }
 }

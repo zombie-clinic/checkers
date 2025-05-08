@@ -96,19 +96,20 @@ public class GameStateServiceImpl implements GameStateService {
     Game lobbyGame = Game.builder()
         .playerOne(player)
         .startingState(
-            String.format("{\"dark\":[%s],\"light\":[%s]}",
+            String.format("{\"dark\":[%s],\"light\":[%s],\"kings\":[%s]}",
                 state.getDark().stream().map(String::valueOf).collect(Collectors.joining(",")),
-                state.getLight().stream().map(String::valueOf).collect(Collectors.joining(","))
+                state.getLight().stream().map(String::valueOf).collect(Collectors.joining(",")),
+                state.getKings().stream().map(String::valueOf).collect(Collectors.joining(","))
             ))
         .build();
 
     Game savedGame = gameRepository.save(lobbyGame);
-    GameResponse gameResponse = new GameResponse(savedGame.getId(), LOBBY.toString(), savedGame.getStartingState(),
-        possibleMoveService.getNextMoves(UUID.fromString(savedGame.getId())));
-    gameResponse.setPossibleMoves(
+    return new GameResponse(
+        savedGame.getId(),
+        LOBBY.toString(),
+        savedGame.getStartingState(),
         possibleMoveService.getNextMoves(UUID.fromString(savedGame.getId())).getPossibleMoves()
     );
-    return gameResponse;
   }
 
   @Transactional

@@ -18,12 +18,12 @@ public class PossibleMoveProviderTest {
 
   public static Stream<Arguments> getStatesWithCaptures() {
     return Stream.of(
-        Arguments.of(new State(List.of(1), List.of(6, 15)), Piece.of(1, DARK), List.of(10), true),
-        Arguments.of(new State(List.of(10), List.of(15)), Piece.of(10, DARK), List.of(19), true),
-        Arguments.of(new State(List.of(14, 7), List.of(17)), Piece.of(17, LIGHT), List.of(10), true),
-        Arguments.of(new State(List.of(7), List.of(10)), Piece.of(10, LIGHT), List.of(3), true),
-        Arguments.of(new State(List.of(2), List.of(7)), Piece.of(2, DARK), List.of(11), true),
-        Arguments.of(new State(List.of(26), List.of(31)), Piece.of(31, LIGHT), List.of(22), true)
+        Arguments.of(new State(List.of(1), List.of(6, 15), List.of()), Piece.of(1, DARK), List.of(10), true),
+        Arguments.of(new State(List.of(10), List.of(15), List.of()), Piece.of(10, DARK), List.of(19), true),
+        Arguments.of(new State(List.of(14, 7), List.of(17), List.of()), Piece.of(17, LIGHT), List.of(10), true),
+        Arguments.of(new State(List.of(7), List.of(10), List.of()), Piece.of(10, LIGHT), List.of(3), true),
+        Arguments.of(new State(List.of(2), List.of(7), List.of()), Piece.of(2, DARK), List.of(11), true),
+        Arguments.of(new State(List.of(26), List.of(31), List.of()), Piece.of(31, LIGHT), List.of(22), true)
     );
   }
 
@@ -32,7 +32,8 @@ public class PossibleMoveProviderTest {
   void givenEmptyBoard_shouldProvideValidMoves(Piece piece, List<Integer> expected) {
     State state = new State(
         piece.isDark() ? List.of(piece.position()) : List.of(),
-        piece.isLight() ? List.of(piece.position()) : List.of());
+        piece.isLight() ? List.of(piece.position()) : List.of(),
+        List.of());
     var actual = new PossibleMoveProviderImpl().getPossibleMovesForPieceInternal(piece, state);
     Assertions.assertThat(actual).containsExactlyInAnyOrderElementsOf(expected.stream()
         .map(i -> new PossibleMove(piece, i, false)).toList());
@@ -44,7 +45,8 @@ public class PossibleMoveProviderTest {
     // TODO Make starting state constructor
     var state = new State(
         Checkerboard.getStartingState().getDark(),
-        Checkerboard.getStartingState().getLight());
+        Checkerboard.getStartingState().getLight(),
+        List.of());
     var actual = new PossibleMoveProviderImpl().getPossibleMovesForPieceInternal(piece, state);
     Assertions.assertThat(actual).containsExactlyInAnyOrderElementsOf(expected.stream()
         .map(i -> new PossibleMove(piece, i, false)).toList());
@@ -107,18 +109,18 @@ public class PossibleMoveProviderTest {
 
   private static Stream<Arguments> getNoneCaptureStates() {
     return Stream.of(
-        Arguments.of(new State(List.of(26), List.of(31)), Piece.of(26, DARK), List.of(30)),
-        Arguments.of(new State(List.of(2), List.of(7)), Piece.of(7, LIGHT), List.of(3))
+        Arguments.of(new State(List.of(26), List.of(31), List.of()), Piece.of(26, DARK), List.of(30)),
+        Arguments.of(new State(List.of(2), List.of(7), List.of()), Piece.of(7, LIGHT), List.of(3))
     );
   }
 
   private static Stream<Arguments> getStatesWithCurvedCaptures() {
     return Stream.of(
-        Arguments.of(new State(List.of(1), List.of(6, 14)), Piece.of(1, DARK), List.of(10), true),
-        Arguments.of(new State(List.of(22), List.of(18)), Piece.of(22, DARK), List.of(15), true),
-        Arguments.of(new State(List.of(10), List.of(14)), Piece.of(10, DARK), List.of(17), true),
-        Arguments.of(new State(List.of(14, 15), List.of(17)), Piece.of(17, LIGHT), List.of(10), true),
-        Arguments.of(new State(List.of(15), List.of(10)), Piece.of(10, LIGHT), List.of(19), true)
+        Arguments.of(new State(List.of(1), List.of(6, 14), List.of()), Piece.of(1, DARK), List.of(10), true),
+        Arguments.of(new State(List.of(22), List.of(18), List.of()), Piece.of(22, DARK), List.of(15), true),
+        Arguments.of(new State(List.of(10), List.of(14), List.of()), Piece.of(10, DARK), List.of(17), true),
+        Arguments.of(new State(List.of(14, 15), List.of(17), List.of()), Piece.of(17, LIGHT), List.of(10), true),
+        Arguments.of(new State(List.of(15), List.of(10), List.of()), Piece.of(10, LIGHT), List.of(19), true)
     );
   }
 }

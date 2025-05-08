@@ -6,7 +6,9 @@ import com.example.checkers.persistence.GameRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.util.ArrayIterator;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -30,7 +32,9 @@ public class StartingStateLookupService {
     }
     return new State(
         fromIteratorToList(startingState.get("dark").elements()),
-        fromIteratorToList(startingState.get("light").elements())
+        fromIteratorToList(startingState.get("light").elements()),
+        fromIteratorToList(startingState.get("kings") == null ? new ArrayList<JsonNode>().iterator()
+            : startingState.get("kings").elements())
     );
   }
 

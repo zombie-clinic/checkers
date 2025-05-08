@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,7 +35,6 @@ public class PossibleMoveServiceImpl implements PossibleMoveService {
   @Transactional
   public MoveResponse getNextMoves(UUID gameId) {
     var moveList = movesReaderService.getMovesFor(gameId.toString());
-
 
     var nextToMoveSide = turnService.getWhichSideToMove(gameId.toString());
     if (nextToMoveSide == null) {
@@ -63,7 +61,6 @@ public class PossibleMoveServiceImpl implements PossibleMoveService {
     if (moveList.isEmpty()) {
       // fixme seems to be unreachable code
       state = startingStateLookupService.getStateFromStartingStateString(UUID.fromString(gameId));
-      state.setKings(List.of());
     } else {
       state = getStateFromMoveList(moveList);
       MoveRecord last = moveList.getLast();
@@ -92,33 +89,8 @@ public class PossibleMoveServiceImpl implements PossibleMoveService {
       }
     }
 
-    if (res.isEmpty()) {
-      // no captures, regular move
-      return new MoveResponse(gameId, state, nextToMoveSide.name(),
-          simplifiedPossibleMoves);
-    }
-
-    // Only captures below
-    Side currentSide = Side.valueOf(nextToMoveSide.name());
-    Side lastMoveSide = moveList.getLast().side();
-
-    if (currentSide == lastMoveSide) {
-      Integer lastMoveCellDest = Integer.valueOf(moveList.getLast().move().split("x")[1]);
-      Map<Integer, List<PossibleMoveSimplified>> resFilteredForChainCaptures =
-          new HashMap<>();
-      resFilteredForChainCaptures.put(lastMoveCellDest, res.get(lastMoveCellDest));
-
-      return new MoveResponse(gameId, state, currentSide.name(),
-
-          resFilteredForChainCaptures.entrySet().stream()
-              .filter(e -> {
-                var list = e.getValue();
-                return list.stream().anyMatch(
-                    PossibleMoveSimplified::isCapture);
-              }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
-    }
-
-    return new MoveResponse(gameId, state, currentSide.name(), res);
+    return new MoveResponse(gameId, state, nextToMoveSide.name(),
+        simplifiedPossibleMoves);
   }
 
   private Map<Integer, List<PossibleMoveSimplified>> getSimplifiedPossibleMoves(Map<Integer,

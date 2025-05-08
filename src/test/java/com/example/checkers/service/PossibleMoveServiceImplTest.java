@@ -136,7 +136,7 @@ class PossibleMoveServiceImplTest {
     // case 1
     var currentState = new State(
         List.of(1, 2, 3, 4, 5, 6, 7, 8, 11, 12, 15, 14),
-        List.of(23, 25, 26, 27, 28, 29, 30, 31, 32, 18, 17, 20)
+        List.of(23, 25, 26, 27, 28, 29, 30, 31, 32, 18, 17, 20), List.of()
     );
 
     MoveRequest moveRequest = new MoveRequest();
@@ -146,7 +146,7 @@ class PossibleMoveServiceImplTest {
     moveRequest.setPlayerId(2L);
     State expectedState = new State(
         List.of(1, 2, 3, 4, 5, 6, 7, 8, 11, 12, 14, 22),
-        List.of(23, 25, 26, 27, 28, 29, 30, 31, 32, 17, 20)
+        List.of(23, 25, 26, 27, 28, 29, 30, 31, 32, 17, 20), List.of()
     );
     State actualState = StateUtils.generateAfterMoveOrCaptureState(currentState, moveRequest);
     assertEquals(expectedState, actualState);
@@ -155,7 +155,7 @@ class PossibleMoveServiceImplTest {
     // case 2
     currentState = new State(
         List.of(1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14),
-        List.of(21, 24, 26, 27, 28, 29, 30, 31, 32, 17, 22, 16)
+        List.of(21, 24, 26, 27, 28, 29, 30, 31, 32, 17, 22, 16), List.of()
     );
 
     moveRequest = new MoveRequest();
@@ -167,7 +167,7 @@ class PossibleMoveServiceImplTest {
     actualState = StateUtils.generateAfterMoveOrCaptureState(currentState, moveRequest);
     expectedState = new State(
         List.of(1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 21),
-        List.of(21, 24, 26, 27, 28, 29, 30, 31, 32, 22, 16)
+        List.of(21, 24, 26, 27, 28, 29, 30, 31, 32, 22, 16), List.of()
     );
     assertEquals(expectedState, actualState);
   }
