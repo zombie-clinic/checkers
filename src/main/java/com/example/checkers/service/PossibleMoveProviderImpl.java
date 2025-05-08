@@ -69,11 +69,12 @@ public class PossibleMoveProviderImpl implements PossibleMoveProvider {
     var res = new ArrayList<PossibleMove>();
 
     if (diagonal.contains(piece.position())) {
-      collectForwardMoves(state, piece, diagonal, res, false);
-      collectBackwardCaptures(state, piece, diagonal, res);
       if (isKing) {
         collectKingMoves(state, piece, diagonal, res);
         collectBackwardKingMoves(state, piece, diagonal, res);
+      } else {
+        collectForwardMoves(state, piece, diagonal, res, false);
+        collectBackwardCaptures(state, piece, diagonal, res);
       }
     }
 
@@ -93,10 +94,10 @@ public class PossibleMoveProviderImpl implements PossibleMoveProvider {
     if (nextSquareIndex > diagonal.size() - 1) {
       return;
     }
-    if (isNextSquareFree(state, piece, nextSquare) && !isBackwardsCaptureCheck) {
+    if (isSquareFree(state, nextSquare) && !isBackwardsCaptureCheck) {
       res.add(new PossibleMove(piece, nextSquare, false));
     }
-    if (isNextSquareOccupiedByOpponent(state, piece, nextSquare)) {
+    if (isSquareOccupiedByWhatSide(state, piece.oppositeSide(), nextSquare)) {
       checkIfCaptureIsPossible(nextSquareIndex + 1, diagonal, state, piece).ifPresent(res::add);
     }
   }
@@ -109,39 +110,35 @@ public class PossibleMoveProviderImpl implements PossibleMoveProvider {
                                 Piece piece,
                                 LinkedList<Integer> diagonal,
                                 ArrayList<PossibleMove> res) {
-    int square = piece.position();
-    var nextSquareIndex = diagonal.indexOf(square) + 1;
-    Integer nextSquare = nextSquareIndex >= diagonal.size() ? null : diagonal.get(nextSquareIndex);
-    if (nextSquare == null) {
+
+    boolean captureInProgress = false;
+    boolean captureDone = false;
+
+    if (diagonal.indexOf(piece.position()) == diagonal.size() - 1) {
       return;
     }
 
-    // king move and capture logic
-    Integer occupied = null;
-    // regular direction
-    while (!isNextSquareOccupied(state, piece, nextSquare) || nextSquare > diagonal.size() - 1) {
-      res.add(new PossibleMove(piece, nextSquare, false));
-      nextSquareIndex = nextSquareIndex + 1;
-      if (nextSquareIndex >= diagonal.size()) {
-        break;
+    List<Integer> moveDirection = diagonal.subList(diagonal.indexOf(piece.position()) + 1, diagonal.size());
+    for (int destSquare : moveDirection) {
+      if (isSquareOccupiedByWhatSide(state, piece.side(), destSquare)) {
+        return;
       }
-      nextSquare = diagonal.get(nextSquareIndex);
-      if (isNextSquareOccupied(state, piece, nextSquare)) {
-        occupied = nextSquare;
-        break;
+      if (isSquareOccupiedByWhatSide(state, piece.oppositeSide(), destSquare)) {
+        if (captureDone) {
+          return;
+        } else {
+          captureInProgress = true;
+        }
       }
-    }
-    if (occupied != null) {
-      if (isNextSquareOccupiedByOpponent(state, piece, nextSquare)) {
-        int nextNextIdx = nextSquareIndex + 1;
-        checkIfCaptureIsPossible(nextNextIdx, diagonal, state, piece).ifPresent(res::add);
-        int nextNextNextIdx = nextNextIdx + 1;
-        for (int i = nextNextNextIdx; i < diagonal.size() - 1; i++) {
-          if (StateUtils.isEmptyCell(nextNextNextIdx, state)) {
-            res.add(new PossibleMove(piece, nextSquare, false));
-          } else {
-            break;
-          }
+      if (isSquareFree(state, destSquare)) {
+        if (captureInProgress) {
+          res.add(new PossibleMove(piece, destSquare, true));
+          captureDone = true;
+          captureInProgress = false;
+        } else if (captureDone) {
+          res.add(new PossibleMove(piece, destSquare, true));
+        } else {
+          res.add(new PossibleMove(piece, destSquare, false));
         }
       }
     }
@@ -170,16 +167,16 @@ public class PossibleMoveProviderImpl implements PossibleMoveProvider {
     return Optional.empty();
   }
 
-  private static boolean isNextSquareOccupied(State state, Piece piece, int nextSquare) {
-    return StateUtils.getSide(piece.oppositeSide(), state).contains(nextSquare)
-        || StateUtils.getSide(piece.side(), state).contains(nextSquare);
+  private static boolean isSquareOccupied(State state, int destSquare) {
+    return StateUtils.getSide(Side.LIGHT, state).contains(destSquare)
+        || StateUtils.getSide(Side.DARK, state).contains(destSquare);
   }
 
-  private static boolean isNextSquareFree(State state, Piece piece, int nextSquare) {
-    return !StateUtils.getSide(piece.oppositeSide(), state).contains(nextSquare);
+  private static boolean isSquareFree(State state, int destSquare) {
+    return !isSquareOccupied(state, destSquare);
   }
 
-  private static boolean isNextSquareOccupiedByOpponent(State state, Piece piece, int nextSquare) {
-    return StateUtils.getSide(piece.oppositeSide(), state).contains(nextSquare);
+  private static boolean isSquareOccupiedByWhatSide(State state, Side side, int destSquare) {
+    return StateUtils.getSide(side, state).contains(destSquare);
   }
 }
