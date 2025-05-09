@@ -86,7 +86,6 @@ public class StateUtils {
    */
   static State generateAfterMoveOrCaptureState(State state, MoveRequest moveRequest) {
 
-
     Integer start = Integer.valueOf(moveRequest.getMove().split("[x\\-]")[0]);
     Integer dest = Integer.valueOf(moveRequest.getMove().split("[x\\-]")[1]);
 
@@ -97,6 +96,7 @@ public class StateUtils {
 
       var light = new ArrayList<>(state.getLight());
       var dark = new ArrayList<>(state.getDark());
+      var kings = new ArrayList<>(state.getKings());
 
       if (side == LIGHT) {
         light.removeIf(e -> e.equals(start));
@@ -106,8 +106,14 @@ public class StateUtils {
         dark.add(dest);
       }
 
+      boolean removed = kings.removeIf(e -> e.equals(start));
+      if (removed) {
+        kings.add(dest);
+      }
+
       calculated.setDark(dark);
       calculated.setLight(light);
+      calculated.setKings(kings);
 
       return calculated;
     }
@@ -126,6 +132,12 @@ public class StateUtils {
             start,
             dest));
       }
+
+      boolean removed = kings.removeIf(e -> e.equals(start));
+      if (removed) {
+        kings.add(dest);
+      }
+
       calculated = new State(
           darkPieces, lightPieces, kings
       );
@@ -140,6 +152,12 @@ public class StateUtils {
             start,
             dest));
       }
+
+      boolean removed = kings.removeIf(e -> e.equals(start));
+      if (removed) {
+        kings.add(dest);
+      }
+
       calculated = new State(
           darkPieces, lightPieces, kings
       );
