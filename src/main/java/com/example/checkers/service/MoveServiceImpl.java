@@ -54,33 +54,14 @@ public class MoveServiceImpl implements MoveService {
         newState.getDark().stream().map(String::valueOf).collect(Collectors.joining(",")),
         newState.getLight().stream().map(String::valueOf).collect(Collectors.joining(",")));
 
-    // TODO There is no need to introduce possible move abstraction, we could go with Move DTO
-    // FIXME redundant call to database
-    List<Move> moves = moveRepository.findAllByGameId(gameId.toString());
+    move.setKings(newState.getKings());
 
-    List<Integer> kings;
-    if (moves.isEmpty()) {
-      kings = new ArrayList<>();
-    } else {
-      kings = new ArrayList<>(moves.getLast().getKings());
-    }
-    Set<Integer> kingsSet = new HashSet<>(kings);
-
-    Integer start = Integer.valueOf(move.getMove().split("[-x]")[0]);
     Integer dest = Integer.valueOf(move.getMove().split("[-x]")[1]);
-    if (isMoveResultsInKings(Side.valueOf(move.getSide()), dest)) {
-      kingsSet.add(dest);
-    } else {
-      if (kingsSet.contains(start)) {
-        kingsSet.remove(start);
-        kingsSet.add(dest);
-      }
+    if (!move.getKings().contains(dest) && isMoveResultsInKings(Side.valueOf(move.getSide()), dest)) {
+      List<Integer> currentKings = move.getKings();
+      currentKings.add(dest);
+      move.setKings(currentKings);
     }
-
-    move.setKings(kingsSet.stream()
-        // check if kings were captured
-        .filter(k -> newState.getLight().contains(k) || newState.getDark().contains(k))
-        .toList());
 
     moveRepository.save(move);
   }
@@ -90,7 +71,6 @@ public class MoveServiceImpl implements MoveService {
     State currentState;
     if (moves.isEmpty()) {
       currentState = startingStateLookupService.getStateFromStartingStateString(gameId);
-      currentState.setKings(List.of());
     } else {
       currentState = new State(
           Arrays.stream(moves.getLast().getDark().split(",")).map(Integer::valueOf).toList(),

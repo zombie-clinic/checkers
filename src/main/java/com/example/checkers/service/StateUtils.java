@@ -85,19 +85,14 @@ public class StateUtils {
    * @return immutable target State object
    */
   static State generateAfterMoveOrCaptureState(State state, MoveRequest moveRequest) {
-
-
     Integer start = Integer.valueOf(moveRequest.getMove().split("[x\\-]")[0]);
     Integer dest = Integer.valueOf(moveRequest.getMove().split("[x\\-]")[1]);
-
     Side side = Side.valueOf(moveRequest.getSide());
-    State calculated = new State();
+    var light = new ArrayList<>(state.getLight());
+    var dark = new ArrayList<>(state.getDark());
+    var kings = new ArrayList<>(state.getKings());
 
     if (!moveRequest.getMove().contains("x")) {
-
-      var light = new ArrayList<>(state.getLight());
-      var dark = new ArrayList<>(state.getDark());
-
       if (side == LIGHT) {
         light.removeIf(e -> e.equals(start));
         light.add(dest);
@@ -105,48 +100,32 @@ public class StateUtils {
         dark.removeIf(e -> e.equals(start));
         dark.add(dest);
       }
-
-      calculated.setDark(dark);
-      calculated.setLight(light);
-
-      return calculated;
-    }
-
-
-    // CAPTURE logic
-
-    if (Side.valueOf(moveRequest.getSide()) == DARK) {
-      var darkPieces = new ArrayList<>(state.getDark());
-      var lightPieces = new ArrayList<>(state.getLight());
-      var kings = new ArrayList<>(state.getKings());
-      darkPieces.removeIf(el -> Objects.equals(el, start));
-      darkPieces.add(dest);
-      if (isCaptureMove(moveRequest)) {
-        lightPieces.remove(determineCapturedPieceIdx(Side.valueOf(moveRequest.getSide()),
-            start,
-            dest));
-      }
-      calculated = new State(
-          darkPieces, lightPieces, kings
-      );
     } else {
-      var darkPieces = new ArrayList<>(state.getDark());
-      var lightPieces = new ArrayList<>(state.getLight());
-      var kings = new ArrayList<>(state.getKings());
-      lightPieces.removeIf(el -> Objects.equals(el, start));
-      lightPieces.add(dest);
-      if (isCaptureMove(moveRequest)) {
-        darkPieces.remove(determineCapturedPieceIdx(Side.valueOf(moveRequest.getSide()),
-            start,
-            dest));
+      if (Side.valueOf(moveRequest.getSide()) == DARK) {
+        dark.removeIf(el -> Objects.equals(el, start));
+        dark.add(dest);
+        if (isCaptureMove(moveRequest)) {
+          light.remove(determineCapturedPieceIdx(Side.valueOf(moveRequest.getSide()),
+              start,
+              dest));
+        }
+      } else {
+        light.removeIf(el -> Objects.equals(el, start));
+        light.add(dest);
+        if (isCaptureMove(moveRequest)) {
+          dark.remove(determineCapturedPieceIdx(Side.valueOf(moveRequest.getSide()),
+              start,
+              dest));
+        }
       }
-      calculated = new State(
-          darkPieces, lightPieces, kings
-      );
-
     }
 
-    return calculated;
+    boolean removed = kings.removeIf(e -> e.equals(start));
+    if (removed) {
+      kings.add(dest);
+    }
+
+    return new State(dark, light, kings);
   }
 
   private static List<Integer> parseList(String str) {

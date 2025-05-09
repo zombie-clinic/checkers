@@ -16,9 +16,9 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 class KingsPossibleMovesTest {
 
-
+  // FIXME State change doesn't make sense in a stateless class (PossibleMoveProvider)
   @Test
-  void givenTwoPiecesToCapture_shouldPerformAChainCapture() {
+  void givenTwoPiecesToCapture_shouldPerformChainCapture() {
     var moveProvider = new PossibleMoveProviderImpl();
 
     State state1 = getTestState(List.of(25), List.of(18, 11), List.of(25));
