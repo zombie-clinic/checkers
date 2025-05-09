@@ -8,10 +8,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.example.checkers.domain.Side;
 import com.example.checkers.model.State;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,7 +46,7 @@ public class ExampleGameIT {
 
     joinLobby(gameId);
 
-    var actualState = new State(List.of(11,27), List.of(2), List.of(2));
+    var actualState = new State(List.of(11, 27), List.of(2), List.of(2));
 
     TestFixture tf = new TestFixture(gameId, actualState);
 
