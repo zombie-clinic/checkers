@@ -72,9 +72,10 @@ public class GameStateServiceImpl implements GameStateService {
     Game lobbyGame = Game.builder()
         .playerOne(player)
         .startingState(
-            String.format("{\"dark\":[%s],\"light\":[%s]}",
+            String.format("{\"dark\":[%s],\"light\":[%s],\"kings\":[%s]}",
                 Checkerboard.getStartingState().getDark().stream().map(String::valueOf).collect(Collectors.joining(",")),
-                Checkerboard.getStartingState().getLight().stream().map(String::valueOf).collect(Collectors.joining(","))
+                Checkerboard.getStartingState().getLight().stream().map(String::valueOf).collect(Collectors.joining(",")),
+                Checkerboard.getStartingState().getKings().stream().map(String::valueOf).collect(Collectors.joining(","))
 
             ))
         .build();
