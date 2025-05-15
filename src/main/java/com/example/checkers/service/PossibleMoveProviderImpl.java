@@ -4,13 +4,14 @@ import com.example.checkers.domain.Checkerboard;
 import com.example.checkers.domain.Piece;
 import com.example.checkers.domain.PossibleMove;
 import com.example.checkers.domain.Side;
-import com.example.checkers.model.State;
+import com.example.checkers.domain.State;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -61,7 +62,7 @@ public class PossibleMoveProviderImpl implements PossibleMoveProvider {
 
     Side side = piece.side();
     // FIXME Domain object should separate from api request object
-    List<Integer> kings = state.getKings() == null ? List.of() : state.getKings();
+    Set<Integer> kings = state.getKings() == null ? Set.of() : state.getKings();
     boolean isKing = side == Side.DARK ?
         (state.getDark().contains(piece.position()) && kings.contains(piece.position()))
         : (state.getLight().contains(piece.position()) && kings.contains(piece.position()));

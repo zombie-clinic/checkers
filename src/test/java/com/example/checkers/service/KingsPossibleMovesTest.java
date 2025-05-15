@@ -6,8 +6,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.example.checkers.domain.Piece;
 import com.example.checkers.domain.PossibleMove;
 import com.example.checkers.domain.Side;
-import com.example.checkers.model.State;
+import com.example.checkers.domain.State;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -21,14 +22,14 @@ class KingsPossibleMovesTest {
   void givenTwoPiecesToCapture_shouldPerformChainCapture() {
     var moveProvider = new PossibleMoveProviderImpl();
 
-    State state1 = getTestState(List.of(25), List.of(18, 11), List.of(25));
+    State state1 = getTestState(Set.of(25), Set.of(18, 11), Set.of(25));
     var actual1 = moveProvider.getPossibleMovesForPieceInternal(Piece.of(25, Side.DARK), state1);
     List<PossibleMove> expected1 = Stream.of(15)
         .map(i -> new PossibleMove(Piece.of(25, Side.DARK), i, true))
         .toList();
     assertThat(actual1).containsExactlyInAnyOrderElementsOf(expected1);
 
-    State state2 = getTestState(List.of(15), List.of(11), List.of(15));
+    State state2 = getTestState(Set.of(15), Set.of(11), Set.of(15));
     var actual2 = moveProvider.getPossibleMovesForPieceInternal(Piece.of(15, Side.DARK), state2);
     List<PossibleMove> expected2 = Stream.of(8, 4)
         .map(i -> new PossibleMove(Piece.of(15, Side.DARK), i, true))
@@ -39,7 +40,7 @@ class KingsPossibleMovesTest {
   @ParameterizedTest
   @MethodSource({"getKingsPositions"})
   void givenStatesWithCurvedCaptures_shouldProvideValidMoves(State state, Piece piece,
-                                                             List<Integer> destList,
+                                                             Set<Integer> destList,
                                                              boolean isCapture) {
     var moveProvider = new PossibleMoveProviderImpl();
     var actual = moveProvider.getPossibleMovesForPieceInternal(piece, state);
@@ -52,12 +53,12 @@ class KingsPossibleMovesTest {
 
   private static Stream<Arguments> getKingsPositions() {
     return Stream.of(
-        Arguments.of(getTestState(List.of(10, 19), List.of(1), List.of(1)), Piece.of(1, LIGHT), List.of(15), true),
-        Arguments.of(getTestState(List.of(19), List.of(15), List.of(15)), Piece.of(15, LIGHT), List.of(24, 28), true)
+        Arguments.of(getTestState(Set.of(10, 19), Set.of(1), Set.of(1)), Piece.of(1, LIGHT), Set.of(15), true),
+        Arguments.of(getTestState(Set.of(19), Set.of(15), Set.of(15)), Piece.of(15, LIGHT), Set.of(24, 28), true)
     );
   }
 
-  static State getTestState(List<Integer> black, List<Integer> light, List<Integer> kings) {
+  static State getTestState(Set<Integer> black, Set<Integer> light, Set<Integer> kings) {
     return new State(black, light, kings);
   }
 }

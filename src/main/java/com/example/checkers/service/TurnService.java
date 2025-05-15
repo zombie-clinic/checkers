@@ -6,7 +6,7 @@ import com.example.checkers.domain.MoveRecord;
 import com.example.checkers.domain.Piece;
 import com.example.checkers.domain.PossibleMove;
 import com.example.checkers.domain.Side;
-import com.example.checkers.model.State;
+import com.example.checkers.domain.State;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;

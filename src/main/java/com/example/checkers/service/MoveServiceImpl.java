@@ -6,15 +6,14 @@ import com.example.checkers.domain.Game;
 import com.example.checkers.domain.Move;
 import com.example.checkers.domain.Player;
 import com.example.checkers.domain.Side;
+import com.example.checkers.domain.State;
 import com.example.checkers.model.MoveRequest;
-import com.example.checkers.model.State;
 import com.example.checkers.persistence.GameRepository;
 import com.example.checkers.persistence.MoveRepository;
 import com.example.checkers.persistence.PlayerRepository;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -45,7 +44,7 @@ public class MoveServiceImpl implements MoveService {
     // FIXME duplication with getCurrentState
     State currentState = getCurrentStateFromMove(gameId);
 
-    validateMoveRequest(currentState, moveRequest.getState());
+    validateMoveRequest(currentState, State.from(moveRequest.getClientState()));
 
     State newState = StateUtils.generateAfterMoveOrCaptureState(currentState, moveRequest);
 
@@ -58,7 +57,7 @@ public class MoveServiceImpl implements MoveService {
 
     Integer dest = Integer.valueOf(move.getMove().split("[-x]")[1]);
     if (!move.getKings().contains(dest) && isMoveResultsInKings(Side.valueOf(move.getSide()), dest)) {
-      List<Integer> currentKings = move.getKings();
+      Set<Integer> currentKings = move.getKings();
       currentKings.add(dest);
       move.setKings(currentKings);
     }
@@ -73,15 +72,15 @@ public class MoveServiceImpl implements MoveService {
       currentState = startingStateLookupService.getStateFromStartingStateString(gameId);
     } else {
       currentState = new State(
-          Arrays.stream(moves.getLast().getDark().split(",")).map(Integer::valueOf).toList(),
-          Arrays.stream(moves.getLast().getLight().split(",")).map(Integer::valueOf).toList(),
+          Arrays.stream(moves.getLast().getDark().split(",")).map(Integer::valueOf).collect(Collectors.toSet()),
+          Arrays.stream(moves.getLast().getLight().split(",")).map(Integer::valueOf).collect(Collectors.toSet()),
           moves.getLast().getKings()
       );
-      List<Integer> kings = moves.getLast().getKings();
+      Set<Integer> kings = moves.getLast().getKings();
       if (kings == null) {
-        kings = Collections.emptyList();
+        kings = Collections.emptySet();
       }
-      currentState.setKings(kings);
+      currentState = new State(currentState.getDark(), currentState.getLight(), kings);
     }
     return currentState;
   }
@@ -105,6 +104,7 @@ public class MoveServiceImpl implements MoveService {
     return List.of(1, 2, 3, 4).contains(dest);
   }
 
+  // TODO refactor
   private void validateMoveRequest(State serverState, State clientState) {
     List<Integer> serverDark = new ArrayList<>(serverState.getDark());
     List<Integer> serverLight = new ArrayList<>(serverState.getLight());

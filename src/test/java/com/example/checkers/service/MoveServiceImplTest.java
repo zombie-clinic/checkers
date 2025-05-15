@@ -9,12 +9,14 @@ import com.example.checkers.domain.GameProgress;
 import com.example.checkers.domain.MoveRecord;
 import com.example.checkers.domain.Player;
 import com.example.checkers.domain.Side;
+import com.example.checkers.domain.State;
+import com.example.checkers.model.ClientState;
 import com.example.checkers.model.MoveRequest;
-import com.example.checkers.model.State;
 import com.example.checkers.persistence.GameRepository;
 import com.example.checkers.persistence.MoveRepository;
 import com.example.checkers.persistence.PlayerRepository;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,7 +63,7 @@ class MoveServiceImplTest {
     String gameId = savedGame.getId();
 
     // 1
-    State state = buildState(List.of(28, 8), List.of(5, 23), List.of());
+    State state = buildState(Set.of(28, 8), Set.of(5, 23), Set.of());
     MoveRequest moveRequest = buildMoveRequest("5-1", LIGHT, state);
     moveService.saveMove(UUID.fromString(gameId), moveRequest);
 
@@ -69,7 +71,7 @@ class MoveServiceImplTest {
     assertThat(moveRecords.getLast().kings()).contains(1);
 
     // 2
-    state = buildState(List.of(28, 8), List.of(1, 23), List.of(1));
+    state = buildState(Set.of(28, 8), Set.of(1, 23), Set.of(1));
     moveRequest = buildMoveRequest("28-32", DARK, state);
     moveService.saveMove(UUID.fromString(gameId), moveRequest);
 
@@ -77,7 +79,7 @@ class MoveServiceImplTest {
     assertThat(moveRecords.getLast().kings()).containsAll(List.of(1, 32));
 
     // 3
-    state = buildState(List.of(32, 8), List.of(1, 23), List.of(1, 32));
+    state = buildState(Set.of(32, 8), Set.of(1, 23), Set.of(1, 32));
     moveRequest = buildMoveRequest("1-6", LIGHT, state);
     moveService.saveMove(UUID.fromString(gameId), moveRequest);
 
@@ -85,7 +87,7 @@ class MoveServiceImplTest {
     assertThat(moveRecords.getLast().kings()).containsAll(List.of(6, 32));
 
     // 4
-    state = buildState(List.of(32, 8), List.of(6, 23), List.of(6, 32));
+    state = buildState(Set.of(32, 8), Set.of(6, 23), Set.of(6, 32));
     moveRequest = buildMoveRequest("32-27", DARK, state);
     moveService.saveMove(UUID.fromString(gameId), moveRequest);
 
@@ -93,7 +95,7 @@ class MoveServiceImplTest {
     assertThat(moveRecords.getLast().kings()).containsAll(List.of(6, 27));
 
     // 5
-    state = buildState(List.of(27, 8), List.of(6, 23), List.of(6, 27));
+    state = buildState(Set.of(27, 8), Set.of(6, 23), Set.of(6, 27));
     moveRequest = buildMoveRequest("23x32", LIGHT, state);
     moveService.saveMove(UUID.fromString(gameId), moveRequest);
 
@@ -101,8 +103,8 @@ class MoveServiceImplTest {
     assertThat(moveRecords.getLast().kings()).containsAll(List.of(6));
   }
 
-  private State buildState(List<Integer> light, List<Integer> dark, List<Integer> kings) {
-    return new State(light, dark, kings);
+  private State buildState(Set<Integer> dark, Set<Integer> light, Set<Integer> kings) {
+    return new State(dark, light, kings);
   }
 
   private static MoveRequest buildMoveRequest(String move, Side side, State state) {
@@ -110,7 +112,7 @@ class MoveServiceImplTest {
     req.setMove(move);
     req.setSide(side.toString());
     req.setPlayerId(side == LIGHT ? 1L : 2L);
-    req.setState(state);
+    req.setClientState(new ClientState(state.getDark(), state.getLight(), state.getKings()));
     return req;
   }
 }

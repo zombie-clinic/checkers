@@ -34,8 +34,8 @@ MoveResponse:
   properties:
     gameId:
       type: string
-    state:
-      $ref: './schemas.yaml#/State'
+    serverState:
+      $ref: './schemas.yaml#/ServerState'
     side:
       type: string
     possibleMoves:
@@ -46,6 +46,6 @@ MoveResponse:
             type: object
   required:
     - gameId
-    - state
+    - serverState
     - side
     - possibleMoves

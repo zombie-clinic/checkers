@@ -3,6 +3,7 @@ package com.example.checkers.api;
 import static org.springframework.http.ResponseEntity.ok;
 
 import com.example.checkers.domain.GameProgress;
+import com.example.checkers.domain.State;
 import com.example.checkers.model.GameResponse;
 import com.example.checkers.model.JoinLobbyRequest;
 import com.example.checkers.model.StartLobbyRequest;
@@ -45,7 +46,7 @@ public class GameController implements GameApi {
     }
     if (isImport != null && isImport) {
       return ok(gameStateService.startImportedGameLobby(request.getPlayerId(), side,
-          request.getState()
+          State.from(request.getClientState())
       ));
     }
     return ok(gameStateService.startLobby(request.getPlayerId(), side));

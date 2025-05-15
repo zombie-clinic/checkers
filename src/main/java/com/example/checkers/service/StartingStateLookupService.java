@@ -1,14 +1,15 @@
 package com.example.checkers.service;
 
+import static com.example.checkers.service.StateUtils.fromJsonNodeIteratorToSet;
+
 import com.example.checkers.domain.Game;
-import com.example.checkers.model.State;
+import com.example.checkers.domain.State;
 import com.example.checkers.persistence.GameRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -29,16 +30,10 @@ public class StartingStateLookupService {
       throw new RuntimeException(e.getMessage());
     }
     return new State(
-        fromIteratorToList(startingState.get("dark").elements()),
-        fromIteratorToList(startingState.get("light").elements()),
-        fromIteratorToList(startingState.get("kings") == null ? new ArrayList<JsonNode>().iterator()
+        fromJsonNodeIteratorToSet(startingState.get("dark").elements()),
+        fromJsonNodeIteratorToSet(startingState.get("light").elements()),
+        fromJsonNodeIteratorToSet(startingState.get("kings") == null ? Collections.emptyIterator()
             : startingState.get("kings").elements())
     );
-  }
-
-  private List<Integer> fromIteratorToList(Iterator<JsonNode> elements) {
-    List<Integer> list = new ArrayList<>();
-    elements.forEachRemaining(e -> list.add(e.intValue()));
-    return list;
   }
 }

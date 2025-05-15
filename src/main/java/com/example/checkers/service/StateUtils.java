@@ -6,13 +6,17 @@ import static com.example.checkers.domain.Side.LIGHT;
 import com.example.checkers.domain.Checkerboard;
 import com.example.checkers.domain.MoveRecord;
 import com.example.checkers.domain.Side;
+import com.example.checkers.domain.State;
 import com.example.checkers.model.MoveRequest;
-import com.example.checkers.model.State;
-import java.util.ArrayList;
+import com.fasterxml.jackson.databind.JsonNode;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Utility board state methods that do not require any wiring.
@@ -39,8 +43,8 @@ public class StateUtils {
     String dark = moveList.getLast().dark();
     String light = moveList.getLast().light();
 
-    List<Integer> darkList = parseList(dark);
-    List<Integer> lightList = parseList(light);
+    Set<Integer> darkList = parseSet(dark);
+    Set<Integer> lightList = parseSet(light);
 
     return new State(
         darkList,
@@ -70,11 +74,17 @@ public class StateUtils {
    * @param side on DARK, LIGHT
    * @return immutable list of corresponding board positions
    */
-  public static List<Integer> getSide(Side side, State state) {
+  public static Set<Integer> getSide(Side side, State state) {
     return switch (side) {
       case DARK -> state.getDark();
       case LIGHT -> state.getLight();
     };
+  }
+
+  public static Set<Integer> fromJsonNodeIteratorToSet(Iterator<JsonNode> elements) {
+    Set<Integer> set = new HashSet<>();
+    elements.forEachRemaining(e -> set.add(e.intValue()));
+    return set;
   }
 
   /**
@@ -88,9 +98,9 @@ public class StateUtils {
     Integer start = Integer.valueOf(moveRequest.getMove().split("[x\\-]")[0]);
     Integer dest = Integer.valueOf(moveRequest.getMove().split("[x\\-]")[1]);
     Side side = Side.valueOf(moveRequest.getSide());
-    var light = new ArrayList<>(state.getLight());
-    var dark = new ArrayList<>(state.getDark());
-    var kings = new ArrayList<>(state.getKings());
+    var light = new HashSet<>(state.getLight());
+    var dark = new HashSet<>(state.getDark());
+    var kings = new HashSet<>(state.getKings());
 
     if (!moveRequest.getMove().contains("x")) {
       if (side == LIGHT) {
@@ -128,13 +138,15 @@ public class StateUtils {
     return new State(dark, light, kings);
   }
 
-  private static List<Integer> parseList(String str) {
+  private static Set<Integer> parseSet(String str) {
     if ("".equals(str)) {
-      return List.of();
+      return Set.of();
     }
 
-    return Arrays.stream(str.split(",")).map(Integer::valueOf).toList();
+    return Arrays.stream(str.split(",")).map(Integer::valueOf).collect(Collectors.toSet());
   }
+
+  // TODO Maybe return a Pair.of pieces and corresponding kings?
 
   private static Integer determineCapturedPieceIdx(Side side, Integer start, Integer end) {
     for (LinkedList<Integer> diagonal : Checkerboard.getDiagonals()) {
@@ -155,8 +167,6 @@ public class StateUtils {
             """,
         start, end));
   }
-
-  // TODO Maybe return a Pair.of pieces and corresponding kings?
 
   private static boolean isCaptureMove(MoveRequest moveRequest) {
     return moveRequest.getMove().contains("x");
