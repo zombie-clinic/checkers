@@ -8,9 +8,9 @@ import com.example.checkers.domain.Game;
 import com.example.checkers.domain.GameProgress;
 import com.example.checkers.domain.MoveRecord;
 import com.example.checkers.domain.Player;
+import com.example.checkers.domain.State;
 import com.example.checkers.model.GameResponse;
 import com.example.checkers.model.MoveRequest;
-import com.example.checkers.model.State;
 import com.example.checkers.persistence.GameRepository;
 import com.example.checkers.persistence.PlayerRepository;
 import java.util.HashSet;
@@ -52,7 +52,7 @@ public class GameStateServiceImpl implements GameStateService {
 
   @Override
   public boolean isGameInProgressConsistent(UUID gameId, MoveRequest moveRequest) {
-    State clientState = moveRequest.getState();
+    State clientState = State.from(moveRequest.getClientState());
     List<MoveRecord> moves = movesReaderService.getMovesFor(gameId.toString());
     State serverState;
     if (moves.isEmpty()) {

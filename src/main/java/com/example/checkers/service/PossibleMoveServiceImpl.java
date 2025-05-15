@@ -6,12 +6,13 @@ import com.example.checkers.domain.MoveRecord;
 import com.example.checkers.domain.PossibleMove;
 import com.example.checkers.domain.PossibleMoveSimplified;
 import com.example.checkers.domain.Side;
+import com.example.checkers.domain.State;
 import com.example.checkers.model.MoveResponse;
-import com.example.checkers.model.State;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -42,7 +43,7 @@ public class PossibleMoveServiceImpl implements PossibleMoveService {
       // we return empty possible moves and null next turn
       // in order front end to recognize end time
       return new MoveResponse(gameId.toString(),
-          getStateFromMoveList(moveList.stream().toList()),
+          State.toServerState(getStateFromMoveList(moveList.stream().toList())),
           null,
           Map.of()
       );
@@ -57,26 +58,30 @@ public class PossibleMoveServiceImpl implements PossibleMoveService {
   private MoveResponse generateMoveResponse(String gameId, Side nextToMoveSide) {
     var moveList = movesReaderService.getMovesFor(gameId);
 
-    State state;
+    State initialState;
+    State resultState = new State(Set.of(), Set.of(), Set.of());
+
     if (moveList.isEmpty()) {
       // fixme seems to be unreachable code
-      state = startingStateLookupService.getStateFromStartingStateString(UUID.fromString(gameId));
+      initialState = startingStateLookupService.getStateFromStartingStateString(UUID.fromString(gameId));
     } else {
-      state = getStateFromMoveList(moveList);
+      initialState = getStateFromMoveList(moveList);
+      // todo refactor to return earlier
+      resultState = new State(initialState.dark(), initialState.light(), initialState.kings());
       MoveRecord last = moveList.getLast();
       if (last == null) {
-        state.setKings(List.of());
+        resultState = new State(initialState.dark(), initialState.light(), Set.of());
       } else {
         if (last.kings().isEmpty()) {
-          state.setKings(List.of());
+          resultState = new State(initialState.dark(), initialState.light(), Set.of());
         } else {
-          state.setKings(new ArrayList<>(last.kings()));
+          resultState = new State(initialState.dark(), initialState.light(), new HashSet<>(last.kings()));
         }
       }
     }
     // regular move, game in progress
     Map<Integer, List<PossibleMove>> possibleMoves = possibleMoveProvider.getPossibleMovesForSide(
-        nextToMoveSide, state);
+        nextToMoveSide, resultState);
     Map<Integer, List<PossibleMoveSimplified>> simplifiedPossibleMoves =
         getSimplifiedPossibleMoves(possibleMoves);
 
@@ -89,7 +94,7 @@ public class PossibleMoveServiceImpl implements PossibleMoveService {
       }
     }
 
-    return new MoveResponse(gameId, state, nextToMoveSide.name(),
+    return new MoveResponse(gameId, State.toServerState(initialState), nextToMoveSide.name(),
         simplifiedPossibleMoves);
   }
 

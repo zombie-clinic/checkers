@@ -6,7 +6,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import java.util.List;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -39,7 +39,7 @@ public class Move {
 
   private String light;
 
-  private List<Integer> kings;
+  private Set<Integer> kings;
 
   public Move(Game game, Player player, String side, String move, String dark, String light) {
     this.game = game;

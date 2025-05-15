@@ -1,6 +1,6 @@
 package com.example.checkers.domain;
 
-import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public record MoveRecord(
@@ -13,16 +13,16 @@ public record MoveRecord(
     String move,
     String dark,
     String light,
-    List<Integer> kings) {
+    Set<Integer> kings) {
 
   public MoveRecord(Long moveId,
                     String gameId,
                     Long playerId,
                     Side side,
                     String move,
-                    List<Integer> dark,
-                    List<Integer> light,
-                    List<Integer> kings) {
+                    Set<Integer> dark,
+                    Set<Integer> light,
+                    Set<Integer> kings) {
     this(moveId, gameId, playerId, side, move,
         dark.stream().map(String::valueOf).collect(Collectors.joining(",")),
         light.stream().map(String::valueOf).collect(Collectors.joining(",")),

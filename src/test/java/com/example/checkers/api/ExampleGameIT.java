@@ -1,5 +1,6 @@
 package com.example.checkers.api;
 
+import static com.example.checkers.service.StateUtils.fromJsonNodeIteratorToSet;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -7,14 +8,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.example.checkers.domain.Side;
-import com.example.checkers.model.State;
+import com.example.checkers.domain.State;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -31,7 +29,7 @@ public class ExampleGameIT {
   String startLobbyRequest = "{\"playerId\": 1, \"side\": \"DARK\"}";
   String joinLobbyRequest = "{\"playerId\": 2, \"gameId\": \"%s\"}";
 
-  String importGameRequest = "{\"playerId\":1,\"side\":\"LIGHT\",\"state\":{\"dark\":[11,27],\"light\":[2],\"kings\":[2]}}";
+  String importGameRequest = "{\"playerId\":1,\"side\":\"LIGHT\",\"clientState\":{\"dark\":[11,27],\"light\":[2],\"kings\":[2]}}";
 
   @Autowired
   private MockMvc mockMvc;
@@ -46,12 +44,12 @@ public class ExampleGameIT {
 
     joinLobby(gameId);
 
-    var actualState = new State(List.of(11, 27), List.of(2), List.of(2));
+    var actualState = new State(Set.of(11, 27), Set.of(2), Set.of(2));
 
     TestFixture tf = new TestFixture(gameId, actualState);
 
-    tf.makeMove("2x20", Side.LIGHT).and().expectStateToBe(new State(List.of(27), List.of(20), List.of(20)));
-    tf.makeMove("20x31", Side.LIGHT).and().expectStateToBe(new State(List.of(), List.of(31), List.of(31)));
+    tf.makeMove("2x20", Side.LIGHT).and().expectStateToBe(new State(Set.of(27), Set.of(20), Set.of(20)));
+    tf.makeMove("20x31", Side.LIGHT).and().expectStateToBe(new State(Set.of(), Set.of(31), Set.of(31)));
   }
 
   @Test
@@ -63,22 +61,22 @@ public class ExampleGameIT {
 
     joinLobby(gameId);
 
-    var actualState = new State(List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12),
-        List.of(21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32),
-        List.of());
+    var actualState = new State(Set.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12),
+        Set.of(21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32),
+        Set.of());
 
     TestFixture tf = new TestFixture(gameId, actualState);
 
     tf.makeMove("21-17", Side.LIGHT).and()
-        .expectStateToBe(new State(List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12), List.of(22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 17), List.of()));
+        .expectStateToBe(new State(Set.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12), Set.of(22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 17), Set.of()));
     tf.makeMove("10-15", Side.DARK).and()
-        .expectStateToBe(new State(List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 15), List.of(22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 17), List.of()));
+        .expectStateToBe(new State(Set.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 15), Set.of(22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 17), Set.of()));
     tf.makeMove("22-18", Side.LIGHT).and()
-        .expectStateToBe(new State(List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 15), List.of(23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 17, 18), List.of()));
+        .expectStateToBe(new State(Set.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 15), Set.of(23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 17, 18), Set.of()));
     tf.makeMove("15x22", Side.DARK).and()
-        .expectStateToBe(new State(List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 22), List.of(23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 17), List.of()));
+        .expectStateToBe(new State(Set.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 22), Set.of(23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 17), Set.of()));
     tf.makeMove("22x13", Side.DARK).and()
-        .expectStateToBe(new State(List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13), List.of(23, 24, 25, 26, 27, 28, 29, 30, 31, 32), List.of()));
+        .expectStateToBe(new State(Set.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13), Set.of(23, 24, 25, 26, 27, 28, 29, 30, 31, 32), Set.of()));
   }
 
   private String joinLobby(String gameId) throws Exception {
@@ -108,7 +106,7 @@ public class ExampleGameIT {
 
   class TestFixture {
 
-    private String gameId;
+    private final String gameId;
 
     private State actualState;
 
@@ -119,13 +117,13 @@ public class ExampleGameIT {
 
     TestFixture makeMove(String move, Side side) throws Exception {
       String response = sendMove(side, move);
-      JsonNode aState = new ObjectMapper().readTree(response).get("state");
-      ArrayNode dark = (ArrayNode) aState.get("dark");
-      ArrayNode light = (ArrayNode) aState.get("light");
-      ArrayNode kings = (ArrayNode) aState.get("kings");
-      actualState = new State(fromIteratorToList(dark.elements()),
-          fromIteratorToList(light.elements()),
-          fromIteratorToList(kings.elements()));
+      JsonNode serverState = new ObjectMapper().readTree(response).get("serverState");
+      ArrayNode dark = (ArrayNode) serverState.get("dark");
+      ArrayNode light = (ArrayNode) serverState.get("light");
+      ArrayNode kings = (ArrayNode) serverState.get("kings");
+      actualState = new State(fromJsonNodeIteratorToSet(dark.elements()),
+          fromJsonNodeIteratorToSet(light.elements()),
+          fromJsonNodeIteratorToSet(kings.elements()));
       return this;
     }
 
@@ -146,57 +144,18 @@ public class ExampleGameIT {
       var moveValue = jsonMapper.writeValueAsString(move);
       var stateValue = jsonMapper.writeValueAsString(actualState);
 
-      String content = "{\"side\":%s,\"move\":%s,\"state\":%s,\"playerId\":%d}"
+      String content = "{\"side\":%s,\"move\":%s,\"clientState\":%s,\"playerId\":%d}"
           // TODO When player logic ready should either side or player ids
           .formatted(sideValue, moveValue, stateValue, side == Side.LIGHT ? 1L : 2L);
       var put = put(url).contentType(APPLICATION_JSON).content(content);
-      String contentAsString = mockMvc.perform(put)
+      return mockMvc.perform(put)
           .andReturn()
           .getResponse()
           .getContentAsString();
-      return contentAsString;
     }
 
     private void compareStates(State expectedState, State actualState) {
-
-      // TODO Should be sorted elsewhere
-      // TODO Should either changed to sets of sorted in equals
-      var sortedListDark = new ArrayList<>(expectedState.getDark());
-      var sortedListLight = new ArrayList<>(expectedState.getLight());
-      var sortedListKings = new ArrayList<>(expectedState.getKings());
-
-      Collections.sort(sortedListDark);
-      Collections.sort(sortedListLight);
-      Collections.sort(sortedListKings);
-
-      expectedState.setDark(sortedListDark);
-      expectedState.setLight(sortedListLight);
-      expectedState.setKings(sortedListKings);
-
-      var sortedActualListDark = new ArrayList<>(actualState.getDark());
-      var sortedActualListLight = new ArrayList<>(actualState.getLight());
-      var sortedActualListKings = new ArrayList<>(actualState.getKings());
-
-      Collections.sort(sortedActualListDark);
-      Collections.sort(sortedActualListLight);
-      Collections.sort(sortedActualListKings);
-
-      actualState.setDark(sortedActualListDark);
-      actualState.setLight(sortedActualListLight);
-      actualState.setKings(sortedActualListKings);
-
-      // TODO Black/White positions should be a type
-      State actual = new State(
-          sortedActualListDark, sortedActualListLight, sortedActualListKings
-      );
-
-      assertEquals(expectedState, actual);
-    }
-
-    private List<Integer> fromIteratorToList(Iterator<JsonNode> elements) {
-      List<Integer> list = new ArrayList<>();
-      elements.forEachRemaining(e -> list.add(e.intValue()));
-      return list;
+      assertEquals(expectedState, actualState);
     }
   }
 }

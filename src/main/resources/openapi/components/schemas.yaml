@@ -5,12 +5,12 @@ MoveRequest:
       type: string
     move:
       type: string
-    state:
-      $ref: '#/State'
+    clientState:
+      $ref: '#/ClientState'
     playerId:
       type: integer
       format: int64
-State:
+ClientState:
   type: object
   required:
     - dark
@@ -18,16 +18,44 @@ State:
     - kings
   properties:
     dark:
+      uniqueItems: true
       type: array
       items:
         type: integer
         format: int32
     light:
+      uniqueItems: true
       type: array
       items:
         type: integer
         format: int32
     kings:
+      uniqueItems: true
+      type: array
+      items:
+        type: integer
+        format: int32
+ServerState:
+  type: object
+  required:
+    - dark
+    - light
+    - kings
+  properties:
+    dark:
+      uniqueItems: true
+      type: array
+      items:
+        type: integer
+        format: int32
+    light:
+      uniqueItems: true
+      type: array
+      items:
+        type: integer
+        format: int32
+    kings:
+      uniqueItems: true
       type: array
       items:
         type: integer

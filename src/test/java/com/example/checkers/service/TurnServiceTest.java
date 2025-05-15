@@ -6,6 +6,7 @@ import com.example.checkers.domain.Checkerboard;
 import com.example.checkers.domain.MoveRecord;
 import com.example.checkers.domain.Side;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -51,12 +52,12 @@ class TurnServiceTest {
             List.of(
                 new MoveRecord(1L, gameId2, 1L, Side.LIGHT, "21-17",
                     Checkerboard.getStartingState().getDark(), Checkerboard.getStartingState().getLight(),
-                    List.of())
+                    Set.of())
             ), Side.DARK),
         Arguments.of(gameId3,
             List.of(
-                new MoveRecord(1L, gameId3, 1L, Side.LIGHT, "22-18", "14,15", "18,27", List.of()),
-                new MoveRecord(2L, gameId3, 2L, Side.DARK, "15x22", "14,22", "27", List.of())
+                new MoveRecord(1L, gameId3, 1L, Side.LIGHT, "22-18", "14,15", "18,27", Set.of()),
+                new MoveRecord(2L, gameId3, 2L, Side.DARK, "15x22", "14,22", "27", Set.of())
             ), Side.LIGHT)
     );
   }

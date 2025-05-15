@@ -1,8 +1,7 @@
 package com.example.checkers.service;
 
-import java.util.UUID;
-
 import com.example.checkers.model.MoveResponse;
+import java.util.UUID;
 
 public interface PossibleMoveService {
 

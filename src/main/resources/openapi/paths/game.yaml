@@ -52,8 +52,8 @@ post:
               format: int64
             side:
               type: string
-            state:
-              $ref: '../components/schemas.yaml#/State'
+            clientState:
+              $ref: '../components/schemas.yaml#/ClientState'
   responses:
     '200':
       description: Successful operation

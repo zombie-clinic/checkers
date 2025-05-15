@@ -15,14 +15,16 @@ import com.example.checkers.domain.Player;
 import com.example.checkers.domain.PossibleMove;
 import com.example.checkers.domain.PossibleMoveSimplified;
 import com.example.checkers.domain.Side;
+import com.example.checkers.domain.State;
+import com.example.checkers.model.ClientState;
 import com.example.checkers.model.MoveRequest;
 import com.example.checkers.model.MoveResponse;
-import com.example.checkers.model.State;
 import com.example.checkers.persistence.GameRepository;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
@@ -94,7 +96,7 @@ class PossibleMoveServiceImplTest {
   void givenMoveResultsInCapture_whenMove_returnValidState() {
     // FIXME Either modify move constructor or use builder with default kings
     Move move = new Move(game, players.left, Side.LIGHT.name(), "21-17", "13", "17");
-    move.setKings(List.of());
+    move.setKings(Set.of());
     when(movesReaderService.getMovesFor(anyString())).thenReturn(
         List.of(
             MoveRecord.fromMove(move)
@@ -115,9 +117,9 @@ class PossibleMoveServiceImplTest {
     when(movesReaderService.getMovesFor(anyString())).thenReturn(
         List.of(
             new MoveRecord(1L, game.getId(), players.left.getId(), Side.LIGHT, "21-17"
-                , "13", "17,18", List.of()),
+                , "13", "17,18", Set.of()),
             new MoveRecord(2L, game.getId(), players.right.getId(), Side.DARK, "13x22"
-                , "22", "18", List.of())
+                , "22", "18", Set.of())
         )
     );
 
@@ -135,18 +137,18 @@ class PossibleMoveServiceImplTest {
 
     // case 1
     var currentState = new State(
-        List.of(1, 2, 3, 4, 5, 6, 7, 8, 11, 12, 15, 14),
-        List.of(23, 25, 26, 27, 28, 29, 30, 31, 32, 18, 17, 20), List.of()
+        Set.of(1, 2, 3, 4, 5, 6, 7, 8, 11, 12, 15, 14),
+        Set.of(23, 25, 26, 27, 28, 29, 30, 31, 32, 18, 17, 20), Set.of()
     );
 
     MoveRequest moveRequest = new MoveRequest();
-    moveRequest.setState(currentState);
+    moveRequest.setClientState(new ClientState(currentState.getDark(), currentState.getLight(), currentState.getKings()));
     moveRequest.setMove("15x22");
     moveRequest.setSide(Side.DARK.name());
     moveRequest.setPlayerId(2L);
     State expectedState = new State(
-        List.of(1, 2, 3, 4, 5, 6, 7, 8, 11, 12, 14, 22),
-        List.of(23, 25, 26, 27, 28, 29, 30, 31, 32, 17, 20), List.of()
+        Set.of(1, 2, 3, 4, 5, 6, 7, 8, 11, 12, 14, 22),
+        Set.of(23, 25, 26, 27, 28, 29, 30, 31, 32, 17, 20), Set.of()
     );
     State actualState = StateUtils.generateAfterMoveOrCaptureState(currentState, moveRequest);
     assertEquals(expectedState, actualState);
@@ -154,20 +156,20 @@ class PossibleMoveServiceImplTest {
 
     // case 2
     currentState = new State(
-        List.of(1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14),
-        List.of(21, 24, 26, 27, 28, 29, 30, 31, 32, 17, 22, 16), List.of()
+        Set.of(1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14),
+        Set.of(21, 24, 26, 27, 28, 29, 30, 31, 32, 17, 22, 16), Set.of()
     );
 
     moveRequest = new MoveRequest();
-    moveRequest.setState(currentState);
+    moveRequest.setClientState(new ClientState(currentState.getDark(), currentState.getLight(), currentState.getKings()));
     moveRequest.setMove("14x21");
     moveRequest.setSide(Side.DARK.name());
     moveRequest.setPlayerId(1L);
 
     actualState = StateUtils.generateAfterMoveOrCaptureState(currentState, moveRequest);
     expectedState = new State(
-        List.of(1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 21),
-        List.of(21, 24, 26, 27, 28, 29, 30, 31, 32, 22, 16), List.of()
+        Set.of(1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 21),
+        Set.of(21, 24, 26, 27, 28, 29, 30, 31, 32, 22, 16), Set.of()
     );
     assertEquals(expectedState, actualState);
   }
@@ -178,9 +180,9 @@ class PossibleMoveServiceImplTest {
     when(movesReaderService.getMovesFor(eq(gameId.toString()))).thenReturn(
         List.of(
             new MoveRecord(1L, game.getId(), players.left.getId(), Side.LIGHT, "22-18"
-                , "14,15", "18,27", List.of()),
+                , "14,15", "18,27", Set.of()),
             new MoveRecord(2L, game.getId(), players.right.getId(), Side.DARK, "15x22",
-                "14,22", "27", List.of())
+                "14,22", "27", Set.of())
         )
     );
 
@@ -204,9 +206,9 @@ class PossibleMoveServiceImplTest {
     when(movesReaderService.getMovesFor(anyString())).thenReturn(
         List.of(
             new MoveRecord(1L, game.getId(), players.left.getId(), Side.LIGHT, "7-3"
-                , "26", "3", List.of(3)),
+                , "26", "3", Set.of(3)),
             new MoveRecord(2L, game.getId(), players.right.getId(), Side.DARK, "26-31"
-                , "31", "3", List.of(3, 31))
+                , "31", "3", Set.of(3, 31))
         )
     );
 
@@ -231,9 +233,9 @@ class PossibleMoveServiceImplTest {
     when(movesReaderService.getMovesFor(anyString())).thenReturn(
         List.of(
             new MoveRecord(1L, game.getId(), players.left.getId(), Side.LIGHT, "5-1"
-                , "26", "5", List.of()),
+                , "26", "5", Set.of()),
             new MoveRecord(2L, game.getId(), players.right.getId(), Side.DARK, "26-31"
-                , "26", "1", List.of(1))
+                , "26", "1", Set.of(1))
         )
     );
 
