@@ -59,29 +59,33 @@ public class PossibleMoveServiceImpl implements PossibleMoveService {
     var moveList = movesReaderService.getMovesFor(gameId);
 
     State initialState;
-    State resultState = new State(Set.of(), Set.of(), Set.of());
 
     if (moveList.isEmpty()) {
-      // fixme seems to be unreachable code
       initialState = startingStateLookupService.getStateFromStartingStateString(UUID.fromString(gameId));
+      return calculateMoveResponse(gameId, nextToMoveSide, initialState);
     } else {
       initialState = getStateFromMoveList(moveList);
-      // todo refactor to return earlier
-      resultState = new State(initialState.dark(), initialState.light(), initialState.kings());
-      MoveRecord last = moveList.getLast();
-      if (last == null) {
+    }
+
+    State resultState;
+
+    MoveRecord last = moveList.getLast();
+    if (last == null) {
+      resultState = new State(initialState.dark(), initialState.light(), Set.of());
+    } else {
+      if (last.kings().isEmpty()) {
         resultState = new State(initialState.dark(), initialState.light(), Set.of());
       } else {
-        if (last.kings().isEmpty()) {
-          resultState = new State(initialState.dark(), initialState.light(), Set.of());
-        } else {
-          resultState = new State(initialState.dark(), initialState.light(), new HashSet<>(last.kings()));
-        }
+        resultState = new State(initialState.dark(), initialState.light(), new HashSet<>(last.kings()));
       }
     }
-    // regular move, game in progress
+
+    return calculateMoveResponse(gameId, nextToMoveSide, resultState);
+  }
+
+  private MoveResponse calculateMoveResponse(String gameId, Side nextToMoveSide, State state) {
     Map<Integer, List<PossibleMove>> possibleMoves = possibleMoveProvider.getPossibleMovesForSide(
-        nextToMoveSide, resultState);
+        nextToMoveSide, state);
     Map<Integer, List<PossibleMoveSimplified>> simplifiedPossibleMoves =
         getSimplifiedPossibleMoves(possibleMoves);
 
@@ -94,7 +98,7 @@ public class PossibleMoveServiceImpl implements PossibleMoveService {
       }
     }
 
-    return new MoveResponse(gameId, State.toServerState(initialState), nextToMoveSide.name(),
+    return new MoveResponse(gameId, State.toServerState(state), nextToMoveSide.name(),
         simplifiedPossibleMoves);
   }
 

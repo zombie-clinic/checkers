@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import java.util.Set;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -27,12 +28,32 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 public class ExampleGameIT {
 
   String startLobbyRequest = "{\"playerId\": 1, \"side\": \"DARK\"}";
-  String joinLobbyRequest = "{\"playerId\": 2, \"gameId\": \"%s\"}";
+  String joinLobbyRequest = "{\"playerId\": %s, \"gameId\": \"%s\"}";
 
   String importGameRequest = "{\"playerId\":1,\"side\":\"LIGHT\",\"clientState\":{\"dark\":[11,27],\"light\":[2],\"kings\":[2]}}";
 
   @Autowired
   private MockMvc mockMvc;
+
+  @Test
+  @Disabled
+    // FIXME 1. there should be a separate test suite for possible moves. 2. Find a way to compare unsorted set in such scenarios
+  void givenStartingGame_whenOpponentJoins_shouldReturnPossibleMoves() throws Exception {
+    var jsonMapper = new ObjectMapper();
+    var startLobbyRequest = "{\"playerId\": 2, \"side\": \"LIGHT\"}";
+    String response = startLobby(startLobbyRequest);
+
+    var gameId = jsonMapper.readTree(response).get("gameId").asText();
+    String s = joinLobby(1L, gameId);
+    assertEquals(String.format(
+        "{\"gameId\":\"%s\",\"progress\":\"STARTING\",\"startingState\":\"{\\\"dark\\\":[1,2,3,4,5,6,7,8,9,10,11,12]," +
+            "\\\"light\\\":[21,22,23,24,25,26,27,28,29,30,31,32],\\\"kings\\\":[]}\",\"possibleMoves\":{\"gameId\":\"%s\"," +
+            "\"serverState\":{\"dark\":[1,2,3,4,5,6,7,8,9,10,11,12],\"light\":[21,22,23,24,25,26,27,28,29,30,31,32],\"kings\":[]},\"side\":\"LIGHT\"," +
+            "\"possibleMoves\":{\"21\":[{\"position\":21,\"destination\":17,\"isCapture\":false}],\"22\":[{\"position\":22,\"destination\":18," +
+            "\"isCapture\":false},{\"position\":22,\"destination\":17,\"isCapture\":false}],\"23\":[{\"position\":23,\"destination\":19,\"isCapture\":false}," +
+            "{\"position\":23,\"destination\":18,\"isCapture\":false}],\"24\":[{\"position\":24,\"destination\":20,\"isCapture\":false},{\"position\":24," +
+            "\"destination\":19,\"isCapture\":false}]}}}", gameId, gameId), s);
+  }
 
   @Test
   void testImportedGameWithKingMove() throws Exception {
@@ -42,7 +63,7 @@ public class ExampleGameIT {
     String response = startImportedGame();
     var gameId = jsonMapper.readTree(response).get("gameId").asText();
 
-    joinLobby(gameId);
+    joinLobby(2L, gameId);
 
     var actualState = new State(Set.of(11, 27), Set.of(2), Set.of(2));
 
@@ -59,7 +80,7 @@ public class ExampleGameIT {
     String response = startLobby();
     var gameId = jsonMapper.readTree(response).get("gameId").asText();
 
-    joinLobby(gameId);
+    joinLobby(2L, gameId);
 
     var actualState = new State(Set.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12),
         Set.of(21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32),
@@ -79,9 +100,9 @@ public class ExampleGameIT {
         .expectStateToBe(new State(Set.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13), Set.of(23, 24, 25, 26, 27, 28, 29, 30, 31, 32), Set.of()));
   }
 
-  private String joinLobby(String gameId) throws Exception {
+  private String joinLobby(long playerId, String gameId) throws Exception {
     var joinLobby = put("/games").contentType(APPLICATION_JSON)
-        .content(joinLobbyRequest.formatted(gameId));
+        .content(joinLobbyRequest.formatted(playerId, gameId));
 
     return getResponseContentString(joinLobby);
   }
@@ -92,6 +113,11 @@ public class ExampleGameIT {
         .andReturn()
         .getResponse()
         .getContentAsString();
+  }
+
+  private String startLobby(String startLobbyRequest) throws Exception {
+    var startLobby = post("/games").contentType(APPLICATION_JSON).content(startLobbyRequest);
+    return getResponseContentString(startLobby);
   }
 
   private String startLobby() throws Exception {
