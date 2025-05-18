@@ -1,7 +1,10 @@
 package com.example.checkers.api;
 
+import static org.springframework.http.ResponseEntity.internalServerError;
 import static org.springframework.http.ResponseEntity.ok;
 
+import com.example.checkers.controller.SessionData;
+import com.example.checkers.controller.SseService;
 import com.example.checkers.domain.exception.GameNotFoundException;
 import com.example.checkers.model.MoveRequest;
 import com.example.checkers.model.MoveResponse;
@@ -10,6 +13,7 @@ import com.example.checkers.service.MoveService;
 import com.example.checkers.service.PossibleMoveService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
  * for the next possible moves given the current state of the game (state inferred from already
  * persisted moves).
  */
+@Slf4j
 @CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174"})
 @RequiredArgsConstructor
 @RestController
@@ -29,6 +34,8 @@ public class MoveController implements MoveApi {
   private final MoveService moveService;
 
   private final PossibleMoveService possibleMoveService;
+
+  private final SseService sseService;
 
   @Override
   public ResponseEntity<MoveResponse> getCurrentState(String gameUuid) {
@@ -46,6 +53,16 @@ public class MoveController implements MoveApi {
     validateMoveRequest(gameId, moveRequest);
     moveService.saveMove(gameId, moveRequest);
     MoveResponse nextMoves = possibleMoveService.getNextMoves(gameId);
+    
+    try {
+      long playerId = moveRequest.getPlayerId() == 1 ? 2 : 1;
+
+      sseService.sendUpdate("moveEvent", new SessionData(gameUuid, playerId, nextMoves.toString()));
+    } catch (Exception e) {
+      log.error("Failed to send sse update, {}", e.getMessage(), e);
+      return internalServerError().build();
+    }
+    
     return ok(nextMoves);
   }
 

@@ -3,6 +3,8 @@ package com.example.checkers.service;
 import static com.example.checkers.domain.GameProgress.LOBBY;
 import static com.example.checkers.service.StateUtils.getStateFromMoveList;
 
+import com.example.checkers.controller.SessionData;
+import com.example.checkers.controller.SseService;
 import com.example.checkers.domain.Checkerboard;
 import com.example.checkers.domain.Game;
 import com.example.checkers.domain.GameProgress;
@@ -39,6 +41,8 @@ public class GameStateServiceImpl implements GameStateService {
   private final PlayerRepository playerRepository;
 
   private final StartingStateLookupService startingStateLookupService;
+
+  private final SseService sseService;
 
   @Override
   public boolean existsAndActive(UUID gameId) {
@@ -113,18 +117,26 @@ public class GameStateServiceImpl implements GameStateService {
     );
   }
 
+  /**
+   * aka joinLobby
+   */
   @Transactional
   @Override
   public GameResponse startGame(String gameId, Long playerTwoId) {
     Player playerTwo = validateAndGet(playerTwoId);
     Game game = validateAndGetGame(gameId);
     if (game.getPlayerOne() == null) {
-      throw new IllegalStateException(("Invalid game, there is no player one in the lobby: " +
-          "%s").formatted(gameId));
+      throw new IllegalStateException(
+          "Invalid game, there is no player one in the lobby: %s".formatted(gameId)
+      );
     }
 
     game.setPlayerTwo(playerTwo);
     game.setProgress(GameProgress.STARTING.toString());
+
+    sseService.sendUpdate("joinEvent", new SessionData(
+        gameId, game.getPlayerOne().getId(), "player two joined"
+    ));
 
     return new GameResponse(gameId, GameProgress.STARTING.toString(), game.getStartingState(), possibleMoveService.getNextMoves(
         UUID.fromString(gameId)
