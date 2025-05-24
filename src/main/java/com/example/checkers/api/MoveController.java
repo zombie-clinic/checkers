@@ -11,6 +11,7 @@ import com.example.checkers.model.MoveResponse;
 import com.example.checkers.service.GameStateService;
 import com.example.checkers.service.MoveService;
 import com.example.checkers.service.PossibleMoveService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -53,11 +54,12 @@ public class MoveController implements MoveApi {
     validateMoveRequest(gameId, moveRequest);
     moveService.saveMove(gameId, moveRequest);
     MoveResponse nextMoves = possibleMoveService.getNextMoves(gameId);
-    
+    ObjectMapper objectMapper = new ObjectMapper();
     try {
+      String responseMessage = objectMapper.writeValueAsString(nextMoves);
       long playerId = moveRequest.getPlayerId() == 1 ? 2 : 1;
 
-      sseService.sendUpdate("moveEvent", new SessionData(gameUuid, playerId, nextMoves.toString()));
+      sseService.sendUpdate("moveEvent", new SessionData(gameUuid, playerId, responseMessage));
     } catch (Exception e) {
       log.error("Failed to send sse update, {}", e.getMessage(), e);
       return internalServerError().build();
