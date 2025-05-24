@@ -3,6 +3,7 @@ package com.example.checkers.api;
 import static org.springframework.http.ResponseEntity.internalServerError;
 import static org.springframework.http.ResponseEntity.ok;
 
+import com.example.checkers.controller.MessageData;
 import com.example.checkers.controller.SessionData;
 import com.example.checkers.controller.SseService;
 import com.example.checkers.domain.exception.GameNotFoundException;
@@ -59,7 +60,7 @@ public class MoveController implements MoveApi {
       String responseMessage = objectMapper.writeValueAsString(nextMoves);
       long playerId = moveRequest.getPlayerId() == 1 ? 2 : 1;
 
-      sseService.sendUpdate("moveEvent", new SessionData(gameUuid, playerId, responseMessage));
+      sseService.sendUpdate("moveEvent", new MessageData(gameUuid, playerId, responseMessage));
     } catch (Exception e) {
       log.error("Failed to send sse update, {}", e.getMessage(), e);
       return internalServerError().build();

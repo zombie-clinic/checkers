@@ -13,14 +13,14 @@ public class SseService {
   // This contains all active clients at any given moment
   private final Map<String, SseEmitter> emitters = new ConcurrentHashMap<>();
 
-  public void sendUpdate(String eventName, SessionData sessionData) {
-    String key = "%s:%d".formatted(sessionData.gameId(), sessionData.playerId());
+  public void sendUpdate(String eventName, MessageData messageData) {
+    String key = "%s:%d".formatted(messageData.gameId(), messageData.playerId());
     SseEmitter emitter = emitters.get(key);
     try {
       emitter.send(SseEmitter.event()
           .name(eventName)
           .comment("timestamp: %s".formatted(LocalDateTime.now()))
-          .data(sessionData.message())
+          .data(messageData.message())
       );
     } catch (IOException e) {
       emitters.remove(key);

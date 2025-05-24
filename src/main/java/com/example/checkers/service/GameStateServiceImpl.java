@@ -3,6 +3,7 @@ package com.example.checkers.service;
 import static com.example.checkers.domain.GameProgress.LOBBY;
 import static com.example.checkers.service.StateUtils.getStateFromMoveList;
 
+import com.example.checkers.controller.MessageData;
 import com.example.checkers.controller.SessionData;
 import com.example.checkers.controller.SseService;
 import com.example.checkers.domain.Checkerboard;
@@ -134,7 +135,7 @@ public class GameStateServiceImpl implements GameStateService {
     game.setPlayerTwo(playerTwo);
     game.setProgress(GameProgress.STARTING.toString());
 
-    sseService.sendUpdate("joinEvent", new SessionData(
+    sseService.sendUpdate("joinEvent", new MessageData(
         gameId, game.getPlayerOne().getId(), "player two joined"
     ));
 
