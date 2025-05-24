@@ -28,4 +28,3 @@ public class SseController {
     return sseService.subscribe(sessionData);
   }
 }
-

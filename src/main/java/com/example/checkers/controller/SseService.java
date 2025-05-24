@@ -4,9 +4,11 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+@Slf4j
 @Service
 public class SseService {
 
@@ -16,6 +18,11 @@ public class SseService {
   public void sendUpdate(String eventName, MessageData messageData) {
     String key = "%s:%d".formatted(messageData.gameId(), messageData.playerId());
     SseEmitter emitter = emitters.get(key);
+    // FIXME what to when no emitter? In tests or fallback case
+    if (emitter == null) {
+      log.error("Emitter for {} not found.", key);
+      return;
+    }
     try {
       emitter.send(SseEmitter.event()
           .name(eventName)
