@@ -74,7 +74,7 @@ public class StateUtils {
    * @param side on DARK, LIGHT
    * @return immutable list of corresponding board positions
    */
-  public static Set<Integer> getSide(Side side, State state) {
+  public static Set<Integer> getPositionsForSide(Side side, State state) {
     return switch (side) {
       case DARK -> state.getDark();
       case LIGHT -> state.getLight();

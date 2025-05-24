@@ -201,6 +201,59 @@ class PossibleMoveServiceImplTest {
     assertThat(expected.toString()).endsWith(actual.toString());
   }
 
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void givenCapture_whenMove_shouldReturnMandatoryCaptureMove() {
+    when(movesReaderService.getMovesFor(eq(gameId.toString()))).thenReturn(
+        // FIXME fix mismatch between passing current state (i.e. previous) when requesting move
+        // FIXME and saving already happened state in moves
+        List.of(
+            new MoveRecord(1L, game.getId(), players.left.getId(), Side.DARK, "1-6"
+                , "6,2,3,4", "13,14,15,16", Set.of()),
+            new MoveRecord(2L, game.getId(), players.right.getId(), Side.LIGHT, "15-10",
+                "6,2,3,4", "10,13,14,16", Set.of())
+        )
+    );
+
+    // FIXME let's use  real method
+    when(turnService.getWhichSideToMove(game.getId())).thenReturn(Side.DARK);
+
+    Map<Integer, List<PossibleMove>> actual =
+        (Map<Integer, List<PossibleMove>>) moveService.getNextMoves(gameId)
+            .getPossibleMoves();
+
+    Map<Integer, List<PossibleMoveSimplified>> expected = new HashMap<>();
+    expected.put(6, List.of(
+        new PossibleMoveSimplified(6, 15, true)));
+
+    assertThat(expected.toString()).endsWith(actual.toString());
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void givenCapture_whenMove_shouldReturnMandatoryCaptureMoves() {
+    when(movesReaderService.getMovesFor(eq(gameId.toString()))).thenReturn(
+        List.of(
+            new MoveRecord(1L, game.getId(), players.left.getId(), Side.LIGHT, "15-10",
+                "5,6,7,8", "13,10,16", Set.of())
+        )
+    );
+
+    // FIXME let's use  real method
+    when(turnService.getWhichSideToMove(game.getId())).thenReturn(Side.DARK);
+
+    Map<Integer, List<PossibleMove>> actual =
+        (Map<Integer, List<PossibleMove>>) moveService.getNextMoves(gameId)
+            .getPossibleMoves();
+
+    Map<Integer, List<PossibleMoveSimplified>> expected = new HashMap<>();
+    expected.put(6, List.of(new PossibleMoveSimplified(6, 15, true)));
+    expected.put(7, List.of(new PossibleMoveSimplified(7, 14, true)));
+
+    assertThat(expected.toString()).endsWith(actual.toString());
+  }
+
   @Test
   void givenKingsTurn_whenMove_ReturnsAllPossibleMoves_case1() {
     when(movesReaderService.getMovesFor(anyString())).thenReturn(
