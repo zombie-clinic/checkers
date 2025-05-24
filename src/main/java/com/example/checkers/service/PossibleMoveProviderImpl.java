@@ -25,13 +25,24 @@ public class PossibleMoveProviderImpl implements PossibleMoveProvider {
   @Override
   public Map<Integer, List<PossibleMove>> getPossibleMovesForSide(Side side, State state) {
     var map = new HashMap<Integer, List<PossibleMove>>();
-    for (int i : StateUtils.getSide(side, state)) {
+    for (int i : StateUtils.getPositionsForSide(side, state)) {
       var possibleMoves = getPossibleMovesForPieceInternal(Piece.of(i, side), state);
       if (!possibleMoves.isEmpty()) {
         map.put(i, possibleMoves);
       }
     }
-    return map;
+    // TODO Find cleaner logic to filter possible moves
+    var captures = new HashMap<Integer, List<PossibleMove>>();
+    // TODO Map structure Integer List doesn't make sense on backend since it is made for frontend
+    for (Map.Entry<Integer, List<PossibleMove>> e : map.entrySet()) {
+      for (PossibleMove pm : e.getValue()) {
+        if (pm.isCapture()) {
+          captures.computeIfAbsent(e.getKey(), _ -> new ArrayList<>()).add(pm);
+        }
+      }
+    }
+
+    return captures.isEmpty() ? map : captures;
   }
 
   List<PossibleMove> getPossibleMovesForPieceInternal(Piece piece,
@@ -169,8 +180,8 @@ public class PossibleMoveProviderImpl implements PossibleMoveProvider {
   }
 
   private static boolean isSquareOccupied(State state, int destSquare) {
-    return StateUtils.getSide(Side.LIGHT, state).contains(destSquare)
-        || StateUtils.getSide(Side.DARK, state).contains(destSquare);
+    return StateUtils.getPositionsForSide(Side.LIGHT, state).contains(destSquare)
+        || StateUtils.getPositionsForSide(Side.DARK, state).contains(destSquare);
   }
 
   private static boolean isSquareFree(State state, int destSquare) {
@@ -178,6 +189,6 @@ public class PossibleMoveProviderImpl implements PossibleMoveProvider {
   }
 
   private static boolean isSquareOccupiedByWhatSide(State state, Side side, int destSquare) {
-    return StateUtils.getSide(side, state).contains(destSquare);
+    return StateUtils.getPositionsForSide(side, state).contains(destSquare);
   }
 }
