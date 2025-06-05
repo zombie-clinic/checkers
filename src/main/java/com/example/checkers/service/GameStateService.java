@@ -24,5 +24,5 @@ public interface GameStateService {
 
   boolean isGameInProgressConsistent(UUID gameId, MoveRequest moveRequest);
 
-  GameResponse startImportedGameLobby(Long playedId, String side, State state);
+  GameResponse startImportedGameLobby(Long playerId, String side, State state);
 }
