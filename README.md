@@ -1,8 +1,8 @@
 ### Run app locally
 
-`./gradlew bootRun` for Linux
+Run with Maven
 
-`gradle.bat bootRun` for Windows
+`mvn spring-boot:run`
 
 ### API
 
@@ -17,7 +17,7 @@ Test database is accessible under [localhost:8080/h2-console](localhost:8080/h2-
 To build and run Docker image
 
 Create executable jar
-`./gradlew clean bootJar`
+`mvn clean package`
 
 Build image
 `docker build -t checkers-backend .`
