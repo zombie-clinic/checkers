@@ -44,7 +44,7 @@ post:
         schema:
           type: object
           required:
-            - playedId
+            - playerId
             - side
           properties:
             playerId:
