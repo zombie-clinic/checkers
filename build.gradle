@@ -122,8 +122,19 @@ tasks.named('bootRun').configure {
 }
 
 
-tasks.withType(JavaCompile).configureEach {
-    javaCompiler = javaToolchains.compilerFor {
-        languageVersion = JavaLanguageVersion.of(24)
-    }
-}
+// TODO
+
+// https://docs.gradle.org/current/userguide/building_java_projects.html#sec:feature_preview
+
+//tasks.withType(JavaCompile).configureEach {
+//    options.compilerArgs += "--enable-preview"
+//    options.compilerArgs += "-Xlint:deprecation"
+//}
+//
+//tasks.withType(Test).configureEach {
+//    jvmArgs += "--enable-preview"
+//}
+//
+//tasks.withType(JavaExec).configureEach {
+//    jvmArgs += "--enable-preview"
+//}
