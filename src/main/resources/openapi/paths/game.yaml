@@ -12,7 +12,7 @@ get:
         type: array
         items:
           type: string
-          enum: [ LOBBY, STARTING, ONGOING, COMPLETED, ARCHIVED ]
+          enum: [ LOBBY, STARTING, ONGOING, FINISHED, ARCHIVED ]
   responses:
     '200':
       description: Successful operation
