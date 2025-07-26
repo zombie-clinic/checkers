@@ -107,9 +107,14 @@ class PossibleMoveServiceImplTest {
     when(turnService.getWhichSideToMove(game.getId())).thenReturn(Side.DARK);
 
     MoveResponse moveResponse = moveService.getNextMoves(gameId);
-    assertEquals(
-        "{13=[PossibleMoveSimplified[position=13, destination=22, isCapture=true]]}",
-        moveResponse.getPossibleMoves().toString());
+
+    Map<Integer, List<PossibleMoveSimplified>> expected = new HashMap<>();
+    expected.put(13, List.of(new PossibleMoveSimplified(13, 22, true)));
+
+    Map<Integer, List<PossibleMoveSimplified>> actual =
+        (Map<Integer, List<PossibleMoveSimplified>>) moveResponse.getPossibleMoves();
+
+    assertThat(actual).isEqualTo(expected);
   }
 
   @Test
