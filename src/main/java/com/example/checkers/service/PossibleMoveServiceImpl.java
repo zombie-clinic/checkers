@@ -43,6 +43,7 @@ public class PossibleMoveServiceImpl implements PossibleMoveService {
       // we return empty possible moves and null next turn
       // in order front end to recognize end time
       return new MoveResponse(
+          gameId.toString(),
           State.toServerState(getStateFromMoveList(moveList.stream().toList())),
           null,
           Map.of()
@@ -100,7 +101,7 @@ public class PossibleMoveServiceImpl implements PossibleMoveService {
       }
     }
 
-    return new MoveResponse(State.toServerState(state), nextToMoveSide.name(),
+    return new MoveResponse(gameId, State.toServerState(state), nextToMoveSide.name(),
         simplifiedPossibleMoves);
   }
 

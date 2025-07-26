@@ -21,8 +21,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class ApiTest {
 
-  String startLobbyRequest = "{\"value\": 1, \"side\": \"DARK\"}";
-  String joinLobbyRequest = "{\"value\": 2, \"value\": \"%s\"}";
+  String startLobbyRequest = "{\"playerId\": 1, \"side\": \"DARK\"}";
+  String joinLobbyRequest = "{\"playerId\": 2, \"gameId\": \"%s\"}";
 
   @Autowired
   private MockMvc mockMvc;
@@ -33,21 +33,22 @@ class ApiTest {
     mockMvc.perform(startLobby)
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.progress").value(GameProgress.LOBBY.toString()))
-        .andExpect(jsonPath("$.value").isNotEmpty());
+        .andExpect(jsonPath("$.gameId").isNotEmpty());
   }
 
   @Test
   void givenLobbyExist_joinLobby() throws Exception {
     var startLobby = post("/games").contentType(APPLICATION_JSON).content(startLobbyRequest);
     String response = mockMvc.perform(startLobby).andReturn().getResponse().getContentAsString();
-    String gameId = new ObjectMapper().readTree(response).get("value").asText();
+    String gameId = new ObjectMapper().readTree(response).get("gameId").asText();
+    String formatted = joinLobbyRequest.formatted(gameId);
     var request = MockMvcRequestBuilders.put("/games")
         .contentType(APPLICATION_JSON)
-        .content(joinLobbyRequest.formatted(gameId));
+        .content(formatted);
 
     mockMvc.perform(request)
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.value").value(gameId))
+        .andExpect(jsonPath("$.gameId").value(gameId))
         .andExpect(jsonPath("$.progress").value(GameProgress.STARTING.toString()));
   }
 
