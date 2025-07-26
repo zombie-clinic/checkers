@@ -25,7 +25,7 @@ GameResponse:
           schema:
             type: object
   required:
-    - gameId
+    - value
     - progress
     - startingState
     - possibleMoves
@@ -45,7 +45,7 @@ MoveResponse:
           schema:
             type: object
   required:
-    - gameId
+    - value
     - serverState
     - side
     - possibleMoves

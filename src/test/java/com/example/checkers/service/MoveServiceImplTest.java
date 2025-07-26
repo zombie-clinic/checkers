@@ -1,20 +1,20 @@
 package com.example.checkers.service;
 
-import static com.example.checkers.domain.Side.DARK;
-import static com.example.checkers.domain.Side.LIGHT;
+import static com.example.checkers.core.Side.DARK;
+import static com.example.checkers.core.Side.LIGHT;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.example.checkers.domain.Game;
-import com.example.checkers.domain.GameProgress;
-import com.example.checkers.domain.MoveRecord;
-import com.example.checkers.domain.Player;
-import com.example.checkers.domain.Side;
-import com.example.checkers.domain.State;
+import com.example.checkers.adapters.db.PersistentGame;
+import com.example.checkers.core.GameProgress;
+import com.example.checkers.core.MoveRecord;
+import com.example.checkers.core.Player;
+import com.example.checkers.core.Side;
+import com.example.checkers.core.State;
 import com.example.checkers.model.ClientState;
 import com.example.checkers.model.MoveRequest;
-import com.example.checkers.persistence.GameRepository;
-import com.example.checkers.persistence.MoveRepository;
-import com.example.checkers.persistence.PlayerRepository;
+import com.example.checkers.adapters.db.GameRepository;
+import com.example.checkers.adapters.db.MoveRepository;
+import com.example.checkers.adapters.db.PlayerRepository;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -53,13 +53,13 @@ class MoveServiceImplTest {
     Player playerTwo = new Player();
     playerTwo.setId(2L);
 
-    var game = new Game();
+    var game = new PersistentGame();
     game.setProgress(GameProgress.ONGOING.toString());
     game.setPlayerOne(playerOne);
     game.setPlayerTwo(playerTwo);
     game.setStartingState("{\"dark\":[28, 8],\"light\":[5, 23]}");
 
-    Game savedGame = gameRepository.save(game);
+    PersistentGame savedGame = gameRepository.save(game);
     String gameId = savedGame.getId();
 
     // 1

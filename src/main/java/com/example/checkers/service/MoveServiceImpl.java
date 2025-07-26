@@ -1,16 +1,17 @@
 package com.example.checkers.service;
 
-import static com.example.checkers.domain.Side.DARK;
+import static com.example.checkers.core.Side.DARK;
 
-import com.example.checkers.domain.Game;
-import com.example.checkers.domain.Move;
-import com.example.checkers.domain.Player;
-import com.example.checkers.domain.Side;
-import com.example.checkers.domain.State;
+import com.example.checkers.adapters.db.GameRepository;
+import com.example.checkers.adapters.db.MoveRepository;
+import com.example.checkers.adapters.db.PersistentGame;
+import com.example.checkers.adapters.db.PlayerRepository;
+import com.example.checkers.core.Move;
+import com.example.checkers.core.Player;
+import com.example.checkers.core.Side;
+import com.example.checkers.core.State;
+import com.example.checkers.core.UseCaseInteractor;
 import com.example.checkers.model.MoveRequest;
-import com.example.checkers.persistence.GameRepository;
-import com.example.checkers.persistence.MoveRepository;
-import com.example.checkers.persistence.PlayerRepository;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -24,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@UseCaseInteractor
 public class MoveServiceImpl implements MoveService {
 
   private final MoveRepository moveRepository;
@@ -37,7 +39,7 @@ public class MoveServiceImpl implements MoveService {
   @Override
   @Transactional
   public void saveMove(UUID gameId, MoveRequest moveRequest) {
-    Game game = findGame(gameId);
+    PersistentGame game = findGame(gameId);
     Player player = findPlayer(moveRequest);
     Side movingSide = Side.valueOf(moveRequest.getSide());
 
@@ -91,7 +93,7 @@ public class MoveServiceImpl implements MoveService {
     );
   }
 
-  private Game findGame(UUID gameId) {
+  private PersistentGame findGame(UUID gameId) {
     return gameRepository.findById(gameId.toString()).orElseThrow(
         () -> new IllegalArgumentException("No game found")
     );

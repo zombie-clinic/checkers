@@ -6,20 +6,20 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
-import com.example.checkers.domain.Checkerboard;
-import com.example.checkers.domain.Game;
-import com.example.checkers.domain.GameProgress;
-import com.example.checkers.domain.Move;
-import com.example.checkers.domain.MoveRecord;
-import com.example.checkers.domain.Player;
-import com.example.checkers.domain.PossibleMove;
-import com.example.checkers.domain.PossibleMoveSimplified;
-import com.example.checkers.domain.Side;
-import com.example.checkers.domain.State;
+import com.example.checkers.core.Checkerboard;
+import com.example.checkers.adapters.db.PersistentGame;
+import com.example.checkers.core.GameProgress;
+import com.example.checkers.core.Move;
+import com.example.checkers.core.MoveRecord;
+import com.example.checkers.core.Player;
+import com.example.checkers.core.PossibleMove;
+import com.example.checkers.core.PossibleMoveSimplified;
+import com.example.checkers.core.Side;
+import com.example.checkers.core.State;
 import com.example.checkers.model.ClientState;
 import com.example.checkers.model.MoveRequest;
 import com.example.checkers.model.MoveResponse;
-import com.example.checkers.persistence.GameRepository;
+import com.example.checkers.adapters.db.GameRepository;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,18 +58,19 @@ class PossibleMoveServiceImplTest {
   @InjectMocks
   private PossibleMoveServiceImpl moveService;
 
-  private Game game;
+  private PersistentGame game;
 
   private Tuple<Player> players;
 
   @BeforeEach
   void setUp() {
     players = setPlayers();
-    game = new Game();
+    game = new PersistentGame();
     game.setId(gameId.toString());
     game.setPlayerOne(players.left);
     game.setPlayerTwo(players.right);
     game.setProgress(GameProgress.ONGOING.name());
+    // TODO Check for kings
     game.setStartingState(
         String.format("{\"dark\":[%s],\"light\":[%s]}",
             Checkerboard.getStartingState().getDark().stream().map(String::valueOf).collect(Collectors.joining(",")),
