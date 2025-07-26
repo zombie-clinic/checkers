@@ -33,12 +33,15 @@ class DatabaseAdapter implements CommandPort, QueryPort {
       player2 = playerRepository.findById(game.playerTwo().id().value());
     }
 
-    PersistentGame persistentGame = new PersistentGame();
-    persistentGame.setId(game.id());
+
+    PersistentGame persistentGame = gameRepository.findGameById(game.id()).orElse(null);
+
+    // FIXME possible NPE
     persistentGame.setProgress(game.progress().toString());
     persistentGame.setPlayerOne(player1.orElseThrow(() -> new IllegalStateException("No players")));
     persistentGame.setPlayerTwo(player2.orElse(null));
-    persistentGame.setStartingState(game.startingState());
+    // DO NOT DO - do not update starting state here, should be fetched from db and never change
+    //    persistentGame.setStartingState(game.startingState());
     gameRepository.save(persistentGame);
   }
 
@@ -48,6 +51,8 @@ class DatabaseAdapter implements CommandPort, QueryPort {
     PersistentGame persistentGame = new PersistentGame();
     persistentGame.setPlayerOne(player1.orElseThrow(() -> new IllegalStateException("No players")));
     persistentGame.setStartingState(getStateString(state));
+    // TODO Check - as it is a new game, where to put Lobby?
+    persistentGame.setProgress(GameProgress.LOBBY.toString());
     PersistentGame persisted = gameRepository.save(persistentGame);
     return GameId.of(persisted.getId());
   }

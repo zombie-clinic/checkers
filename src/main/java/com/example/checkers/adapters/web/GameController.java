@@ -84,6 +84,7 @@ class GameController implements GameApi {
     MoveResponse nextMoves = possibleMoveService.getNextMoves(UUID.fromString(gameId));
 
     GameResponse game = queryService.getGameById(gameId);
+
     game.setPossibleMoves(nextMoves);
     return ok(game);
   }

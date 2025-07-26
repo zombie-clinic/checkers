@@ -12,6 +12,7 @@ import com.example.checkers.core.UseCaseInteractor;
 import com.example.checkers.port.CommandPort;
 import com.example.checkers.port.QueryPort;
 import com.example.checkers.usecase.UpdateGameLifeCycleUseCase;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -39,6 +40,7 @@ class GameLifeCycleService implements UpdateGameLifeCycleUseCase {
   }
 
   @Override
+  @Transactional
   public void startGame(GameId gameId, PlayerId player2) {
     GameEntity game = queryPort.getGameById(gameId);
     if (game.playerOne() == null) {
@@ -46,7 +48,7 @@ class GameLifeCycleService implements UpdateGameLifeCycleUseCase {
           "Invalid game, there is no player one in the lobby: " + "%s".formatted(gameId));
     }
     PlayerEntity player = queryPort.getPlayerById(player2);
-    GameEntity newGame = game.withPlayerTwo(player);
+    GameEntity newGame = game.withPlayerTwo(player).withProgress(GameProgress.STARTING);
     commandPort.updatePersistedGame(newGame);
   }
 

@@ -13,8 +13,9 @@ public record GameEntity(String id,
                          String startingState) {
 
   public GameEntity {
-    progress = GameProgress.LOBBY;
-    startingState = String.format("{\"dark\":[%s]\"light\":[%s],\"kings\":[%s]}",
+    // FIXME Eliminate this abomination
+    // TODO Mind this is invoked on every GameEntity creation
+    startingState = String.format("{\"dark\":[%s],\"light\":[%s],\"kings\":[%s]}",
         Checkerboard.getStartingState().getDark().stream().map(String::valueOf).collect(Collectors.joining(",")),
         Checkerboard.getStartingState().getLight().stream().map(String::valueOf).collect(Collectors.joining(",")),
         Stream.of().map(String::valueOf).collect(Collectors.joining(",")));

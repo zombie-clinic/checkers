@@ -9,6 +9,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
@@ -22,6 +23,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Builder
 @Entity
+@Table(name = "Game")
 @Getter
 @Setter
 // TODO make not public, rename

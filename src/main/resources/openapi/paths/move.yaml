@@ -5,7 +5,7 @@ get:
   description: Get current state
   operationId: getCurrentState
   parameters:
-    - name: value
+    - name: gameId
       in: path
       description: ID of an starting/ongoing game
       required: true
@@ -27,7 +27,7 @@ put:
   description: Start a new game
   operationId: move
   parameters:
-    - name: value
+    - name: gameId
       in: path
       description: ID of an starting/ongoing game
       required: true
