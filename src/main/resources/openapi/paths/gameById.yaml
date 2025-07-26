@@ -5,7 +5,7 @@ get:
   description: Returns a single game
   operationId: getGameById
   parameters:
-    - name: gameId
+    - name: value
       in: path
       description: ID of a game to return
       required: true

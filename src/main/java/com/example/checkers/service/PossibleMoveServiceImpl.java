@@ -2,11 +2,11 @@ package com.example.checkers.service;
 
 import static com.example.checkers.service.StateUtils.getStateFromMoveList;
 
-import com.example.checkers.domain.MoveRecord;
-import com.example.checkers.domain.PossibleMove;
-import com.example.checkers.domain.PossibleMoveSimplified;
-import com.example.checkers.domain.Side;
-import com.example.checkers.domain.State;
+import com.example.checkers.core.MoveRecord;
+import com.example.checkers.core.PossibleMove;
+import com.example.checkers.core.PossibleMoveSimplified;
+import com.example.checkers.core.Side;
+import com.example.checkers.core.State;
 import com.example.checkers.model.MoveResponse;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -42,7 +42,8 @@ public class PossibleMoveServiceImpl implements PossibleMoveService {
       // meaning last player to capture a piece wins
       // we return empty possible moves and null next turn
       // in order front end to recognize end time
-      return new MoveResponse(gameId.toString(),
+      return new MoveResponse(
+          gameId.toString(),
           State.toServerState(getStateFromMoveList(moveList.stream().toList())),
           null,
           Map.of()
@@ -61,7 +62,8 @@ public class PossibleMoveServiceImpl implements PossibleMoveService {
     State initialState;
 
     if (moveList.isEmpty()) {
-      initialState = startingStateLookupService.getStateFromStartingStateString(UUID.fromString(gameId));
+      initialState =
+          startingStateLookupService.getStateFromStartingStateString(UUID.fromString(gameId));
       return calculateMoveResponse(gameId, nextToMoveSide, initialState);
     } else {
       initialState = getStateFromMoveList(moveList);
@@ -76,7 +78,8 @@ public class PossibleMoveServiceImpl implements PossibleMoveService {
       if (last.kings().isEmpty()) {
         resultState = new State(initialState.dark(), initialState.light(), Set.of());
       } else {
-        resultState = new State(initialState.dark(), initialState.light(), new HashSet<>(last.kings()));
+        resultState =
+            new State(initialState.dark(), initialState.light(), new HashSet<>(last.kings()));
       }
     }
 

@@ -1,12 +1,12 @@
 package com.example.checkers.service;
 
-import static com.example.checkers.domain.Side.DARK;
-import static com.example.checkers.domain.Side.LIGHT;
+import static com.example.checkers.core.Side.DARK;
+import static com.example.checkers.core.Side.LIGHT;
 
-import com.example.checkers.domain.Checkerboard;
-import com.example.checkers.domain.MoveRecord;
-import com.example.checkers.domain.Side;
-import com.example.checkers.domain.State;
+import com.example.checkers.core.Checkerboard;
+import com.example.checkers.core.MoveRecord;
+import com.example.checkers.core.Side;
+import com.example.checkers.core.State;
 import com.example.checkers.model.MoveRequest;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.Arrays;
