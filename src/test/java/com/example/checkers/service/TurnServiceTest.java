@@ -2,9 +2,9 @@ package com.example.checkers.service;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-import com.example.checkers.domain.Checkerboard;
-import com.example.checkers.domain.MoveRecord;
-import com.example.checkers.domain.Side;
+import com.example.checkers.core.Checkerboard;
+import com.example.checkers.core.MoveRecord;
+import com.example.checkers.core.Side;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;

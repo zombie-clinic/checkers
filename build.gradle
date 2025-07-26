@@ -10,7 +10,7 @@ version = '0.0.1-SNAPSHOT'
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(24)
     }
 }
 
@@ -67,9 +67,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'com.h2database:h2:2.2.222'
     testImplementation 'com.h2database:h2:2.2.222'
-    compileOnly 'org.projectlombok:lombok:1.18.30'
+    compileOnly 'org.projectlombok:lombok:1.18.38'
     runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
-    annotationProcessor 'org.projectlombok:lombok:1.18.30'
+    annotationProcessor 'org.projectlombok:lombok:1.18.38'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     implementation 'io.swagger.core.v3:swagger-annotations:2.2.15'
     implementation 'javax.annotation:javax.annotation-api:1.3.2'
@@ -121,17 +121,20 @@ tasks.named('bootRun').configure {
     mustRunAfter 'build'
 }
 
+
+// TODO
+
 // https://docs.gradle.org/current/userguide/building_java_projects.html#sec:feature_preview
 
-tasks.withType(JavaCompile).configureEach {
-    options.compilerArgs += "--enable-preview"
-    options.compilerArgs += "-Xlint:deprecation"
-}
-
-tasks.withType(Test).configureEach {
-    jvmArgs += "--enable-preview"
-}
-
-tasks.withType(JavaExec).configureEach {
-    jvmArgs += "--enable-preview"
-}
+//tasks.withType(JavaCompile).configureEach {
+//    options.compilerArgs += "--enable-preview"
+//    options.compilerArgs += "-Xlint:deprecation"
+//}
+//
+//tasks.withType(Test).configureEach {
+//    jvmArgs += "--enable-preview"
+//}
+//
+//tasks.withType(JavaExec).configureEach {
+//    jvmArgs += "--enable-preview"
+//}

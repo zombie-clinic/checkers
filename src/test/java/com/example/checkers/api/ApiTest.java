@@ -6,7 +6,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.example.checkers.domain.GameProgress;
+import com.example.checkers.core.GameProgress;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,8 +21,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class ApiTest {
 
-  String startLobbyRequest = "{\"playerId\": 1, \"side\": \"DARK\"}";
-  String joinLobbyRequest = "{\"playerId\": 2, \"gameId\": \"%s\"}";
+  String startLobbyRequest = "{\"value\": 1, \"side\": \"DARK\"}";
+  String joinLobbyRequest = "{\"value\": 2, \"value\": \"%s\"}";
 
   @Autowired
   private MockMvc mockMvc;
@@ -33,21 +33,21 @@ class ApiTest {
     mockMvc.perform(startLobby)
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.progress").value(GameProgress.LOBBY.toString()))
-        .andExpect(jsonPath("$.gameId").isNotEmpty());
+        .andExpect(jsonPath("$.value").isNotEmpty());
   }
 
   @Test
   void givenLobbyExist_joinLobby() throws Exception {
     var startLobby = post("/games").contentType(APPLICATION_JSON).content(startLobbyRequest);
     String response = mockMvc.perform(startLobby).andReturn().getResponse().getContentAsString();
-    String gameId = new ObjectMapper().readTree(response).get("gameId").asText();
+    String gameId = new ObjectMapper().readTree(response).get("value").asText();
     var request = MockMvcRequestBuilders.put("/games")
         .contentType(APPLICATION_JSON)
         .content(joinLobbyRequest.formatted(gameId));
 
     mockMvc.perform(request)
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.gameId").value(gameId))
+        .andExpect(jsonPath("$.value").value(gameId))
         .andExpect(jsonPath("$.progress").value(GameProgress.STARTING.toString()));
   }
 

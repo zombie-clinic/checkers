@@ -2,11 +2,11 @@ package com.example.checkers.service;
 
 import static com.example.checkers.service.StateUtils.getStateFromMoveList;
 
-import com.example.checkers.domain.MoveRecord;
-import com.example.checkers.domain.Piece;
-import com.example.checkers.domain.PossibleMove;
-import com.example.checkers.domain.Side;
-import com.example.checkers.domain.State;
+import com.example.checkers.core.MoveRecord;
+import com.example.checkers.core.Piece;
+import com.example.checkers.core.PossibleMove;
+import com.example.checkers.core.Side;
+import com.example.checkers.core.State;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;

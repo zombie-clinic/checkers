@@ -15,5 +15,6 @@ public interface MoveService {
    * @param gameId      A valid uuid of an ongoing game
    * @param moveRequest Payload with a move accompanied by previous state
    */
+  @Deprecated
   void saveMove(UUID gameId, MoveRequest moveRequest);
 }

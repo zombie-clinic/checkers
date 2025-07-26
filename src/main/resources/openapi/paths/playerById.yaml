@@ -3,7 +3,7 @@ get:
     - Player
   operationId: getPlayerById
   parameters:
-    - name: playerId
+    - name: value
       in: path
       required: true
       schema:

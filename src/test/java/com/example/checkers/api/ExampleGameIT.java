@@ -7,8 +7,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.example.checkers.domain.Side;
-import com.example.checkers.domain.State;
+import com.example.checkers.core.Side;
+import com.example.checkers.core.State;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -27,10 +27,10 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class ExampleGameIT {
 
-  String startLobbyRequest = "{\"playerId\": 1, \"side\": \"DARK\"}";
-  String joinLobbyRequest = "{\"playerId\": %s, \"gameId\": \"%s\"}";
+  String startLobbyRequest = "{\"value\": 1, \"side\": \"DARK\"}";
+  String joinLobbyRequest = "{\"value\": %s, \"value\": \"%s\"}";
 
-  String importGameRequest = "{\"playerId\":1,\"side\":\"LIGHT\",\"clientState\":{\"dark\":[11,27],\"light\":[2],\"kings\":[2]}}";
+  String importGameRequest = "{\"value\":1,\"side\":\"LIGHT\",\"clientState\":{\"dark\":[11,27],\"light\":[2],\"kings\":[2]}}";
 
   @Autowired
   private MockMvc mockMvc;
@@ -40,14 +40,14 @@ public class ExampleGameIT {
     // FIXME 1. there should be a separate test suite for possible moves. 2. Find a way to compare unsorted set in such scenarios
   void givenStartingGame_whenOpponentJoins_shouldReturnPossibleMoves() throws Exception {
     var jsonMapper = new ObjectMapper();
-    var startLobbyRequest = "{\"playerId\": 2, \"side\": \"LIGHT\"}";
+    var startLobbyRequest = "{\"value\": 2, \"side\": \"LIGHT\"}";
     String response = startLobby(startLobbyRequest);
 
-    var gameId = jsonMapper.readTree(response).get("gameId").asText();
+    var gameId = jsonMapper.readTree(response).get("value").asText();
     String s = joinLobby(1L, gameId);
     assertEquals(String.format(
-        "{\"gameId\":\"%s\",\"progress\":\"STARTING\",\"startingState\":\"{\\\"dark\\\":[1,2,3,4,5,6,7,8,9,10,11,12]," +
-            "\\\"light\\\":[21,22,23,24,25,26,27,28,29,30,31,32],\\\"kings\\\":[]}\",\"possibleMoves\":{\"gameId\":\"%s\"," +
+        "{\"value\":\"%s\",\"progress\":\"STARTING\",\"startingState\":\"{\\\"dark\\\":[1,2,3,4,5,6,7,8,9,10,11,12]," +
+            "\\\"light\\\":[21,22,23,24,25,26,27,28,29,30,31,32],\\\"kings\\\":[]}\",\"possibleMoves\":{\"value\":\"%s\"," +
             "\"serverState\":{\"dark\":[1,2,3,4,5,6,7,8,9,10,11,12],\"light\":[21,22,23,24,25,26,27,28,29,30,31,32],\"kings\":[]},\"side\":\"LIGHT\"," +
             "\"possibleMoves\":{\"21\":[{\"position\":21,\"destination\":17,\"isCapture\":false}],\"22\":[{\"position\":22,\"destination\":18," +
             "\"isCapture\":false},{\"position\":22,\"destination\":17,\"isCapture\":false}],\"23\":[{\"position\":23,\"destination\":19,\"isCapture\":false}," +
@@ -61,7 +61,7 @@ public class ExampleGameIT {
     var jsonMapper = new ObjectMapper();
 
     String response = startImportedGame();
-    var gameId = jsonMapper.readTree(response).get("gameId").asText();
+    var gameId = jsonMapper.readTree(response).get("value").asText();
 
     joinLobby(2L, gameId);
 
@@ -78,7 +78,7 @@ public class ExampleGameIT {
     var jsonMapper = new ObjectMapper();
 
     String response = startLobby();
-    var gameId = jsonMapper.readTree(response).get("gameId").asText();
+    var gameId = jsonMapper.readTree(response).get("value").asText();
 
     joinLobby(2L, gameId);
 
@@ -170,7 +170,7 @@ public class ExampleGameIT {
       var moveValue = jsonMapper.writeValueAsString(move);
       var stateValue = jsonMapper.writeValueAsString(actualState);
 
-      String content = "{\"side\":%s,\"move\":%s,\"clientState\":%s,\"playerId\":%d}"
+      String content = "{\"side\":%s,\"move\":%s,\"clientState\":%s,\"value\":%d}"
           // TODO When player logic ready should either side or player ids
           .formatted(sideValue, moveValue, stateValue, side == Side.LIGHT ? 1L : 2L);
       var put = put(url).contentType(APPLICATION_JSON).content(content);
