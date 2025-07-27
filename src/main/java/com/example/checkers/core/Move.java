@@ -1,0 +1,53 @@
+package com.example.checkers.core;
+
+import com.example.checkers.adapters.db.PersistentGame;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import java.util.Set;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@AllArgsConstructor
+@NoArgsConstructor
+@Entity
+@Getter
+@Setter
+public class Move {
+
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private long id;
+
+  @ManyToOne
+  @JoinColumn
+  private PersistentGame game;
+
+  @ManyToOne
+  @JoinColumn
+  private Player player;
+
+  private String side;
+
+  private String move;
+
+  private String dark;
+
+  private String light;
+
+  private Set<Integer> kings;
+
+  public Move(PersistentGame game, Player player, String side, String move, String dark, String light) {
+    this.game = game;
+    this.player = player;
+    this.side = side;
+    this.move = move;
+    this.dark = dark;
+    this.light = light;
+  }
+}

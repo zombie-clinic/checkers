@@ -1,12 +1,12 @@
 package com.example.checkers.service;
 
-import static com.example.checkers.domain.Side.DARK;
-import static com.example.checkers.domain.Side.LIGHT;
+import static com.example.checkers.core.Side.DARK;
+import static com.example.checkers.core.Side.LIGHT;
 
-import com.example.checkers.domain.Checkerboard;
-import com.example.checkers.domain.Piece;
-import com.example.checkers.domain.PossibleMove;
-import com.example.checkers.domain.State;
+import com.example.checkers.core.Checkerboard;
+import com.example.checkers.core.Piece;
+import com.example.checkers.core.PossibleMove;
+import com.example.checkers.core.State;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;

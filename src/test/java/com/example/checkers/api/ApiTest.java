@@ -6,7 +6,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.example.checkers.domain.GameProgress;
+import com.example.checkers.core.GameProgress;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,9 +41,10 @@ class ApiTest {
     var startLobby = post("/games").contentType(APPLICATION_JSON).content(startLobbyRequest);
     String response = mockMvc.perform(startLobby).andReturn().getResponse().getContentAsString();
     String gameId = new ObjectMapper().readTree(response).get("gameId").asText();
+    String formatted = joinLobbyRequest.formatted(gameId);
     var request = MockMvcRequestBuilders.put("/games")
         .contentType(APPLICATION_JSON)
-        .content(joinLobbyRequest.formatted(gameId));
+        .content(formatted);
 
     mockMvc.perform(request)
         .andExpect(status().isOk())

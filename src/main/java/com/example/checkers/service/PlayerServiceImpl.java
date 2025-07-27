@@ -1,7 +1,7 @@
 package com.example.checkers.service;
 
 import com.example.checkers.model.PlayerResponse;
-import com.example.checkers.persistence.PlayerRepository;
+import com.example.checkers.adapters.db.PlayerRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
